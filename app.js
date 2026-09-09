@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Udvegadarshini - Master App Logic with Personal Wellness Hub & Mode Toggle
+   Udvegadarshini - Master App Logic with Sign Up & Login Validation
    ========================================================================== */
 
 class UdvegadarshiniApp {
@@ -11,13 +11,15 @@ class UdvegadarshiniApp {
         this.port = null;
         this.reader = null;
 
-        this.viewMode = 'personal'; // 'personal' or 'clinical'
+        this.viewMode = 'personal';
 
         this.currentUser = {
             subjectId: 'SUBJ-3221',
             fullName: 'Santhosh / Sindhu / Bharat / Nani',
             role: 'Personal Wellness'
         };
+
+        this.usersDB = []; // Registered Users DB
 
         this.currentMetrics = {
             stressScore: 0,
@@ -40,6 +42,7 @@ class UdvegadarshiniApp {
 
     init() {
         this.initSplashScreen();
+        this.loadUsersDB();
         this.bindEvents();
         this.initChart();
 
@@ -52,6 +55,24 @@ class UdvegadarshiniApp {
         stressGames.init();
 
         this.bindSoundTherapyPresets();
+    }
+
+    loadUsersDB() {
+        const db = localStorage.getItem('udvega_users_db');
+        if (db) {
+            this.usersDB = JSON.parse(db);
+        } else {
+            // Default seed user
+            this.usersDB = [{
+                email: 'test@example.com',
+                password: '1234',
+                fullName: 'Santhosh / Sindhu / Bharat / Nani',
+                subjectId: 'SUBJ-3221',
+                role: 'Personal Wellness',
+                lang: 'teluglish'
+            }];
+            localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+        }
     }
 
     initSplashScreen() {
@@ -112,16 +133,133 @@ class UdvegadarshiniApp {
         document.getElementById('pdfSubjectName').textContent = this.currentUser.fullName || 'Guest User';
     }
 
-    saveUserProfile(subjectId, fullName, role, lang) {
-        this.currentUser = { subjectId, fullName, role };
+    saveUserProfile(userObj) {
+        this.currentUser = {
+            subjectId: userObj.subjectId,
+            fullName: userObj.fullName,
+            role: userObj.role
+        };
         localStorage.setItem('udvega_user', JSON.stringify(this.currentUser));
         this.updateUserProfileUI();
 
-        if (lang) i18n.setLanguage(lang);
+        if (userObj.lang) i18n.setLanguage(userObj.lang);
         document.getElementById('loginModal').style.display = 'none';
     }
 
     bindEvents() {
+        // Auth Tab Switcher (Sign Up vs Log In)
+        const tabSignup = document.getElementById('tabModeSignup');
+        const tabLogin = document.getElementById('tabModeLogin');
+        const signupForm = document.getElementById('signupForm');
+        const loginForm = document.getElementById('loginForm');
+        const modalTitle = document.getElementById('authModalTitle');
+        const modalSubtitle = document.getElementById('authModalSubtitle');
+        const alertBox = document.getElementById('authAlertBox');
+
+        if (tabSignup && tabLogin) {
+            tabSignup.onclick = () => {
+                tabSignup.classList.add('active');
+                tabLogin.classList.remove('active');
+                signupForm.style.display = 'flex';
+                loginForm.style.display = 'none';
+                modalTitle.textContent = "Create Your Account";
+                modalSubtitle.textContent = "Sign up to register your EEG profile & track personal stress analytics";
+                if (alertBox) alertBox.style.display = 'none';
+            };
+
+            tabLogin.onclick = () => {
+                tabLogin.classList.add('active');
+                tabSignup.classList.remove('active');
+                loginForm.style.display = 'flex';
+                signupForm.style.display = 'none';
+                modalTitle.textContent = "Welcome Back";
+                modalSubtitle.textContent = "Log in with your registered Email / Subject ID & PIN";
+                if (alertBox) alertBox.style.display = 'none';
+            };
+        }
+
+        // Handle Sign Up Form Submission
+        if (signupForm) {
+            signupForm.onsubmit = (e) => {
+                e.preventDefault();
+                const fullName = document.getElementById('signupFullName').value.trim();
+                const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+                const password = document.getElementById('signupPassword').value;
+                const subjectId = document.getElementById('signupSubjectId').value.trim();
+                const role = document.getElementById('signupRole').value;
+                const lang = document.getElementById('signupLanguage').value;
+
+                // Check if user already exists
+                const existing = this.usersDB.find(u => u.email === email || u.subjectId === subjectId);
+                if (existing) {
+                    if (alertBox) {
+                        alertBox.className = 'auth-alert-box';
+                        alertBox.textContent = 'User already registered! Please click Log In tab.';
+                        alertBox.style.display = 'block';
+                    }
+                    return;
+                }
+
+                // Register New Account
+                const newUser = { fullName, email, password, subjectId, role, lang };
+                this.usersDB.push(newUser);
+                localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+
+                if (alertBox) {
+                    alertBox.className = 'auth-alert-box success';
+                    alertBox.textContent = 'Account created successfully! Logging you in...';
+                    alertBox.style.display = 'block';
+                }
+
+                setTimeout(() => this.saveUserProfile(newUser), 1000);
+            };
+        }
+
+        // Handle Log In Form Submission
+        if (loginForm) {
+            loginForm.onsubmit = (e) => {
+                e.preventDefault();
+                const loginInput = document.getElementById('loginEmail').value.trim().toLowerCase();
+                const password = document.getElementById('loginPassword').value;
+
+                const match = this.usersDB.find(u => 
+                    (u.email.toLowerCase() === loginInput || u.subjectId.toLowerCase() === loginInput) &&
+                    u.password === password
+                );
+
+                if (match) {
+                    if (alertBox) {
+                        alertBox.className = 'auth-alert-box success';
+                        alertBox.textContent = `Welcome back, ${match.fullName}! Opening dashboard...`;
+                        alertBox.style.display = 'block';
+                    }
+                    setTimeout(() => this.saveUserProfile(match), 800);
+                } else {
+                    if (alertBox) {
+                        alertBox.className = 'auth-alert-box';
+                        alertBox.textContent = 'Invalid credentials! Please check your Email / Subject ID & PIN, or Sign Up.';
+                        alertBox.style.display = 'block';
+                    }
+                }
+            };
+        }
+
+        // Guest Action
+        document.querySelectorAll('.btnGuestAction').forEach(btn => {
+            btn.onclick = () => {
+                this.saveUserProfile({
+                    subjectId: 'SUBJ-GUEST',
+                    fullName: 'Guest User',
+                    role: 'Personal Wellness',
+                    lang: i18n.currentLang
+                });
+            };
+        });
+
+        document.getElementById('btnLogout').onclick = () => {
+            document.getElementById('loginModal').style.display = 'flex';
+        };
+
         // Mode Toggle Buttons
         const btnPersonal = document.getElementById('btnModePersonal');
         const btnClinical = document.getElementById('btnModeClinical');
@@ -131,44 +269,16 @@ class UdvegadarshiniApp {
             btnClinical.onclick = () => this.setMode('clinical');
         }
 
-        // Save Journal Button
         const btnSaveJournal = document.getElementById('btnSaveJournal');
         if (btnSaveJournal) {
             btnSaveJournal.onclick = () => this.saveJournalEntry();
         }
 
-        // Language Selectors
         const headerLang = document.getElementById('languageSelect');
-        const modalLang = document.getElementById('selectModalLanguage');
-
         if (headerLang) {
             headerLang.value = i18n.currentLang;
             headerLang.onchange = (e) => i18n.setLanguage(e.target.value);
         }
-        if (modalLang) {
-            modalLang.value = i18n.currentLang;
-            modalLang.onchange = (e) => i18n.setLanguage(e.target.value);
-        }
-
-        const loginForm = document.getElementById('loginForm');
-        if (loginForm) {
-            loginForm.onsubmit = (e) => {
-                e.preventDefault();
-                const subjId = document.getElementById('inputSubjectId').value;
-                const name = document.getElementById('inputFullName').value;
-                const role = document.getElementById('selectRole').value;
-                const lang = document.getElementById('selectModalLanguage').value;
-                this.saveUserProfile(subjId, name, role, lang);
-            };
-        }
-
-        document.getElementById('btnGuestLogin').onclick = () => {
-            this.saveUserProfile('SUBJ-GUEST', 'Guest User', 'Personal Wellness', i18n.currentLang);
-        };
-
-        document.getElementById('btnLogout').onclick = () => {
-            document.getElementById('loginModal').style.display = 'flex';
-        };
 
         const tabs = document.querySelectorAll('.nav-tab');
         tabs.forEach(tab => {
@@ -527,7 +637,6 @@ class UdvegadarshiniApp {
         document.getElementById('valEntropy').textContent = data.entropy.toFixed(3);
         document.getElementById('valKatzFD').textContent = data.katzFD.toFixed(3);
 
-        // Update Personal Wellness Hub Indices
         document.getElementById('valPeaceScore').textContent = `${Math.max(10, 100 - score)} / 100`;
 
         const timeLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });

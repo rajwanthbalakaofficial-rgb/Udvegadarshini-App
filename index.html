@@ -37,30 +37,52 @@
         </div>
     </div>
 
-    <!-- ================= 2. USER LOGIN & PROFILE SELECTION MODAL ================= -->
+    <!-- ================= 2. USER SIGN UP & LOGIN AUTHENTICATION MODAL ================= -->
     <div class="login-modal-overlay" id="loginModal" style="display: none;">
         <div class="login-card card">
+            
+            <!-- Auth Header & Switcher Tabs -->
             <div class="login-header">
                 <div class="login-icon"><i class="fa-solid fa-user-shield"></i></div>
-                <h2>Udvegadarshini Neural Login</h2>
-                <p>Sign in to link your ESP32 session data & personalized AI profile</p>
+                <h2 id="authModalTitle">Create Your Account</h2>
+                <p id="authModalSubtitle">Sign up to register your EEG profile & track personal stress analytics</p>
+
+                <div class="auth-tabs">
+                    <button class="btn-auth-tab active" id="tabModeSignup"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
+                    <button class="btn-auth-tab" id="tabModeLogin"><i class="fa-solid fa-right-to-bracket"></i> Log In</button>
+                </div>
             </div>
 
-            <form id="loginForm" class="login-form">
+            <div class="auth-alert-box" id="authAlertBox" style="display: none;"></div>
+
+            <!-- FORM 1: SIGN UP (NEW USER) -->
+            <form id="signupForm" class="login-form">
                 <div class="form-group">
-                    <label><i class="fa-solid fa-id-card"></i> Subject / Patient ID</label>
-                    <input type="text" id="inputSubjectId" placeholder="e.g. SUBJ-322103" required value="SUBJ-3221">
+                    <label><i class="fa-solid fa-user"></i> Full Name</label>
+                    <input type="text" id="signupFullName" placeholder="e.g. Santhosh / Sindhu / Bharat / Nani" required>
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fa-solid fa-user"></i> Full Name</label>
-                    <input type="text" id="inputFullName" placeholder="Enter your name" required value="Santhosh / Sindhu / Bharat / Nani">
+                    <label><i class="fa-solid fa-envelope"></i> Email Address / Username</label>
+                    <input type="text" id="signupEmail" placeholder="e.g. user@example.com" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-key"></i> Create 4-Digit PIN / Password</label>
+                        <input type="password" id="signupPassword" placeholder="Create PIN" maxlength="12" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-id-card"></i> Subject / Patient ID</label>
+                        <input type="text" id="signupSubjectId" placeholder="e.g. SUBJ-3221" required value="SUBJ-3221">
+                    </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label><i class="fa-solid fa-user-gear"></i> Role / Usage</label>
-                        <select id="selectRole">
+                        <select id="signupRole">
                             <option value="Personal Wellness">Personal Daily Wellness User</option>
                             <option value="Researcher">ECE Researcher / Student</option>
                             <option value="Doctor">Medical Practitioner / Doctor</option>
@@ -70,7 +92,7 @@
 
                     <div class="form-group">
                         <label><i class="fa-solid fa-language"></i> Preferred Language</label>
-                        <select id="selectModalLanguage">
+                        <select id="signupLanguage">
                             <option value="teluglish">🇮🇳 Teluglish (Telugu in English)</option>
                             <option value="en">🇬🇧 English</option>
                             <option value="telugu">🇮🇳 తెలుగు (Telugu)</option>
@@ -80,12 +102,33 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-block btn-lg">
-                    <i class="fa-solid fa-rocket"></i> Launch Neural Dashboard
+                    <i class="fa-solid fa-user-check"></i> Register Account & Launch Dashboard
                 </button>
-                <button type="button" class="btn btn-secondary btn-block" id="btnGuestLogin">
+                <button type="button" class="btn btn-secondary btn-block btnGuestAction">
                     <i class="fa-solid fa-user-secret"></i> Continue as Guest
                 </button>
             </form>
+
+            <!-- FORM 2: LOG IN (EXISTING USER) -->
+            <form id="loginForm" class="login-form" style="display: none;">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-envelope"></i> Registered Email or Subject ID</label>
+                    <input type="text" id="loginEmail" placeholder="Enter your email or SUBJ-ID" required>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-lock"></i> Security PIN / Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your PIN / Password" required>
+                </div>
+
+                <button type="submit" class="btn btn-accent btn-block btn-lg">
+                    <i class="fa-solid fa-right-to-bracket"></i> Log In to Your Dashboard
+                </button>
+                <button type="button" class="btn btn-secondary btn-block btnGuestAction">
+                    <i class="fa-solid fa-user-secret"></i> Continue as Guest
+                </button>
+            </form>
+
         </div>
     </div>
 
