@@ -12,6 +12,7 @@ const i18nDict = {
         tabSound: "432Hz Sound Therapy",
         tabGames: "5 Stress Relief Games",
         tabHistory: "History & Reports",
+        tabPersonal: "Personal Wellness Hub",
         serialConnect: "Web Serial (USB)",
         bleConnect: "Web BLE",
         startSim: "Start Simulator",
@@ -34,7 +35,11 @@ const i18nDict = {
         stateNormal: "Normal Baseline",
         stateFocus: "Active Focus State",
         stateActive: "High Mental Engagement",
-        stateStressed: "High Stress Alert!"
+        stateStressed: "High Stress Alert!",
+        personalModeTitle: "Personal Daily Wellness & Streak Tracker",
+        calmStreak: "Calm Streak: 5 Days 🔥",
+        dailyGoal: "Daily Calm Goal: 30 Mins",
+        journalPlaceholder: "Write your daily thoughts or what made you stressed today..."
     },
     teluglish: {
         appName: "Udvegadarshini",
@@ -44,6 +49,7 @@ const i18nDict = {
         tabSound: "432Hz Sound Therapy",
         tabGames: "5 Stress Relief Games",
         tabHistory: "History & Reports",
+        tabPersonal: "Personal Wellness Hub",
         serialConnect: "Web Serial (USB)",
         bleConnect: "Web BLE",
         startSim: "Start Simulator",
@@ -66,7 +72,11 @@ const i18nDict = {
         stateNormal: "Normal Baseline",
         stateFocus: "Active Focus State",
         stateActive: "High Mental Engagement",
-        stateStressed: "High Stress Alert!"
+        stateStressed: "High Stress Alert!",
+        personalModeTitle: "Personal Daily Wellness & Streak Tracker",
+        calmStreak: "Calm Streak: 5 Days 🔥",
+        dailyGoal: "Daily Calm Goal: 30 Mins",
+        journalPlaceholder: "Eeroju emaindhi? Nee thoughts ikkada note chesko raa..."
     },
     telugu: {
         appName: "ఉద్వేగదర్శిని",
@@ -76,6 +86,7 @@ const i18nDict = {
         tabSound: "432Hz సౌండ్ థెరపీ",
         tabGames: "5 ఒత్తిడి ఉపశమన గేమ్‌లు",
         tabHistory: "చరిత్ర & నివేదికలు",
+        tabPersonal: "వ్యక్తిగత ఆరోగ్య కేంద్రం",
         serialConnect: "వెబ్ సీరియల్ (USB)",
         bleConnect: "వెబ్ BLE",
         startSim: "సిమ్యులేటర్ ప్రారంభించు",
@@ -98,7 +109,11 @@ const i18nDict = {
         stateNormal: "సాధారణ స్థితి (Normal)",
         stateFocus: "ఏకాగ్రత స్థితి (Focus)",
         stateActive: "అధిక నిశ్చితార్థం (Active)",
-        stateStressed: "అధిక ఒత్తిడి హెచ్చరిక! (High Stress)"
+        stateStressed: "అధిక ఒత్తిడి హెచ్చరిక! (High Stress)",
+        personalModeTitle: "వ్యక్తిగత రోజువారీ ఆరోగ్యం & స్ట్రీక్ ట్రాకర్",
+        calmStreak: "ప్రశాంతత స్ట్రీక్: 5 రోజులు 🔥",
+        dailyGoal: "రోజువారీ లక్ష్యం: 30 నిమిషాలు",
+        journalPlaceholder: "ఈ రోజు మీ ఆలోచనలను ఇక్కడ రాయండి..."
     },
     hindi: {
         appName: "उद्वेगदर्शिनी",
@@ -108,6 +123,7 @@ const i18nDict = {
         tabSound: "432Hz ध्वनि चिकित्सा",
         tabGames: "5 तनाव राहत खेल",
         tabHistory: "इतिहास और रिपोर्ट",
+        tabPersonal: "व्यक्तिगत कल्याण केंद्र",
         serialConnect: "वेब सीरियल (USB)",
         bleConnect: "वेब BLE",
         startSim: "सिम्युलेटर शुरू करें",
@@ -130,7 +146,11 @@ const i18nDict = {
         stateNormal: "सामान्य स्थिति",
         stateFocus: "सक्रिय फोकस स्थिति",
         stateActive: "उच्च मानसिक सहभागिता",
-        stateStressed: "उच्च तनाव चेतावनी!"
+        stateStressed: "उच्च तनाव चेतावनी!",
+        personalModeTitle: "व्यक्तिगत दैनिक कल्याण और स्ट्रीक ट्रैकर",
+        calmStreak: "शांत स्ट्राइक: 5 दिन 🔥",
+        dailyGoal: "दैनिक शांत लक्ष्य: 30 मिनट",
+        journalPlaceholder: "आज अपने विचार यहाँ लिखें..."
     }
 };
 
@@ -154,7 +174,6 @@ class LanguageManager {
         const langSelect = document.getElementById('languageSelect');
         if (langSelect) langSelect.value = this.currentLang;
 
-        // Update Nav Tabs
         const tabMonitor = document.querySelector('[data-tab="tab-monitor"]');
         if (tabMonitor) tabMonitor.innerHTML = `<i class="fa-solid fa-chart-line"></i> ${this.t('tabMonitor')}`;
 
@@ -170,7 +189,9 @@ class LanguageManager {
         const tabHistory = document.querySelector('[data-tab="tab-history"]');
         if (tabHistory) tabHistory.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> ${this.t('tabHistory')}`;
 
-        // Header Buttons
+        const tabPersonal = document.querySelector('[data-tab="tab-personal"]');
+        if (tabPersonal) tabPersonal.innerHTML = `<i class="fa-solid fa-heart-pulse"></i> ${this.t('tabPersonal')}`;
+
         const serialBtn = document.getElementById('btnConnectSerial');
         if (serialBtn) serialBtn.innerHTML = `<i class="fa-solid fa-plug"></i> ${this.t('serialConnect')}`;
 

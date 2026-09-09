@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Udvegadarshini - Master App Logic with Splash Screen, Login & i18n
+   Udvegadarshini - Master App Logic with Personal Wellness Hub & Mode Toggle
    ========================================================================== */
 
 class UdvegadarshiniApp {
@@ -11,14 +11,14 @@ class UdvegadarshiniApp {
         this.port = null;
         this.reader = null;
 
-        // Logged In User State
+        this.viewMode = 'personal'; // 'personal' or 'clinical'
+
         this.currentUser = {
             subjectId: 'SUBJ-3221',
             fullName: 'Santhosh / Sindhu / Bharat / Nani',
-            role: 'Researcher'
+            role: 'Personal Wellness'
         };
 
-        // Current Metrics State
         this.currentMetrics = {
             stressScore: 0,
             state: 'waiting',
@@ -28,6 +28,7 @@ class UdvegadarshiniApp {
         };
 
         this.historyLogs = [];
+        this.journalEntries = [];
         this.sessionStartTime = new Date();
 
         this.chart = null;
@@ -42,8 +43,8 @@ class UdvegadarshiniApp {
         this.bindEvents();
         this.initChart();
 
-        // Apply saved language & profile
         this.loadSavedUserProfile();
+        this.loadSavedJournals();
         i18n.applyTranslations();
 
         soundEngine.bindCanvas('audioVisualizerCanvas');
@@ -53,9 +54,6 @@ class UdvegadarshiniApp {
         this.bindSoundTherapyPresets();
     }
 
-    /* ----------------------------------------------------------------------
-       1. Splash Screen & Login Lifecycle
-       ---------------------------------------------------------------------- */
     initSplashScreen() {
         const progressBar = document.getElementById('splashProgress');
         const statusText = document.getElementById('splashStatusText');
@@ -80,7 +78,6 @@ class UdvegadarshiniApp {
                     splashScreen.style.opacity = '0';
                     splashScreen.style.visibility = 'hidden';
 
-                    // Show login modal if no saved session found
                     const savedUser = localStorage.getItem('udvega_user');
                     if (!savedUser) {
                         document.getElementById('loginModal').style.display = 'flex';
@@ -98,12 +95,19 @@ class UdvegadarshiniApp {
         }
     }
 
+    loadSavedJournals() {
+        const saved = localStorage.getItem('udvega_journals');
+        if (saved) {
+            this.journalEntries = JSON.parse(saved);
+            this.renderJournalEntries();
+        }
+    }
+
     updateUserProfileUI() {
         document.getElementById('userNameText').textContent = this.currentUser.fullName || 'Guest User';
         document.getElementById('userRoleText').textContent = `${this.currentUser.role} (${this.currentUser.subjectId})`;
         document.getElementById('userAvatar').textContent = (this.currentUser.fullName || 'G').charAt(0).toUpperCase();
 
-        // PDF Sync
         document.getElementById('pdfSubjectId').textContent = this.currentUser.subjectId || 'SUBJ-GUEST';
         document.getElementById('pdfSubjectName').textContent = this.currentUser.fullName || 'Guest User';
     }
@@ -117,10 +121,22 @@ class UdvegadarshiniApp {
         document.getElementById('loginModal').style.display = 'none';
     }
 
-    /* ----------------------------------------------------------------------
-       2. Navigation Tabs & UI Event Bindings
-       ---------------------------------------------------------------------- */
     bindEvents() {
+        // Mode Toggle Buttons
+        const btnPersonal = document.getElementById('btnModePersonal');
+        const btnClinical = document.getElementById('btnModeClinical');
+
+        if (btnPersonal && btnClinical) {
+            btnPersonal.onclick = () => this.setMode('personal');
+            btnClinical.onclick = () => this.setMode('clinical');
+        }
+
+        // Save Journal Button
+        const btnSaveJournal = document.getElementById('btnSaveJournal');
+        if (btnSaveJournal) {
+            btnSaveJournal.onclick = () => this.saveJournalEntry();
+        }
+
         // Language Selectors
         const headerLang = document.getElementById('languageSelect');
         const modalLang = document.getElementById('selectModalLanguage');
@@ -134,7 +150,6 @@ class UdvegadarshiniApp {
             modalLang.onchange = (e) => i18n.setLanguage(e.target.value);
         }
 
-        // Login Form Submission
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
             loginForm.onsubmit = (e) => {
@@ -148,14 +163,13 @@ class UdvegadarshiniApp {
         }
 
         document.getElementById('btnGuestLogin').onclick = () => {
-            this.saveUserProfile('SUBJ-GUEST', 'Guest User', 'Subject', i18n.currentLang);
+            this.saveUserProfile('SUBJ-GUEST', 'Guest User', 'Personal Wellness', i18n.currentLang);
         };
 
         document.getElementById('btnLogout').onclick = () => {
             document.getElementById('loginModal').style.display = 'flex';
         };
 
-        // Tab Switching
         const tabs = document.querySelectorAll('.nav-tab');
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -174,12 +188,10 @@ class UdvegadarshiniApp {
             });
         });
 
-        // Connection Buttons
         document.getElementById('btnConnectSerial').onclick = () => this.connectWebSerial();
         document.getElementById('btnConnectBLE').onclick = () => this.connectWebBLE();
         document.getElementById('btnToggleSim').onclick = () => this.toggleSimulator();
 
-        // Global Alert Banner Buttons
         document.getElementById('btnAlertOpenApta').onclick = () => {
             document.querySelector('[data-tab="tab-apta"]').click();
         };
@@ -191,7 +203,6 @@ class UdvegadarshiniApp {
             document.getElementById('highStressAlert').style.display = 'none';
         };
 
-        // Āpta AI Buttons
         document.getElementById('btnSendChat').onclick = () => {
             const input = document.getElementById('chatInputField');
             aptaAI.handleUserPrompt(input.value);
@@ -208,12 +219,56 @@ class UdvegadarshiniApp {
         });
         document.getElementById('btnClearChat').onclick = () => aptaAI.clearChat();
 
-        // 4-7-8 Breathing Guide Button
         document.getElementById('btnStartBreathing').onclick = () => this.toggle478Breathing();
 
-        // History & PDF Exporter Buttons
         document.getElementById('btnClearHistory').onclick = () => this.clearHistory();
         document.getElementById('btnExportPDF').onclick = () => this.exportPDFReport();
+    }
+
+    setMode(modeKey) {
+        this.viewMode = modeKey;
+        const btnPersonal = document.getElementById('btnModePersonal');
+        const btnClinical = document.getElementById('btnModeClinical');
+
+        if (modeKey === 'personal') {
+            btnPersonal.classList.add('active');
+            btnClinical.classList.remove('active');
+        } else {
+            btnClinical.classList.add('active');
+            btnPersonal.classList.remove('active');
+        }
+    }
+
+    saveJournalEntry() {
+        const textarea = document.getElementById('journalTextarea');
+        const text = textarea.value.trim();
+        if (!text) return;
+
+        const timeStr = new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        this.journalEntries.unshift({ date: timeStr, note: text });
+
+        if (this.journalEntries.length > 20) this.journalEntries.pop();
+        localStorage.setItem('udvega_journals', JSON.stringify(this.journalEntries));
+
+        textarea.value = '';
+        this.renderJournalEntries();
+    }
+
+    renderJournalEntries() {
+        const list = document.getElementById('journalEntriesList');
+        if (!list) return;
+
+        list.innerHTML = '';
+        if (this.journalEntries.length === 0) {
+            list.innerHTML = '<li>No journal notes saved yet. Write your thoughts above!</li>';
+            return;
+        }
+
+        this.journalEntries.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span class="j-date">${item.date}</span> - ${item.note}`;
+            list.appendChild(li);
+        });
     }
 
     bindSoundTherapyPresets() {
@@ -270,32 +325,9 @@ class UdvegadarshiniApp {
             data: {
                 labels: [],
                 datasets: [
-                    {
-                        label: 'Stress Score (%)',
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        fill: true,
-                        data: []
-                    },
-                    {
-                        label: 'Beta/Alpha Ratio (x100)',
-                        borderColor: '#6366f1',
-                        borderWidth: 2,
-                        borderDash: [4, 4],
-                        tension: 0.3,
-                        fill: false,
-                        data: []
-                    },
-                    {
-                        label: 'Alpha Wave Power (x1000)',
-                        borderColor: '#10b981',
-                        borderWidth: 1.5,
-                        tension: 0.3,
-                        fill: false,
-                        data: []
-                    }
+                    { label: 'Stress Score (%)', borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, tension: 0.3, fill: true, data: [] },
+                    { label: 'Beta/Alpha Ratio (x100)', borderColor: '#6366f1', borderWidth: 2, borderDash: [4, 4], tension: 0.3, fill: false, data: [] },
+                    { label: 'Alpha Wave Power (x1000)', borderColor: '#10b981', borderWidth: 1.5, tension: 0.3, fill: false, data: [] }
                 ]
             },
             options: {
@@ -447,25 +479,15 @@ class UdvegadarshiniApp {
         let stateDesc = 'Balanced Alpha & Beta waves';
 
         if (score >= 5 && score < 25) {
-            stateKey = 'relax';
-            stateTitle = i18n.t('stateRelax');
-            stateDesc = 'Alpha wave dominant, calm mind';
+            stateKey = 'relax'; stateTitle = i18n.t('stateRelax'); stateDesc = 'Alpha wave dominant, calm mind';
         } else if (score >= 25 && score < 40) {
-            stateKey = 'normal';
-            stateTitle = i18n.t('stateNormal');
-            stateDesc = 'Balanced wakefulness & resilience';
+            stateKey = 'normal'; stateTitle = i18n.t('stateNormal'); stateDesc = 'Balanced wakefulness & resilience';
         } else if (score >= 40 && score < 55) {
-            stateKey = 'focus';
-            stateTitle = i18n.t('stateFocus');
-            stateDesc = 'Beta rising, active problem solving';
+            stateKey = 'focus'; stateTitle = i18n.t('stateFocus'); stateDesc = 'Beta rising, active problem solving';
         } else if (score >= 55 && score < 70) {
-            stateKey = 'active';
-            stateTitle = i18n.t('stateActive');
-            stateDesc = 'High Beta, time pressure / gaming';
+            stateKey = 'active'; stateTitle = i18n.t('stateActive'); stateDesc = 'High Beta, time pressure / gaming';
         } else if (score >= 70) {
-            stateKey = 'stressed';
-            stateTitle = i18n.t('stateStressed');
-            stateDesc = 'Fight-or-flight mode detected';
+            stateKey = 'stressed'; stateTitle = i18n.t('stateStressed'); stateDesc = 'Fight-or-flight mode detected';
         }
 
         this.currentMetrics = { ...data, state: stateTitle, timestamp: new Date() };
@@ -505,6 +527,9 @@ class UdvegadarshiniApp {
         document.getElementById('valEntropy').textContent = data.entropy.toFixed(3);
         document.getElementById('valKatzFD').textContent = data.katzFD.toFixed(3);
 
+        // Update Personal Wellness Hub Indices
+        document.getElementById('valPeaceScore').textContent = `${Math.max(10, 100 - score)} / 100`;
+
         const timeLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         this.chart.data.labels.push(timeLabel);
         this.chart.data.datasets[0].data.push(score);
@@ -527,11 +552,9 @@ class UdvegadarshiniApp {
         const badge = document.getElementById('connectionBadge');
         const textEl = document.getElementById('connectionText');
 
-        if (connected) {
-            badge.className = 'connection-status-badge connected';
-        } else {
-            badge.className = 'connection-status-badge';
-        }
+        if (connected) badge.className = 'connection-status-badge connected';
+        else badge.className = 'connection-status-badge';
+
         textEl.textContent = text;
     }
 
@@ -557,16 +580,9 @@ class UdvegadarshiniApp {
 
             const runCycle = () => {
                 timerNum.textContent = seconds;
-                if (phase === 'inhale') {
-                    circle.className = 'breathing-circle expand';
-                    text.textContent = 'Inhale (4s)';
-                } else if (phase === 'hold') {
-                    circle.className = 'breathing-circle hold';
-                    text.textContent = 'Hold (7s)';
-                } else if (phase === 'exhale') {
-                    circle.className = 'breathing-circle contract';
-                    text.textContent = 'Exhale (8s)';
-                }
+                if (phase === 'inhale') { circle.className = 'breathing-circle expand'; text.textContent = 'Inhale (4s)'; }
+                else if (phase === 'hold') { circle.className = 'breathing-circle hold'; text.textContent = 'Hold (7s)'; }
+                else if (phase === 'exhale') { circle.className = 'breathing-circle contract'; text.textContent = 'Exhale (8s)'; }
 
                 seconds--;
                 if (seconds < 0) {

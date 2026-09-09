@@ -59,8 +59,9 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label><i class="fa-solid fa-user-gear"></i> Role</label>
+                        <label><i class="fa-solid fa-user-gear"></i> Role / Usage</label>
                         <select id="selectRole">
+                            <option value="Personal Wellness">Personal Daily Wellness User</option>
                             <option value="Researcher">ECE Researcher / Student</option>
                             <option value="Doctor">Medical Practitioner / Doctor</option>
                             <option value="Subject">Test Subject / Patient</option>
@@ -102,6 +103,13 @@
 
         <!-- Connection Status, Language Selector & Profile Badge -->
         <div class="header-controls">
+            <!-- Mode Toggle Switch (Personal Wellness vs Clinical Lab) -->
+            <div class="mode-toggle-box" title="Switch view mode">
+                <span class="mode-label">Mode:</span>
+                <button class="btn-mode-toggle active" id="btnModePersonal"><i class="fa-solid fa-heart-pulse"></i> Personal</button>
+                <button class="btn-mode-toggle" id="btnModeClinical"><i class="fa-solid fa-flask"></i> Clinical</button>
+            </div>
+
             <!-- Language Selector Dropdown -->
             <div class="lang-selector-box">
                 <i class="fa-solid fa-globe"></i>
@@ -144,6 +152,9 @@
     <nav class="main-nav">
         <button class="nav-tab active" data-tab="tab-monitor">
             <i class="fa-solid fa-chart-line"></i> Live Monitor
+        </button>
+        <button class="nav-tab" data-tab="tab-personal">
+            <i class="fa-solid fa-heart-pulse"></i> Personal Wellness Hub
         </button>
         <button class="nav-tab" data-tab="tab-apta">
             <i class="fa-solid fa-user-doctor"></i> Āpta AI (आप्त AI) <span class="badge-unread" id="aptaUnread" style="display:none;">1</span>
@@ -359,6 +370,111 @@
                             <span class="metric-val" id="valKatzFD">1.0000</span>
                         </div>
                     </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= NEW TAB: PERSONAL WELLNESS HUB ================= -->
+        <section class="tab-page" id="tab-personal">
+            <div class="personal-hub-layout">
+                
+                <!-- Top Hero Streaks & Daily Goal Card -->
+                <div class="card personal-hero-card">
+                    <div class="personal-hero-header">
+                        <div>
+                            <h2><i class="fa-solid fa-heart-pulse"></i> Personal Daily Wellness Hub</h2>
+                            <p>Track your daily calm streak, mental energy, and personal stress journal.</p>
+                        </div>
+                        <div class="streak-badge-box">
+                            <i class="fa-solid fa-fire glow-fire"></i>
+                            <div>
+                                <strong id="streakCountText">5 Days Streak</strong>
+                                <span>Calm Zone Record 🔥</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Wellness Index Cards -->
+                    <div class="wellness-indices-grid">
+                        <div class="index-card">
+                            <div class="index-icon"><i class="fa-solid fa-spa"></i></div>
+                            <div class="index-info">
+                                <span>Mind Peace Score</span>
+                                <strong id="valPeaceScore">82 / 100</strong>
+                            </div>
+                        </div>
+                        <div class="index-card">
+                            <div class="index-icon"><i class="fa-solid fa-bolt"></i></div>
+                            <div class="index-info">
+                                <span>Mental Energy</span>
+                                <strong id="valMentalEnergy">High (Alpha Dominant)</strong>
+                            </div>
+                        </div>
+                        <div class="index-card">
+                            <div class="index-icon"><i class="fa-solid fa-moon"></i></div>
+                            <div class="index-info">
+                                <span>Sleep Readiness</span>
+                                <strong id="valSleepReadiness">Optimal</strong>
+                            </div>
+                        </div>
+                        <div class="index-card">
+                            <div class="index-icon"><i class="fa-solid fa-bullseye"></i></div>
+                            <div class="index-info">
+                                <span>Daily Focus Time</span>
+                                <strong id="valFocusTime">45 Mins Achieved</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Grid: Personal Journal & Habit Checklist -->
+                <div class="personal-grid">
+                    
+                    <!-- Personal Journal Logger -->
+                    <div class="card journal-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-book-bookmark"></i> Personal Stress Journal & Notes</h3>
+                            <button class="btn btn-sm btn-primary" id="btnSaveJournal"><i class="fa-solid fa-floppy-disk"></i> Save Entry</button>
+                        </div>
+                        <textarea id="journalTextarea" placeholder="Eeroju mind lo em thoughts unnai? What caused stress today or how did 432Hz sound therapy help you? Note it down..." rows="6"></textarea>
+                        
+                        <div class="past-journals-box">
+                            <h4>Recent Entries:</h4>
+                            <ul id="journalEntriesList">
+                                <li><span class="j-date">Today, 21:15</span> - Completed 4-7-8 breathing session. Felt instant relaxation!</li>
+                                <li><span class="j-date">Yesterday, 14:30</span> - EEG showed Focus state during coding project presentation.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Personal Daily Wellness Habit Checklist -->
+                    <div class="card habit-checklist-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-list-check"></i> Daily Mindful Habits</h3>
+                            <span class="sub-info">4 / 4 Completed</span>
+                        </div>
+
+                        <div class="habit-list">
+                            <label class="habit-item">
+                                <input type="checkbox" checked>
+                                <span>250Hz ESP32 Morning EEG Baseline Check</span>
+                            </label>
+                            <label class="habit-item">
+                                <input type="checkbox" checked>
+                                <span>10-Minute 432Hz Solfeggio Audio Relaxation</span>
+                            </label>
+                            <label class="habit-item">
+                                <input type="checkbox" checked>
+                                <span>4-7-8 Guided Breathing Exercise</span>
+                            </label>
+                            <label class="habit-item">
+                                <input type="checkbox" checked>
+                                <span>Hydration & 5-Min Posture Reset</span>
+                            </label>
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
