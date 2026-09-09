@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Udvegadarshini (उद्वेगदर्शिनी) - Real-Time EEG Stress & Brain Mirror</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for real-time graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+
+    <!-- ================= 1. ANIMATED HIGH-TECH SPLASH SCREEN ================= -->
+    <div class="splash-screen-overlay" id="splashScreen">
+        <div class="splash-content">
+            <div class="splash-logo-box">
+                <i class="fa-solid fa-brain splash-brain-icon"></i>
+            </div>
+            <h1 class="splash-title">Udvegadarshini <span class="splash-hindi">उद्वेगदर्शिनी</span></h1>
+            <p class="splash-subtitle">BioAmp EXG Pill & ESP32 Embedded 1D-CNN Stress Monitor</p>
+
+            <div class="splash-loader-bar">
+                <div class="splash-progress" id="splashProgress"></div>
+            </div>
+
+            <div class="splash-status-text" id="splashStatusText">Initialising ESP32 Neural System...</div>
+
+            <div class="splash-credits">
+                <p>Designed by ECE Dept | Gayatri Vidya Parishad College of Engineering (Autonomous)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 2. USER LOGIN & PROFILE SELECTION MODAL ================= -->
+    <div class="login-modal-overlay" id="loginModal" style="display: none;">
+        <div class="login-card card">
+            <div class="login-header">
+                <div class="login-icon"><i class="fa-solid fa-user-shield"></i></div>
+                <h2>Udvegadarshini Neural Login</h2>
+                <p>Sign in to link your ESP32 session data & personalized AI profile</p>
+            </div>
+
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-id-card"></i> Subject / Patient ID</label>
+                    <input type="text" id="inputSubjectId" placeholder="e.g. SUBJ-322103" required value="SUBJ-3221">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-user"></i> Full Name</label>
+                    <input type="text" id="inputFullName" placeholder="Enter your name" required value="Santhosh / Sindhu / Bharat / Nani">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-user-gear"></i> Role</label>
+                        <select id="selectRole">
+                            <option value="Researcher">ECE Researcher / Student</option>
+                            <option value="Doctor">Medical Practitioner / Doctor</option>
+                            <option value="Subject">Test Subject / Patient</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-language"></i> Preferred Language</label>
+                        <select id="selectModalLanguage">
+                            <option value="teluglish">🇮🇳 Teluglish (Telugu in English)</option>
+                            <option value="en">🇬🇧 English</option>
+                            <option value="telugu">🇮🇳 తెలుగు (Telugu)</option>
+                            <option value="hindi">🇮🇳 हिन्दी (Hindi)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg">
+                    <i class="fa-solid fa-rocket"></i> Launch Neural Dashboard
+                </button>
+                <button type="button" class="btn btn-secondary btn-block" id="btnGuestLogin">
+                    <i class="fa-solid fa-user-secret"></i> Continue as Guest
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class="fa-solid fa-brain glow-pulse"></i>
+            </div>
+            <div class="logo-text">
+                <h1>Udvegadarshini <span class="hindi-subtitle">उद्वेगदर्शिनी</span></h1>
+                <p class="tagline">BioAmp EXG Pill & ESP32 1D-CNN Real-Time EEG Monitor</p>
+            </div>
+        </div>
+
+        <!-- Connection Status, Language Selector & Profile Badge -->
+        <div class="header-controls">
+            <!-- Language Selector Dropdown -->
+            <div class="lang-selector-box">
+                <i class="fa-solid fa-globe"></i>
+                <select id="languageSelect">
+                    <option value="teluglish">Teluglish</option>
+                    <option value="en">English</option>
+                    <option value="telugu">తెలుగు</option>
+                    <option value="hindi">हिन्दी</option>
+                </select>
+            </div>
+
+            <!-- User Profile Badge -->
+            <div class="user-profile-badge" id="userProfileBadge">
+                <div class="user-avatar" id="userAvatar">S</div>
+                <div class="user-info-text">
+                    <strong id="userNameText">Guest User</strong>
+                    <span id="userRoleText">Subject</span>
+                </div>
+                <button class="btn-icon" id="btnLogout" title="Switch User / Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+
+            <div class="connection-status-badgeDisconnected" id="connectionBadge">
+                <span class="status-dot"></span>
+                <span id="connectionText">Device Disconnected</span>
+            </div>
+            
+            <button class="btn btn-primary" id="btnConnectSerial">
+                <i class="fa-solid fa-plug"></i> Web Serial (USB)
+            </button>
+            <button class="btn btn-secondary" id="btnConnectBLE">
+                <i class="fa-brands fa-bluetooth-b"></i> Web BLE
+            </button>
+            <button class="btn btn-accent" id="btnToggleSim">
+                <i class="fa-solid fa-microchip"></i> <span id="simBtnText">Start Simulator</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="main-nav">
+        <button class="nav-tab active" data-tab="tab-monitor">
+            <i class="fa-solid fa-chart-line"></i> Live Monitor
+        </button>
+        <button class="nav-tab" data-tab="tab-apta">
+            <i class="fa-solid fa-user-doctor"></i> Āpta AI (आप्त AI) <span class="badge-unread" id="aptaUnread" style="display:none;">1</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-frequency">
+            <i class="fa-solid fa-compact-disc"></i> 432Hz Sound Therapy
+        </button>
+        <button class="nav-tab" data-tab="tab-games">
+            <i class="fa-solid fa-gamepad"></i> 5 Stress Relief Games
+        </button>
+        <button class="nav-tab" data-tab="tab-history">
+            <i class="fa-solid fa-clock-rotate-left"></i> History & Reports
+        </button>
+    </nav>
+
+    <!-- Global Alert Banner for High Stress Auto-Trigger -->
+    <div class="high-stress-alert" id="highStressAlert" style="display: none;">
+        <div class="alert-content">
+            <i class="fa-solid fa-triangle-exclamation alert-icon"></i>
+            <div>
+                <strong>High Stress Level Detected (>70%)!</strong>
+                <p>Āpta AI is here to help. Sound therapy and 4-7-8 breathing have been prepared for you.</p>
+            </div>
+        </div>
+        <div class="alert-actions">
+            <button class="btn btn-light btn-sm" id="btnAlertOpenApta">Talk to Āpta AI</button>
+            <button class="btn btn-light-outline btn-sm" id="btnAlertPlayMusic">Play 432Hz Sound</button>
+            <button class="btn-icon" id="btnCloseAlert"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="app-content">
+
+        <!-- ================= TAB 1: LIVE MONITOR ================= -->
+        <section class="tab-page active" id="tab-monitor">
+            <div class="dashboard-grid">
+
+                <!-- Left Column: Main Stress Gauge Card -->
+                <div class="card card-stress-gauge">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-gauge-high"></i> Real-Time Stress Score</h3>
+                        <span class="badge-model">1D-CNN Model (98.28% Acc)</span>
+                    </div>
+
+                    <div class="gauge-wrapper">
+                        <div class="gauge-container">
+                            <svg class="gauge-svg" viewBox="0 0 200 200">
+                                <circle class="gauge-bg" cx="100" cy="100" r="85"></circle>
+                                <circle class="gauge-fill" id="gaugeFill" cx="100" cy="100" r="85"></circle>
+                            </svg>
+                            <div class="gauge-center">
+                                <div class="stress-score-num" id="stressScoreVal">--<span>%</span></div>
+                                <div class="stress-state-title" id="stressStateTitle">Waiting Data...</div>
+                                <div class="stress-state-desc" id="stressStateDesc">Connect ESP32 or start simulator</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stress Scale Categories -->
+                    <div class="stress-scale-bar">
+                        <div class="scale-item scale-relax" data-level="relax">
+                            <span class="scale-color"></span>
+                            <span class="scale-label">Relaxation (5-25%)</span>
+                        </div>
+                        <div class="scale-item scale-normal" data-level="normal">
+                            <span class="scale-color"></span>
+                            <span class="scale-label">Normal (25-40%)</span>
+                        </div>
+                        <div class="scale-item scale-focus" data-level="focus">
+                            <span class="scale-color"></span>
+                            <span class="scale-label">Focus (40-55%)</span>
+                        </div>
+                        <div class="scale-item scale-active" data-level="active">
+                            <span class="scale-color"></span>
+                            <span class="scale-label">Active (55-70%)</span>
+                        </div>
+                        <div class="scale-item scale-stressed" data-level="stressed">
+                            <span class="scale-color"></span>
+                            <span class="scale-label">Stressed (70-90%+)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Top Column: EEG Frequency Band Powers -->
+                <div class="card card-band-powers">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-wave-square"></i> EEG Band Powers (0.5 - 40 Hz)</h3>
+                        <span class="sub-info">BioAmp EXG Pill 1000x Gain</span>
+                    </div>
+
+                    <div class="band-bars-container">
+                        <!-- Delta -->
+                        <div class="band-bar-row">
+                            <div class="band-info">
+                                <span class="band-name">Delta (&delta;)</span>
+                                <span class="band-freq">0.5 - 4 Hz</span>
+                                <span class="band-val" id="valDelta">0.000</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-delta" id="barDelta" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Theta -->
+                        <div class="band-bar-row">
+                            <div class="band-info">
+                                <span class="band-name">Theta (&theta;)</span>
+                                <span class="band-freq">4 - 8 Hz</span>
+                                <span class="band-val" id="valTheta">0.000</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-theta" id="barTheta" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Alpha -->
+                        <div class="band-bar-row">
+                            <div class="band-info">
+                                <span class="band-name">Alpha (&alpha;)</span>
+                                <span class="band-freq">8 - 13 Hz</span>
+                                <span class="band-val" id="valAlpha">0.000</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-alpha" id="barAlpha" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Beta -->
+                        <div class="band-bar-row">
+                            <div class="band-info">
+                                <span class="band-name">Beta (&beta;)</span>
+                                <span class="band-freq">13 - 30 Hz</span>
+                                <span class="band-val" id="valBeta">0.000</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-beta" id="barBeta" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Gamma -->
+                        <div class="band-bar-row">
+                            <div class="band-info">
+                                <span class="band-name">Gamma (&gamma;)</span>
+                                <span class="band-freq">30 - 40 Hz</span>
+                                <span class="band-val" id="valGamma">0.000</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-gamma" id="barGamma" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Beta/Alpha Ratio Highlight -->
+                    <div class="ratio-highlight-box">
+                        <div class="ratio-title">
+                            <i class="fa-solid fa-calculator"></i> &beta; / &alpha; Ratio (Cognitive Stress Indicator)
+                        </div>
+                        <div class="ratio-value" id="valBetaAlphaRatio">0.000</div>
+                        <div class="ratio-status" id="ratioStatusText">Normal Baseline</div>
+                    </div>
+                </div>
+
+                <!-- Bottom Full Width Column: Live EEG Signal & Biomarkers Chart -->
+                <div class="card card-full-width">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-chart-area"></i> Live EEG Time-Series & Biomarkers Trend</h3>
+                        <div class="chart-legend-pills">
+                            <span class="pill pill-stress"><i class="fa-solid fa-circle"></i> Stress Score</span>
+                            <span class="pill pill-beta-alpha"><i class="fa-solid fa-circle"></i> Beta/Alpha Ratio</span>
+                            <span class="pill pill-alpha"><i class="fa-solid fa-circle"></i> Alpha Wave</span>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="liveEEGChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Secondary Biomarkers Cards Grid -->
+                <div class="biomarkers-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon"><i class="fa-solid fa-bolt"></i></div>
+                        <div class="metric-body">
+                            <span class="metric-label">Hjorth Activity</span>
+                            <span class="metric-val" id="valHjorthAct">0.0000</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon"><i class="fa-solid fa-arrows-up-down-left-right"></i></div>
+                        <div class="metric-body">
+                            <span class="metric-label">Hjorth Mobility</span>
+                            <span class="metric-val" id="valHjorthMob">0.0000</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon"><i class="fa-solid fa-network-wired"></i></div>
+                        <div class="metric-body">
+                            <span class="metric-label">Hjorth Complexity</span>
+                            <span class="metric-val" id="valHjorthComp">0.0000</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                        <div class="metric-body">
+                            <span class="metric-label">Signal Entropy</span>
+                            <span class="metric-val" id="valEntropy">0.0000</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                        <div class="metric-body">
+                            <span class="metric-label">Katz Fractal Dim</span>
+                            <span class="metric-val" id="valKatzFD">1.0000</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: ĀPTA AI CHATBOT ================= -->
+        <section class="tab-page" id="tab-apta">
+            <div class="apta-layout">
+                <!-- Left Sidebar: Āpta AI Profile & Mood Check-In -->
+                <div class="apta-sidebar card">
+                    <div class="apta-avatar-wrapper">
+                        <div class="apta-avatar">
+                            <i class="fa-solid fa-user-astronaut"></i>
+                        </div>
+                        <h2>Āpta AI <span class="sanskrit-tag">आप्त AI</span></h2>
+                        <p class="apta-role">Your Trusted Bestie & Well-Wisher</p>
+                    </div>
+
+                    <div class="apta-live-status">
+                        <div class="status-indicator">
+                            <span class="dot-online"></span> Āpta is Listening
+                        </div>
+                        <div class="synced-stress-box">
+                            <span>Current EEG Sync:</span>
+                            <strong id="aptaSyncedStress">--%</strong>
+                        </div>
+                    </div>
+
+                    <div class="quick-mood-prompts">
+                        <h4>Quick Mood Check-in:</h4>
+                        <button class="btn-mood" data-mood="feeling-stressed">
+                            <i class="fa-solid fa-head-side-virus"></i> Macha, ekkuva stress gaa undhi
+                        </button>
+                        <button class="btn-mood" data-mood="feeling-sad">
+                            <i class="fa-solid fa-face-sad-tear"></i> Koncham badha gaa undhi raa
+                        </button>
+                        <button class="btn-mood" data-mood="need-focus">
+                            <i class="fa-solid fa-bullseye"></i> Focus ravadam ledhu
+                        </button>
+                        <button class="btn-mood" data-mood="feeling-good">
+                            <i class="fa-solid fa-face-smile-beam"></i> Cool gaa unnanu eeroju!
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Chat Interface -->
+                <div class="apta-chat-container card">
+                    <div class="chat-header">
+                        <div class="chat-header-title">
+                            <i class="fa-solid fa-comments"></i> Conversation with Āpta AI
+                        </div>
+                        <button class="btn btn-sm btn-secondary" id="btnClearChat">
+                            <i class="fa-solid fa-trash"></i> Clear Chat
+                        </button>
+                    </div>
+
+                    <div class="chat-messages-box" id="chatMessagesBox">
+                        <!-- Default welcome message -->
+                        <div class="chat-bubble bubble-apta">
+                            <div class="bubble-header">
+                                <span class="speaker-name">Āpta AI</span>
+                                <span class="bubble-time">Just now</span>
+                            </div>
+                            <div class="bubble-text" id="aptaWelcomeText">
+                                Namaskaram raa mama! 🙏 Naan Āpta AI (आप्त AI). Unna raa, neeku eppudaina stress anipinchina, badha anipinchina leda urike matladalani unna, ikkada cheppu. 
+                                <br><br>
+                                Mana ESP32 device nundi real-time EEG data ni nenu monitor chesthunna. Stress level ekkuvaithe direct ga nene neetho matladatha! Cheppu raa, eeroju mood ela undhi?
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Box -->
+                    <div class="chat-input-area">
+                        <input type="text" id="chatInputField" placeholder="Macha, edhavadhu cheppali anipisthe ikkada type cheyyi raa..." autocomplete="off">
+                        <button class="btn btn-primary" id="btnSendChat">
+                            <i class="fa-solid fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: FREQUENCY SOUND THERAPY ================= -->
+        <section class="tab-page" id="tab-frequency">
+            <div class="sound-layout">
+                
+                <!-- Main Player Card -->
+                <div class="card sound-player-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-compact-disc glow-spin"></i> Solfeggio & Brainwave Sound Healing</h3>
+                        <span class="badge-mode">Web Audio Synthesizer</span>
+                    </div>
+
+                    <div class="player-hero">
+                        <div class="audio-visualizer-container">
+                            <canvas id="audioVisualizerCanvas"></canvas>
+                        </div>
+
+                        <div class="now-playing-info">
+                            <span class="playing-label">CURRENTLY PLAYING</span>
+                            <h2 id="nowPlayingTitle">432 Hz - Deep Peace Frequency</h2>
+                            <p id="nowPlayingDesc">Miracle tone for clearing stress and restoring natural mind-body alignment.</p>
+                        </div>
+
+                        <div class="audio-controls-row">
+                            <button class="btn-circle btn-play" id="btnPlaySound">
+                                <i class="fa-solid fa-play" id="playIcon"></i>
+                            </button>
+                            <div class="volume-slider-box">
+                                <i class="fa-solid fa-volume-high"></i>
+                                <input type="range" id="volumeControl" min="0" max="1" step="0.05" value="0.7">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sound Preset Cards Grid -->
+                    <div class="presets-grid">
+                        
+                        <!-- 432 Hz -->
+                        <div class="preset-card active" data-type="solfeggio" data-freq="432" data-title="432 Hz - Deep Peace & Harmony" data-desc="Natural harmonic frequency that lowers anxiety and heart rate.">
+                            <div class="preset-icon"><i class="fa-solid fa-om"></i></div>
+                            <div class="preset-info">
+                                <h4>432 Hz Miracle Tone</h4>
+                                <p>Deep Peace & Stress Relief</p>
+                            </div>
+                            <span class="badge-tag">Solfeggio</span>
+                        </div>
+
+                        <!-- 528 Hz -->
+                        <div class="preset-card" data-type="solfeggio" data-freq="528" data-title="528 Hz - Transformation & Healing" data-desc="Known as the Frequency of Transformation, promotes relaxation and clarity.">
+                            <div class="preset-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                            <div class="preset-info">
+                                <h4>528 Hz Transformation</h4>
+                                <p>Emotional Healing Tone</p>
+                            </div>
+                            <span class="badge-tag">Solfeggio</span>
+                        </div>
+
+                        <!-- 396 Hz -->
+                        <div class="preset-card" data-type="solfeggio" data-freq="396" data-title="396 Hz - Fear & Guilt Release" data-desc="Helps liberate subconscious anxiety and grounding.">
+                            <div class="preset-icon"><i class="fa-solid fa-shield-heart"></i></div>
+                            <div class="preset-info">
+                                <h4>396 Hz Fear Release</h4>
+                                <p>Anxiety & Tension Relief</p>
+                            </div>
+                            <span class="badge-tag">Solfeggio</span>
+                        </div>
+
+                        <!-- Alpha Binaural Beats (10 Hz) -->
+                        <div class="preset-card" data-type="binaural" data-freq="10" data-title="10 Hz Alpha Binaural Beats" data-desc="Generates 10Hz difference between left and right ear to induce relaxed focus.">
+                            <div class="preset-icon"><i class="fa-solid fa-headphones"></i></div>
+                            <div class="preset-info">
+                                <h4>10 Hz Alpha Beats</h4>
+                                <p>Calm Focus & Biofeedback</p>
+                            </div>
+                            <span class="badge-tag">Binaural</span>
+                        </div>
+
+                        <!-- Theta Binaural Beats (6 Hz) -->
+                        <div class="preset-card" data-type="binaural" data-freq="6" data-title="6 Hz Theta Deep Relaxation" data-desc="Encourages deep meditation state and theta brainwave sync.">
+                            <div class="preset-icon"><i class="fa-solid fa-spa"></i></div>
+                            <div class="preset-info">
+                                <h4>6 Hz Theta Meditation</h4>
+                                <p>Deep Rest & Calmness</p>
+                            </div>
+                            <span class="badge-tag">Binaural</span>
+                        </div>
+
+                        <!-- Ambient Ocean Rain -->
+                        <div class="preset-card" data-type="noise" data-freq="rain" data-title="Ambient Gentle Rain & Ocean Waves" data-desc="Soothing brown/pink noise generator mimicking gentle rain.">
+                            <div class="preset-icon"><i class="fa-solid fa-cloud-showers-heavy"></i></div>
+                            <div class="preset-info">
+                                <h4>Gentle Rain Soundscape</h4>
+                                <p>Natural White Noise</p>
+                            </div>
+                            <span class="badge-tag">Nature</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Guided 4-7-8 Biofeedback Breathing Guide Card -->
+                <div class="card breathing-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-lungs"></i> 4-7-8 Biofeedback Breathing Visualizer</h3>
+                        <span class="sub-info">Synchronized with EEG Alpha enhancement</span>
+                    </div>
+
+                    <div class="breathing-content">
+                        <div class="breathing-circle-wrapper">
+                            <div class="breathing-circle" id="breathingCircle">
+                                <span class="breath-state-text" id="breathStateText">Press Start</span>
+                            </div>
+                        </div>
+
+                        <div class="breathing-timer" id="breathTimerNum">--</div>
+
+                        <div class="breathing-instructions">
+                            <div class="step-item step-inhale"><span class="step-num">4s</span> Inhale</div>
+                            <div class="step-item step-hold"><span class="step-num">7s</span> Hold</div>
+                            <div class="step-item step-exhale"><span class="step-num">8s</span> Exhale</div>
+                        </div>
+
+                        <button class="btn btn-accent btn-block" id="btnStartBreathing">
+                            <i class="fa-solid fa-circle-play"></i> Start 4-7-8 Breathing Cycle
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: 5 STRESS RELIEF MINI-GAMES ================= -->
+        <section class="tab-page" id="tab-games">
+            <div class="games-layout">
+                
+                <!-- Game Selector Header Bar -->
+                <div class="games-nav-bar card">
+                    <h3><i class="fa-solid fa-gamepad"></i> Choose Stress Relief Mini-Game:</h3>
+                    <div class="games-buttons">
+                        <button class="btn-game-select active" data-game="bubble">
+                            <i class="fa-solid fa-circle-dot"></i> 1. Bubble Popper
+                        </button>
+                        <button class="btn-game-select" data-game="zen">
+                            <i class="fa-solid fa-water"></i> 2. Zen Sandbox
+                        </button>
+                        <button class="btn-game-select" data-game="sudoku">
+                            <i class="fa-solid fa-table-cells"></i> 3. Sudoku Focus
+                        </button>
+                        <button class="btn-game-select" data-game="memory">
+                            <i class="fa-solid fa-clone"></i> 4. Pattern Match
+                        </button>
+                        <button class="btn-game-select" data-game="maze">
+                            <i class="fa-solid fa-route"></i> 5. Calm Maze
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Game Container Card -->
+                <div class="card game-canvas-card">
+                    
+                    <!-- GAME 1: BUBBLE POPPER -->
+                    <div class="game-panel active" id="game-bubble">
+                        <div class="game-header">
+                            <div>
+                                <h4><i class="fa-solid fa-circle-dot"></i> Bubble Wrap Popper</h4>
+                                <p>Tap or click bubbles to pop them! High tactile stress relief.</p>
+                            </div>
+                            <div class="game-stats">
+                                <span>Popped: <strong id="bubbleScore">0</strong></span>
+                                <button class="btn btn-sm btn-secondary" id="btnResetBubble">Reset Sheet</button>
+                            </div>
+                        </div>
+                        <div class="bubble-grid-container" id="bubbleGrid">
+                            <!-- JS will inject bubble elements -->
+                        </div>
+                    </div>
+
+                    <!-- GAME 2: ZEN PARTICLE SANDBOX -->
+                    <div class="game-panel" id="game-zen">
+                        <div class="game-header">
+                            <div>
+                                <h4><i class="fa-solid fa-water"></i> Zen Particle Fluid Sandbox</h4>
+                                <p>Move your cursor or finger to swirl mesmerizing glowing particles.</p>
+                            </div>
+                            <button class="btn btn-sm btn-secondary" id="btnClearZen">Clear Particles</button>
+                        </div>
+                        <div class="zen-canvas-wrapper">
+                            <canvas id="zenCanvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- GAME 3: SUDOKU FOCUS PUZZLE -->
+                    <div class="game-panel" id="game-sudoku">
+                        <div class="game-header">
+                            <div>
+                                <h4><i class="fa-solid fa-table-cells"></i> Sudoku Mind Focus Puzzle</h4>
+                                <p>Engage your logical mind to distract from stress spikes.</p>
+                            </div>
+                            <div class="game-stats">
+                                <button class="btn btn-sm btn-primary" id="btnNewSudoku">New Game</button>
+                            </div>
+                        </div>
+                        <div class="sudoku-container" id="sudokuContainer">
+                            <!-- JS will inject sudoku cells -->
+                        </div>
+                    </div>
+
+                    <!-- GAME 4: MEMORY PATTERN HARMONIZER -->
+                    <div class="game-panel" id="game-memory">
+                        <div class="game-header">
+                            <div>
+                                <h4><i class="fa-solid fa-clone"></i> Memory Pattern Match</h4>
+                                <p>Match pairs of calming wellness emojis to reset mental focus.</p>
+                            </div>
+                            <div class="game-stats">
+                                <span>Matches: <strong id="memoryMatches">0 / 6</strong></span>
+                                <button class="btn btn-sm btn-secondary" id="btnResetMemory">Restart</button>
+                            </div>
+                        </div>
+                        <div class="memory-grid-container" id="memoryGrid">
+                            <!-- JS will inject memory cards -->
+                        </div>
+                    </div>
+
+                    <!-- GAME 5: CALM MAZE NAVIGATOR -->
+                    <div class="game-panel" id="game-maze">
+                        <div class="game-header">
+                            <div>
+                                <h4><i class="fa-solid fa-route"></i> Calm Maze Navigator</h4>
+                                <p>Use Arrow keys or screen buttons to guide the glowing orb to the exit.</p>
+                            </div>
+                            <button class="btn btn-sm btn-primary" id="btnNewMaze">New Maze</button>
+                        </div>
+                        <div class="maze-canvas-wrapper">
+                            <canvas id="mazeCanvas"></canvas>
+                        </div>
+                        <div class="maze-dpad">
+                            <button class="btn-dpad" id="btnMazeUp"><i class="fa-solid fa-arrow-up"></i></button>
+                            <div class="dpad-middle">
+                                <button class="btn-dpad" id="btnMazeLeft"><i class="fa-solid fa-arrow-left"></i></button>
+                                <button class="btn-dpad" id="btnMazeDown"><i class="fa-solid fa-arrow-down"></i></button>
+                                <button class="btn-dpad" id="btnMazeRight"><i class="fa-solid fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= TAB 5: HISTORY & PDF REPORTS ================= -->
+        <section class="tab-page" id="tab-history">
+            <div class="history-layout">
+                
+                <!-- History Table & Analytics Card -->
+                <div class="card history-table-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-clock-rotate-left"></i> Session Stress History Logs</h3>
+                        <div class="history-actions">
+                            <button class="btn btn-sm btn-secondary" id="btnClearHistory">
+                                <i class="fa-solid fa-trash"></i> Clear Logs
+                            </button>
+                            <button class="btn btn-sm btn-primary" id="btnExportPDF">
+                                <i class="fa-solid fa-file-pdf"></i> Download PDF Medical Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="history-summary-boxes">
+                        <div class="sum-box">
+                            <span>Total Samples Logged</span>
+                            <strong id="logCountVal">0</strong>
+                        </div>
+                        <div class="sum-box">
+                            <span>Average Stress Level</span>
+                            <strong id="avgStressVal">--%</strong>
+                        </div>
+                        <div class="sum-box">
+                            <span>Peak Stress Recorded</span>
+                            <strong id="peakStressVal">--%</strong>
+                        </div>
+                        <div class="sum-box">
+                            <span>Dominant State</span>
+                            <strong id="dominantStateVal">--</strong>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Stress Score</th>
+                                    <th>Brain State</th>
+                                    <th>&beta; / &alpha; Ratio</th>
+                                    <th>Alpha Power</th>
+                                    <th>Beta Power</th>
+                                    <th>Connection</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <tr>
+                                    <td colspan="7" class="empty-table-msg">No stress records logged yet. Connect device or start simulator.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PDF Medical Report Printable Preview Template -->
+                <div class="pdf-printable-template card" id="pdfReportTemplate">
+                    <div class="pdf-header">
+                        <div class="pdf-title">
+                            <h2>Udvegadarshini (उद्वेगदर्शिनी)</h2>
+                            <p>Real-Time EEG Stress Level Estimation Report</p>
+                        </div>
+                        <div class="pdf-meta">
+                            <p><strong>Date:</strong> <span id="pdfDate">--</span></p>
+                            <p><strong>Subject ID:</strong> <span id="pdfSubjectId">SUBJ-3221</span></p>
+                            <p><strong>Subject Name:</strong> <span id="pdfSubjectName">Santhosh / Sindhu / Bharat / Nani</span></p>
+                            <p><strong>Hardware:</strong> BioAmp EXG Pill + ESP32</p>
+                            <p><strong>ML Model:</strong> 1D-CNN (98.28% Accuracy)</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+
+                    <div class="pdf-body">
+                        <h4>1. Session Executive Summary</h4>
+                        <table class="pdf-summary-table">
+                            <tr>
+                                <td><strong>Session Duration:</strong> <span id="pdfDuration">--</span></td>
+                                <td><strong>Average Stress:</strong> <span id="pdfAvgStress">--%</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Peak Stress:</strong> <span id="pdfPeakStress">--%</span></td>
+                                <td><strong>Dominant State:</strong> <span id="pdfDominantState">--</span></td>
+                            </tr>
+                        </table>
+
+                        <h4>2. EEG Feature Spectrum Analysis</h4>
+                        <p>Averages extracted over single-channel frontal cortex acquisition (250Hz sampling):</p>
+                        <ul id="pdfEEGFeatureList">
+                            <li>Delta Band (0.5-4 Hz): --</li>
+                            <li>Theta Band (4-8 Hz): --</li>
+                            <li>Alpha Band (8-13 Hz): --</li>
+                            <li>Beta Band (13-30 Hz): --</li>
+                            <li>Gamma Band (30-40 Hz): --</li>
+                            <li>Beta/Alpha Ratio: --</li>
+                        </ul>
+
+                        <h4>3. Recommendation & Āpta AI Notes</h4>
+                        <p id="pdfRecommendationNotes">
+                            Subject exhibited balanced brainwave activity. Continue 432Hz sound therapy and 4-7-8 breathing cycles during peak work hours.
+                        </p>
+                    </div>
+
+                    <div class="pdf-footer">
+                        <p>Generated by Udvegadarshini Embedded AI Healthcare System | Gayatri Vidya Parishad College of Engineering (Autonomous)</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JS Files -->
+    <script src="i18n.js"></script>
+    <script src="audio-frequency.js"></script>
+    <script src="apta-ai.js"></script>
+    <script src="games.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
