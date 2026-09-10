@@ -1519,6 +1519,58 @@ body {
     cursor: pointer; 
 }
 
+/* Arrow Logic Flow Puzzle Game */
+.arrow-grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 340px;
+    aspect-ratio: 1;
+    margin: 0 auto;
+    background: rgba(15, 23, 42, 0.9);
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+}
+
+.arrow-cell {
+    aspect-ratio: 1;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    color: var(--accent-secondary);
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    user-select: none;
+    position: relative;
+}
+
+.arrow-cell:hover {
+    background: rgba(6, 182, 212, 0.15);
+    border-color: rgba(6, 182, 212, 0.4);
+}
+
+.arrow-cell.connected {
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: #10b981 !important;
+    color: #34d399 !important;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+}
+
+.arrow-cell.start-cell {
+    border-color: #10b981;
+}
+
+.arrow-cell.target-cell {
+    border-color: #f59e0b;
+}
+
 /* 2048 Mind Merge Game */
 .grid-2048-container {
     display: grid;

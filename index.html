@@ -741,8 +741,8 @@
                         <button class="btn-game-select active" data-game="bubble">
                             <i class="fa-solid fa-circle-dot"></i> 1. Bubble Popper
                         </button>
-                        <button class="btn-game-select" data-game="zen">
-                            <i class="fa-solid fa-water"></i> 2. Zen Ripple Pond
+                        <button class="btn-game-select" data-game="arrow">
+                            <i class="fa-solid fa-compass"></i> 2. Arrow Flow
                         </button>
                         <button class="btn-game-select" data-game="sudoku">
                             <i class="fa-solid fa-table-cells"></i> 3. Sudoku Focus
@@ -776,17 +776,21 @@
                         </div>
                     </div>
 
-                    <!-- GAME 2: ZEN RIPPLE POND & LOTUS FLOW -->
-                    <div class="game-panel" id="game-zen">
+                    <!-- GAME 2: ARROW LOGIC FLOW PUZZLE -->
+                    <div class="game-panel" id="game-arrow">
                         <div class="game-header">
                             <div>
-                                <h4><i class="fa-solid fa-water"></i> Zen Ripple Pond & Lotus Flow</h4>
-                                <p>Touch or drag your finger to create soothing neon ripples & watch glowing lotus petals float peacefully.</p>
+                                <h4><i class="fa-solid fa-compass"></i> Arrow Logic Flow Puzzle</h4>
+                                <p>Tap arrow tiles to rotate them and connect the energy stream from Start (🟢) to Target (🎯)!</p>
                             </div>
-                            <button class="btn btn-sm btn-secondary" id="btnClearZen">Reset Water</button>
+                            <div class="game-stats">
+                                <span>Level: <strong id="arrowLevel">1</strong></span>
+                                <span>Moves: <strong id="arrowMoves">0</strong></span>
+                                <button class="btn btn-sm btn-primary" id="btnNewArrow">Shuffle Level</button>
+                            </div>
                         </div>
-                        <div class="zen-canvas-wrapper">
-                            <canvas id="zenCanvas"></canvas>
+                        <div class="arrow-grid-container" id="arrowGrid">
+                            <!-- JS will inject 4x4 arrow cells -->
                         </div>
                     </div>
 

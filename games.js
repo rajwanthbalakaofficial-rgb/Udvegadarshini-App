@@ -9,13 +9,15 @@ class StressReliefGames {
         // 1. Bubble Popper state
         this.bubblePoppedCount = 0;
 
-        // 2. Zen Ripple Pond state
-        this.zenCanvas = null;
-        this.zenCtx = null;
-        this.ripples = [];
-        this.petals = [];
-        this.mousePos = { x: 0, y: 0, active: false };
-        this.zenAnim = null;
+        // 2. Arrow Logic Flow Puzzle state
+        this.arrowGrid = [
+            [0, 90, 180, 270],
+            [90, 180, 270, 0],
+            [180, 270, 0, 90],
+            [270, 0, 90, 180]
+        ];
+        this.arrowLevel = 1;
+        this.arrowMoves = 0;
 
         // 3. Sudoku state
         this.sudokuBoard = [
@@ -49,7 +51,7 @@ class StressReliefGames {
 
     init() {
         this.initBubblePopper();
-        this.initZenSandbox();
+        this.initArrowPuzzle();
         this.initSudoku();
         this.initMemoryMatch();
         this.init2048();
@@ -77,12 +79,6 @@ class StressReliefGames {
 
         const targetPanel = document.getElementById(`game-${gameKey}`);
         if (targetPanel) targetPanel.classList.add('active');
-
-        if (gameKey === 'zen') {
-            this.startZenAnimation();
-        } else {
-            this.stopZenAnimation();
-        }
     }
 
     /* ----------------------------------------------------------------------
@@ -141,174 +137,155 @@ class StressReliefGames {
     }
 
     /* ----------------------------------------------------------------------
-       2. GAME 2: ZEN RIPPLE POND & LOTUS FLOW (NEW INTERACTIVE WATER)
+       2. GAME 2: ARROW LOGIC FLOW PUZZLE (NEW ADDICTIVE PUZZLE)
        ---------------------------------------------------------------------- */
-    initZenSandbox() {
-        this.zenCanvas = document.getElementById('zenCanvas');
-        if (!this.zenCanvas) return;
+    initArrowPuzzle() {
+        const container = document.getElementById('arrowGrid');
+        if (!container) return;
 
-        this.zenCtx = this.zenCanvas.getContext('2d');
-        this.resizeZenCanvas();
-        window.addEventListener('resize', () => this.resizeZenCanvas());
+        const angles = [0, 90, 180, 270];
+        this.arrowMoves = 0;
+        this.updateArrowStats();
 
-        this.ripples = [];
-        this.petals = [];
-
-        // Spawn 14 floating lotus petals
-        for (let i = 0; i < 14; i++) {
-            this.petals.push({
-                x: Math.random() * (this.zenCanvas.width || 300),
-                y: Math.random() * (this.zenCanvas.height || 300),
-                vx: (Math.random() - 0.5) * 0.4,
-                vy: (Math.random() - 0.5) * 0.4,
-                radius: Math.random() * 8 + 12,
-                color: i % 2 === 0 ? '#06b6d4' : '#a855f7',
-                angle: Math.random() * Math.PI * 2,
-                spin: (Math.random() - 0.5) * 0.02
-            });
+        // Create 4x4 randomized arrow angles
+        this.arrowGrid = [];
+        for (let r = 0; r < 4; r++) {
+            const row = [];
+            for (let c = 0; c < 4; c++) {
+                row.push(angles[Math.floor(Math.random() * angles.length)]);
+            }
+            this.arrowGrid.push(row);
         }
 
-        const handleTouch = (e) => {
-            const rect = this.zenCanvas.getBoundingClientRect();
-            const touches = e.touches || [e];
-            for (let i = 0; i < touches.length; i++) {
-                const x = touches[i].clientX - rect.left;
-                const y = touches[i].clientY - rect.top;
-                this.addZenRipple(x, y);
-            }
-        };
+        this.renderArrowGrid();
+        this.checkArrowConnections();
 
-        this.zenCanvas.onpointerdown = (e) => handleTouch(e);
-        this.zenCanvas.onpointermove = (e) => {
-            if (e.buttons > 0) handleTouch(e);
-        };
-
-        const clearBtn = document.getElementById('btnClearZen');
-        if (clearBtn) {
-            clearBtn.onclick = () => this.initZenSandbox();
+        const btnNew = document.getElementById('btnNewArrow');
+        if (btnNew) {
+            btnNew.onclick = () => this.initArrowPuzzle();
         }
     }
 
-    addZenRipple(x, y) {
-        this.ripples.push({
-            x: x,
-            y: y,
-            radius: 2,
-            maxRadius: 80 + Math.random() * 40,
-            alpha: 1.0,
-            color: `hsl(${180 + Math.random() * 60}, 90%, 60%)`
-        });
-        if (this.ripples.length > 25) this.ripples.shift();
+    renderArrowGrid() {
+        const container = document.getElementById('arrowGrid');
+        if (!container) return;
 
-        // Push nearby petals
-        this.petals.forEach(p => {
-            const dx = p.x - x;
-            const dy = p.y - y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 100 && dist > 1) {
-                p.vx += (dx / dist) * 1.5;
-                p.vy += (dy / dist) * 1.5;
+        container.innerHTML = '';
+        for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+                const cell = document.createElement('div');
+                cell.className = `arrow-cell ${r === 0 && c === 0 ? 'start-cell' : ''} ${r === 3 && c === 3 ? 'target-cell' : ''}`;
+                cell.id = `arrow-${r}-${c}`;
+
+                const angle = this.arrowGrid[r][c];
+
+                // Arrow icon
+                let badge = '';
+                if (r === 0 && c === 0) badge = '<span class="badge-node">🟢</span>';
+                if (r === 3 && c === 3) badge = '<span class="badge-node">🎯</span>';
+
+                cell.innerHTML = `<i class="fa-solid fa-arrow-up" style="transform: rotate(${angle}deg); transition: transform 0.25s ease;"></i> ${badge}`;
+
+                cell.addEventListener('click', () => {
+                    this.rotateArrowTile(r, c);
+                });
+
+                container.appendChild(cell);
             }
-        });
-
-        this.playWaterDropSound();
+        }
     }
 
-    playWaterDropSound() {
+    rotateArrowTile(r, c) {
+        this.arrowGrid[r][c] = (this.arrowGrid[r][c] + 90) % 360;
+        this.arrowMoves++;
+        this.updateArrowStats();
+        this.playTileClickSound();
+
+        this.renderArrowGrid();
+        this.checkArrowConnections();
+    }
+
+    checkArrowConnections() {
+        // Trace energy flow starting at (0,0)
+        const visited = new Set();
+        let r = 0, c = 0;
+        let path = [];
+
+        while (r >= 0 && r < 4 && c >= 0 && c < 4) {
+            const key = `${r}-${c}`;
+            if (visited.has(key)) break; // loop detected
+            visited.add(key);
+            path.push({ r, c });
+
+            const angle = this.arrowGrid[r][c];
+            if (angle === 0) r--;        // Up
+            else if (angle === 90) c++;  // Right
+            else if (angle === 180) r++; // Down
+            else if (angle === 270) c--; // Left
+        }
+
+        // Highlight connected path
+        path.forEach(p => {
+            const el = document.getElementById(`arrow-${p.r}-${p.c}`);
+            if (el) el.classList.add('connected');
+        });
+
+        // Check if path reaches target (3,3)
+        const reachedTarget = path.some(p => p.r === 3 && p.c === 3);
+        if (reachedTarget) {
+            this.playVictorySound();
+            setTimeout(() => {
+                alert(`🎉 Fantastic! Level ${this.arrowLevel} Connected in ${this.arrowMoves} Moves!`);
+                this.arrowLevel++;
+                this.initArrowPuzzle();
+            }, 300);
+        }
+    }
+
+    updateArrowStats() {
+        const lvl = document.getElementById('arrowLevel');
+        const mvs = document.getElementById('arrowMoves');
+        if (lvl) lvl.textContent = this.arrowLevel;
+        if (mvs) mvs.textContent = this.arrowMoves;
+    }
+
+    playTileClickSound() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(600 + Math.random() * 300, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.12);
+            osc.frequency.setValueAtTime(500, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.05);
 
             gain.gain.setValueAtTime(0.15, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
 
             osc.connect(gain);
             gain.connect(ctx.destination);
             osc.start();
-            osc.stop(ctx.currentTime + 0.12);
+            osc.stop(ctx.currentTime + 0.05);
         } catch(e){}
     }
 
-    resizeZenCanvas() {
-        if (this.zenCanvas && this.zenCanvas.parentElement) {
-            this.zenCanvas.width = this.zenCanvas.parentElement.clientWidth;
-            this.zenCanvas.height = this.zenCanvas.parentElement.clientHeight;
-        }
-    }
+    playVictorySound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+            osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+            osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
 
-    startZenAnimation() {
-        this.stopZenAnimation();
-        const loop = () => {
-            if (!this.zenCtx || !this.zenCanvas) return;
-            this.zenAnim = requestAnimationFrame(loop);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
 
-            const w = this.zenCanvas.width;
-            const h = this.zenCanvas.height;
-
-            // Deep fluid dark background
-            this.zenCtx.fillStyle = 'rgba(8, 11, 20, 0.25)';
-            this.zenCtx.fillRect(0, 0, w, h);
-
-            // Draw & update concentric ripples
-            for (let i = this.ripples.length - 1; i >= 0; i--) {
-                const r = this.ripples[i];
-                r.radius += 2.2;
-                r.alpha -= 0.02;
-
-                if (r.alpha <= 0 || r.radius >= r.maxRadius) {
-                    this.ripples.splice(i, 1);
-                    continue;
-                }
-
-                this.zenCtx.beginPath();
-                this.zenCtx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
-                this.zenCtx.strokeStyle = r.color;
-                this.zenCtx.globalAlpha = r.alpha;
-                this.zenCtx.lineWidth = 2.5;
-                this.zenCtx.shadowBlur = 12;
-                this.zenCtx.shadowColor = r.color;
-                this.zenCtx.stroke();
-                this.zenCtx.globalAlpha = 1.0;
-                this.zenCtx.shadowBlur = 0;
-            }
-
-            // Draw & update floating lotus petals
-            this.petals.forEach(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.angle += p.spin;
-
-                p.vx *= 0.96;
-                p.vy *= 0.96;
-
-                if (p.x < 10) p.x = w - 10;
-                if (p.x > w - 10) p.x = 10;
-                if (p.y < 10) p.y = h - 10;
-                if (p.y > h - 10) p.y = 10;
-
-                this.zenCtx.save();
-                this.zenCtx.translate(p.x, p.y);
-                this.zenCtx.rotate(p.angle);
-                this.zenCtx.fillStyle = p.color;
-                this.zenCtx.shadowBlur = 10;
-                this.zenCtx.shadowColor = p.color;
-
-                // Draw lotus petal shape
-                this.zenCtx.beginPath();
-                this.zenCtx.ellipse(0, 0, p.radius, p.radius * 0.5, 0, 0, Math.PI * 2);
-                this.zenCtx.fill();
-                this.zenCtx.restore();
-            });
-        };
-        loop();
-    }
-
-    stopZenAnimation() {
-        if (this.zenAnim) cancelAnimationFrame(this.zenAnim);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.35);
+        } catch(e){}
     }
 
     /* ----------------------------------------------------------------------
