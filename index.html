@@ -742,7 +742,7 @@
                             <i class="fa-solid fa-circle-dot"></i> 1. Bubble Popper
                         </button>
                         <button class="btn-game-select" data-game="zen">
-                            <i class="fa-solid fa-water"></i> 2. Zen Sandbox
+                            <i class="fa-solid fa-water"></i> 2. Zen Ripple Pond
                         </button>
                         <button class="btn-game-select" data-game="sudoku">
                             <i class="fa-solid fa-table-cells"></i> 3. Sudoku Focus
@@ -750,8 +750,8 @@
                         <button class="btn-game-select" data-game="memory">
                             <i class="fa-solid fa-clone"></i> 4. Pattern Match
                         </button>
-                        <button class="btn-game-select" data-game="maze">
-                            <i class="fa-solid fa-route"></i> 5. Calm Maze
+                        <button class="btn-game-select" data-game="merge">
+                            <i class="fa-solid fa-shapes"></i> 5. 2048 Mind Merge
                         </button>
                     </div>
                 </div>
@@ -776,14 +776,14 @@
                         </div>
                     </div>
 
-                    <!-- GAME 2: ZEN PARTICLE SANDBOX -->
+                    <!-- GAME 2: ZEN RIPPLE POND & LOTUS FLOW -->
                     <div class="game-panel" id="game-zen">
                         <div class="game-header">
                             <div>
-                                <h4><i class="fa-solid fa-water"></i> Zen Particle Fluid Sandbox</h4>
-                                <p>Move your cursor or finger to swirl mesmerizing glowing particles.</p>
+                                <h4><i class="fa-solid fa-water"></i> Zen Ripple Pond & Lotus Flow</h4>
+                                <p>Touch or drag your finger to create soothing neon ripples & watch glowing lotus petals float peacefully.</p>
                             </div>
-                            <button class="btn btn-sm btn-secondary" id="btnClearZen">Clear Particles</button>
+                            <button class="btn btn-sm btn-secondary" id="btnClearZen">Reset Water</button>
                         </div>
                         <div class="zen-canvas-wrapper">
                             <canvas id="zenCanvas"></canvas>
@@ -823,24 +823,28 @@
                         </div>
                     </div>
 
-                    <!-- GAME 5: CALM MAZE NAVIGATOR -->
-                    <div class="game-panel" id="game-maze">
+                    <!-- GAME 5: 2048 MIND FOCUS MERGE -->
+                    <div class="game-panel" id="game-merge">
                         <div class="game-header">
                             <div>
-                                <h4><i class="fa-solid fa-route"></i> Calm Maze Navigator</h4>
-                                <p>Use Arrow keys or screen buttons to guide the glowing orb to the exit.</p>
+                                <h4><i class="fa-solid fa-shapes"></i> 2048 Mind Focus Merge</h4>
+                                <p>Swipe or use arrow buttons to merge matching tiles and reach 2048!</p>
                             </div>
-                            <button class="btn btn-sm btn-primary" id="btnNewMaze">New Maze</button>
+                            <div class="game-stats">
+                                <span>Score: <strong id="score2048">0</strong></span>
+                                <span>Best: <strong id="best2048">0</strong></span>
+                                <button class="btn btn-sm btn-primary" id="btnReset2048">New Game</button>
+                            </div>
                         </div>
-                        <div class="maze-canvas-wrapper">
-                            <canvas id="mazeCanvas"></canvas>
+                        <div class="grid-2048-container" id="grid2048">
+                            <!-- JS will inject 16 tile cells -->
                         </div>
                         <div class="maze-dpad">
-                            <button class="btn-dpad" id="btnMazeUp"><i class="fa-solid fa-arrow-up"></i></button>
+                            <button class="btn-dpad" id="btn2048Up"><i class="fa-solid fa-arrow-up"></i></button>
                             <div class="dpad-middle">
-                                <button class="btn-dpad" id="btnMazeLeft"><i class="fa-solid fa-arrow-left"></i></button>
-                                <button class="btn-dpad" id="btnMazeDown"><i class="fa-solid fa-arrow-down"></i></button>
-                                <button class="btn-dpad" id="btnMazeRight"><i class="fa-solid fa-arrow-right"></i></button>
+                                <button class="btn-dpad" id="btn2048Left"><i class="fa-solid fa-arrow-left"></i></button>
+                                <button class="btn-dpad" id="btn2048Down"><i class="fa-solid fa-arrow-down"></i></button>
+                                <button class="btn-dpad" id="btn2048Right"><i class="fa-solid fa-arrow-right"></i></button>
                             </div>
                         </div>
                     </div>
