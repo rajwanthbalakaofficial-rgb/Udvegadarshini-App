@@ -177,25 +177,25 @@ body {
     backdrop-filter: blur(20px); 
     z-index: 999; 
     display: flex; 
-    align-items: center; 
+    align-items: flex-start; 
     justify-content: center; 
-    padding: 1.5rem; 
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
+    padding: 2.5rem 1rem; 
+    overflow-y: auto !important; 
+    -webkit-overflow-scrolling: touch; 
     animation: fadeIn 0.3s ease; 
 }
 
 .login-card { 
     width: 100%; 
     max-width: 480px; 
-    padding: 2.4rem !important; 
-    background: rgba(15, 23, 42, 0.94) !important;
-    border: 1px solid rgba(99, 102, 241, 0.35) !important; 
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(99, 102, 241, 0.25) !important; 
-    border-radius: 24px !important;
-    max-height: 88vh;
-    overflow-y: auto !important;
-    margin: auto;
+    padding: 2.2rem !important; 
+    background: rgba(15, 23, 42, 0.95) !important; 
+    border: 1px solid rgba(99, 102, 241, 0.4) !important; 
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(99, 102, 241, 0.25) !important; 
+    border-radius: 24px !important; 
+    margin: auto 0 !important; 
+    max-height: none !important; 
+    overflow: visible !important; 
 }
 
 .login-header { 
@@ -1730,15 +1730,15 @@ body {
 @media (max-width: 640px) {
     /* Auth Modal Fixes for Mobile */
     .login-modal-overlay {
-        padding: 0.6rem;
+        padding: 1.5rem 0.6rem;
         align-items: flex-start;
-        padding-top: 1.5rem;
     }
 
     .login-card {
         padding: 1.3rem 1rem !important;
-        max-height: 92vh;
-        overflow-y: auto;
+        margin: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
         border-radius: 20px !important;
     }
 
