@@ -180,6 +180,8 @@ body {
     align-items: center; 
     justify-content: center; 
     padding: 1.5rem; 
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
     animation: fadeIn 0.3s ease; 
 }
 
@@ -187,12 +189,13 @@ body {
     width: 100%; 
     max-width: 480px; 
     padding: 2.4rem !important; 
-    background: rgba(15, 23, 42, 0.92) !important;
+    background: rgba(15, 23, 42, 0.94) !important;
     border: 1px solid rgba(99, 102, 241, 0.35) !important; 
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(99, 102, 241, 0.25) !important; 
     border-radius: 24px !important;
-    max-height: 90vh;
-    overflow-y: auto;
+    max-height: 88vh;
+    overflow-y: auto !important;
+    margin: auto;
 }
 
 .login-header { 
