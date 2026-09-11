@@ -42,22 +42,19 @@ class UdvegadarshiniApp {
     }
 
     init() {
-        this.initSplashScreen();
-        this.loadUsersDB();
-        this.loadDoctorRequests();
-        this.bindEvents();
-        this.initChart();
-
-        this.loadSavedUserProfile();
-        this.loadSavedJournals();
-        i18n.applyTranslations();
-
-        soundEngine.bindCanvas('audioVisualizerCanvas');
-        aptaAI.init();
-        stressGames.init();
-
-        this.bindSoundTherapyPresets();
-        this.initDoctorPortalEvents();
+        try { this.initSplashScreen(); } catch(e) { console.error("Splash init error:", e); }
+        try { this.loadUsersDB(); } catch(e) { console.error("Users DB error:", e); }
+        try { this.loadDoctorRequests(); } catch(e) { console.error("Doctor reqs error:", e); }
+        try { this.bindEvents(); } catch(e) { console.error("Bind events error:", e); }
+        try { this.initChart(); } catch(e) { console.error("Chart init error:", e); }
+        try { this.loadSavedUserProfile(); } catch(e) { console.error("Profile load error:", e); }
+        try { this.loadSavedJournals(); } catch(e) { console.error("Journals load error:", e); }
+        try { if (typeof i18n !== 'undefined') i18n.applyTranslations(); } catch(e) { console.error("i18n error:", e); }
+        try { if (typeof soundEngine !== 'undefined') soundEngine.bindCanvas('audioVisualizerCanvas'); } catch(e) { console.error("SoundEngine error:", e); }
+        try { if (typeof aptaAI !== 'undefined') aptaAI.init(); } catch(e) { console.error("AptaAI error:", e); }
+        try { if (typeof stressGames !== 'undefined') stressGames.init(); } catch(e) { console.error("Games error:", e); }
+        try { this.bindSoundTherapyPresets(); } catch(e) { console.error("Presets error:", e); }
+        try { this.initDoctorPortalEvents(); } catch(e) { console.error("Doctor portal error:", e); }
     }
 
     loadUsersDB() {
@@ -668,28 +665,36 @@ class UdvegadarshiniApp {
     }
 
     initChart() {
-        const ctx = document.getElementById('liveEEGChart').getContext('2d');
-
-        this.chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    { label: 'Stress Score (%)', borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, tension: 0.3, fill: true, data: [] },
-                    { label: 'Beta/Alpha Ratio (x100)', borderColor: '#6366f1', borderWidth: 2, borderDash: [4, 4], tension: 0.3, fill: false, data: [] },
-                    { label: 'Alpha Wave Power (x1000)', borderColor: '#10b981', borderWidth: 1.5, tension: 0.3, fill: false, data: [] }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b' } },
-                    y: { min: 0, max: 100, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b' } }
+        const canvas = document.getElementById('liveEEGChart');
+        if (!canvas || typeof Chart === 'undefined') {
+            console.warn("Chart.js CDN or canvas element not ready");
+            return;
+        }
+        try {
+            const ctx = canvas.getContext('2d');
+            this.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Stress Score (%)', borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, tension: 0.3, fill: true, data: [] },
+                        { label: 'Beta/Alpha Ratio (x100)', borderColor: '#6366f1', borderWidth: 2, borderDash: [4, 4], tension: 0.3, fill: false, data: [] },
+                        { label: 'Alpha Wave Power (x1000)', borderColor: '#10b981', borderWidth: 1.5, tension: 0.3, fill: false, data: [] }
+                    ]
                 },
-                plugins: { legend: { display: false } }
-            }
-        });
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b' } },
+                        y: { min: 0, max: 100, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        } catch (e) {
+            console.error("Error building Chart.js instance:", e);
+        }
     }
 
     async connectWebSerial() {
@@ -879,19 +884,21 @@ class UdvegadarshiniApp {
 
         document.getElementById('valPeaceScore').textContent = `${Math.max(10, 100 - score)} / 100`;
 
-        const timeLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        this.chart.data.labels.push(timeLabel);
-        this.chart.data.datasets[0].data.push(score);
-        this.chart.data.datasets[1].data.push(data.betaAlphaRatio * 100);
-        this.chart.data.datasets[2].data.push(data.alpha * 10000);
+        if (this.chart && this.chart.data) {
+            const timeLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            this.chart.data.labels.push(timeLabel);
+            this.chart.data.datasets[0].data.push(score);
+            this.chart.data.datasets[1].data.push(data.betaAlphaRatio * 100);
+            this.chart.data.datasets[2].data.push(data.alpha * 10000);
 
-        if (this.chart.data.labels.length > this.chartMaxPoints) {
-            this.chart.data.labels.shift();
-            this.chart.data.datasets[0].data.shift();
-            this.chart.data.datasets[1].data.shift();
-            this.chart.data.datasets[2].data.shift();
+            if (this.chart.data.labels.length > this.chartMaxPoints) {
+                this.chart.data.labels.shift();
+                this.chart.data.datasets[0].data.shift();
+                this.chart.data.datasets[1].data.shift();
+                this.chart.data.datasets[2].data.shift();
+            }
+            this.chart.update('none');
         }
-        this.chart.update('none');
 
         aptaAI.updateStressSync(score);
         this.addHistoryRecord({ ...this.currentMetrics, score });
