@@ -17,7 +17,7 @@
 <body class="dark-theme">
 
     <!-- ================= 1. ANIMATED HIGH-TECH SPLASH SCREEN ================= -->
-    <div class="splash-screen-overlay" id="splashScreen" style="display: none;">
+    <div class="splash-screen-overlay" id="splashScreen">
         <div class="splash-content">
             <div class="splash-logo-box">
                 <i class="fa-solid fa-brain splash-brain-icon"></i>
@@ -36,6 +36,17 @@
             </div>
         </div>
     </div>
+    <script>
+        setTimeout(function() {
+            var splash = document.getElementById('splashScreen');
+            if (splash) {
+                splash.style.opacity = '0';
+                splash.style.visibility = 'hidden';
+                splash.style.pointerEvents = 'none';
+                setTimeout(function() { splash.style.display = 'none'; }, 500);
+            }
+        }, 1200);
+    </script>
 
     <!-- ================= 2. USER SIGN UP & LOGIN AUTHENTICATION MODAL ================= -->
     <div class="login-modal-overlay" id="loginModal" style="display: none;">

@@ -152,19 +152,41 @@ class UdvegadarshiniApp {
     }
 
     initSplashScreen() {
+        const progressBar = document.getElementById('splashProgress');
+        const statusText = document.getElementById('splashStatusText');
         const splashScreen = document.getElementById('splashScreen');
-        if (splashScreen) {
-            splashScreen.style.opacity = '0';
-            splashScreen.style.visibility = 'hidden';
-            splashScreen.style.pointerEvents = 'none';
-            splashScreen.style.display = 'none';
-        }
 
-        const savedUser = localStorage.getItem('udvega_user');
-        if (!savedUser) {
-            const loginModal = document.getElementById('loginModal');
-            if (loginModal) loginModal.style.display = 'flex';
-        }
+        if (!splashScreen) return;
+
+        const steps = [
+            { pct: 30, text: "Initialising ESP32 Neural System..." },
+            { pct: 70, text: "Loading 1D-CNN Quantized Weights (INT8)..." },
+            { pct: 100, text: "Ready!" }
+        ];
+
+        let idx = 0;
+        const interval = setInterval(() => {
+            if (idx < steps.length) {
+                if (progressBar) progressBar.style.width = `${steps[idx].pct}%`;
+                if (statusText) statusText.textContent = steps[idx].text;
+                idx++;
+            } else {
+                clearInterval(interval);
+                splashScreen.style.opacity = '0';
+                splashScreen.style.visibility = 'hidden';
+                splashScreen.style.pointerEvents = 'none';
+
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+
+                    const savedUser = localStorage.getItem('udvega_user');
+                    if (!savedUser) {
+                        const loginModal = document.getElementById('loginModal');
+                        if (loginModal) loginModal.style.display = 'flex';
+                    }
+                }, 400);
+            }
+        }, 220);
     }
 
     loadSavedUserProfile() {
