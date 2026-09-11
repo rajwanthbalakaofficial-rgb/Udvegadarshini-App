@@ -256,7 +256,57 @@ class UdvegadarshiniApp {
         document.getElementById('loginModal').style.display = 'none';
     }
 
+    updateSignupFormFieldsByRole(role) {
+        const idLabel = document.getElementById('signupSubjectIdLabel');
+        const idInput = document.getElementById('signupSubjectId');
+        const clinicalFields = document.getElementById('signupClinicalFields');
+        const hospitalGroup = document.getElementById('signupHospitalGroup');
+        const hospitalLabel = document.getElementById('signupHospitalLabel');
+        const doctorGroup = document.getElementById('signupDoctorSelectGroup');
+        const note = document.getElementById('patientUnblockedNote');
+
+        if (role === 'Doctor') {
+            if (idLabel) idLabel.innerHTML = `<i class="fa-solid fa-id-card"></i> Doctor License / Reg ID`;
+            if (idInput) {
+                idInput.placeholder = 'e.g. DOC-701 or REG-9942';
+                if (!idInput.value || idInput.value === 'SUBJ-3221' || idInput.value === 'USER-101') idInput.value = 'DOC-701';
+            }
+            if (clinicalFields) clinicalFields.style.display = 'grid';
+            if (hospitalGroup) hospitalGroup.style.display = 'block';
+            if (hospitalLabel) hospitalLabel.innerHTML = `<i class="fa-solid fa-hospital"></i> Hospital / Medical Center Name`;
+            if (doctorGroup) doctorGroup.style.display = 'none'; // Doctors don't select an assigned doctor for themselves!
+            if (note) note.style.display = 'none';
+        } else if (role === 'Subject') {
+            if (idLabel) idLabel.innerHTML = `<i class="fa-solid fa-id-card"></i> Subject / Patient ID`;
+            if (idInput) {
+                idInput.placeholder = 'e.g. SUBJ-3221';
+                if (!idInput.value || idInput.value === 'DOC-701' || idInput.value === 'USER-101') idInput.value = 'SUBJ-3221';
+            }
+            if (clinicalFields) clinicalFields.style.display = 'grid';
+            if (hospitalGroup) hospitalGroup.style.display = 'block';
+            if (hospitalLabel) hospitalLabel.innerHTML = `<i class="fa-solid fa-hospital"></i> Target Hospital / Medical Center`;
+            if (doctorGroup) doctorGroup.style.display = 'block';
+            if (note) note.style.display = 'block';
+        } else {
+            // Personal Wellness or Researcher
+            if (idLabel) idLabel.innerHTML = `<i class="fa-solid fa-id-card"></i> User / Member ID`;
+            if (idInput) {
+                idInput.placeholder = 'e.g. USER-101';
+                if (!idInput.value || idInput.value === 'DOC-701' || idInput.value === 'SUBJ-3221') idInput.value = 'USER-101';
+            }
+            if (clinicalFields) clinicalFields.style.display = 'none';
+            if (note) note.style.display = 'none';
+        }
+    }
+
     bindEvents() {
+        // Role Selection Dynamic Field Toggle
+        const signupRoleSelect = document.getElementById('signupRole');
+        if (signupRoleSelect) {
+            this.updateSignupFormFieldsByRole(signupRoleSelect.value);
+            signupRoleSelect.onchange = (e) => this.updateSignupFormFieldsByRole(e.target.value);
+        }
+
         // Auth Tab Switcher (Sign Up vs Log In)
         const tabSignup = document.getElementById('tabModeSignup');
         const tabLogin = document.getElementById('tabModeLogin');
@@ -275,6 +325,7 @@ class UdvegadarshiniApp {
                 modalTitle.textContent = "Create Your Account";
                 modalSubtitle.textContent = "Sign up to register your EEG profile & track personal stress analytics";
                 if (alertBox) alertBox.style.display = 'none';
+                if (signupRoleSelect) this.updateSignupFormFieldsByRole(signupRoleSelect.value);
             };
 
             tabLogin.onclick = () => {
@@ -299,7 +350,7 @@ class UdvegadarshiniApp {
                 const role = document.getElementById('signupRole').value;
                 const lang = document.getElementById('signupLanguage').value;
                 const hospitalName = document.getElementById('signupHospital') ? document.getElementById('signupHospital').value : 'GVP Multi-Specialty Hospital';
-                const docSel = document.getElementById('signupDoctorSelect') ? document.getElementById('signupDoctorSelect').value : '';
+                const docSel = (role === 'Subject' && document.getElementById('signupDoctorSelect')) ? document.getElementById('signupDoctorSelect').value : '';
 
                 let doctorEmail = '';
                 let doctorName = '';
@@ -323,14 +374,16 @@ class UdvegadarshiniApp {
                 // Register New Account
                 const newUser = { 
                     fullName, email, password, subjectId, role, lang,
-                    hospitalName, doctorEmail, doctorName,
+                    hospitalName: role === 'Doctor' || role === 'Subject' ? hospitalName : '',
+                    doctorEmail: role === 'Subject' ? doctorEmail : '',
+                    doctorName: role === 'Subject' ? doctorName : '',
                     doctorApprovalStatus: role === 'Subject' ? 'pending' : 'approved'
                 };
                 this.usersDB.push(newUser);
                 localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
 
-                // Generate Instagram-style Request for Doctor Admin if role is Subject/Patient
-                if (role === 'Subject' || doctorEmail) {
+                // Generate Instagram-style Request for Doctor Admin ONLY if role is Subject/Patient
+                if (role === 'Subject' && doctorEmail) {
                     const newReq = {
                         requestId: 'REQ-' + (1000 + Math.floor(Math.random() * 9000)),
                         patientSubjectId: subjectId,
@@ -344,7 +397,6 @@ class UdvegadarshiniApp {
                         latestStressScore: 35,
                         eegData: { delta: 15, theta: 20, alpha: 40, beta: 20, gamma: 5 }
                     };
-                    // Check if request already exists
                     if (!this.doctorRequests.some(r => r.patientEmail === email)) {
                         this.doctorRequests.push(newReq);
                         localStorage.setItem('udvega_doctor_requests', JSON.stringify(this.doctorRequests));
@@ -353,7 +405,9 @@ class UdvegadarshiniApp {
 
                 if (alertBox) {
                     alertBox.className = 'auth-alert-box success';
-                    alertBox.textContent = 'Account created & Link Request sent! You can start using app & device right away...';
+                    alertBox.textContent = role === 'Doctor' ? 
+                        `Doctor Account registered successfully! Opening Admin Portal...` :
+                        `Account created & Link Request sent! You can start using app & device right away...`;
                     alertBox.style.display = 'block';
                 }
 
