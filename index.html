@@ -78,11 +78,9 @@
                     <input type="text" id="signupEmail" placeholder="e.g. user@example.com" required>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label><i class="fa-solid fa-key"></i> Create 4-Digit PIN / Password</label>
-                        <input type="password" id="signupPassword" placeholder="Create PIN" maxlength="12" required>
-                    </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-key"></i> Create 4-Digit PIN / Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create PIN" maxlength="12" required>
                 </div>
 
                 <div class="form-row">
@@ -103,16 +101,14 @@
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label><i class="fa-solid fa-language"></i> Preferred Language</label>
-                        <select id="signupLanguage">
-                            <option value="teluglish">🇮🇳 Teluglish (Telugu in English)</option>
-                            <option value="en">🇬🇧 English</option>
-                            <option value="telugu">🇮🇳 తెలుగు (Telugu)</option>
-                            <option value="hindi">🇮🇳 हिन्दी (Hindi)</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-language"></i> Preferred Language</label>
+                    <select id="signupLanguage">
+                        <option value="teluglish">🇮🇳 Teluglish (Telugu in English)</option>
+                        <option value="en">🇬🇧 English</option>
+                        <option value="telugu">🇮🇳 తెలుగు (Telugu)</option>
+                        <option value="hindi">🇮🇳 हिन्दी (Hindi)</option>
+                    </select>
                 </div>
 
                 <!-- CLINICAL / PATIENT LINKING FIELDS -->
@@ -130,11 +126,6 @@
                         </select>
                     </div>
 
-                    <div class="form-group" id="signupCustomHospitalGroup" style="display: none;">
-                        <label><i class="fa-solid fa-square-plus"></i> Enter New Hospital / Clinic Name</label>
-                        <input type="text" id="signupCustomHospital" placeholder="e.g. Ramesh Hospitals / Yashoda Clinic">
-                    </div>
-
                     <div class="form-group" id="signupDoctorSelectGroup">
                         <label><i class="fa-solid fa-user-doctor"></i> Assigned Doctor / Consultant</label>
                         <select id="signupDoctorSelect">
@@ -143,6 +134,11 @@
                             <option value="dr.kvrao@gvp.ac.in|Dr. K. V. Rao (Neuro-Psychiatry)">Dr. K. V. Rao (Neuro-Psychiatry)</option>
                             <option value="dr.general@hospital.com|Dr. General Physician">General Hospital Admin</option>
                         </select>
+                    </div>
+
+                    <div class="form-group full-width-group" id="signupCustomHospitalGroup" style="display: none;">
+                        <label><i class="fa-solid fa-square-plus"></i> Enter New Hospital / Clinic Name</label>
+                        <input type="text" id="signupCustomHospital" placeholder="e.g. Ramesh Hospitals / Yashoda Clinic">
                     </div>
                 </div>
 
