@@ -364,7 +364,7 @@ class UdvegadarshiniApp {
                 idInput.placeholder = 'e.g. HOSP-REG-101';
                 if (!idInput.value || idInput.value === 'SUBJ-3221' || idInput.value === 'DOC-701' || idInput.value === 'USER-101') idInput.value = 'HOSP-REG-101';
             }
-            if (clinicalFields) clinicalFields.style.display = 'grid';
+            if (clinicalFields) clinicalFields.style.display = 'none';
             if (hospitalGroup) hospitalGroup.style.display = 'none';
             if (customHospitalGroup) customHospitalGroup.style.display = 'block';
             if (customHospitalLabel) customHospitalLabel.innerHTML = `<i class="fa-solid fa-square-plus"></i> New Hospital / Medical Center Name`;
