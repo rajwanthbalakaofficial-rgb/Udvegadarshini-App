@@ -152,52 +152,19 @@ class UdvegadarshiniApp {
     }
 
     initSplashScreen() {
-        const progressBar = document.getElementById('splashProgress');
-        const statusText = document.getElementById('splashStatusText');
         const splashScreen = document.getElementById('splashScreen');
+        if (splashScreen) {
+            splashScreen.style.opacity = '0';
+            splashScreen.style.visibility = 'hidden';
+            splashScreen.style.pointerEvents = 'none';
+            splashScreen.style.display = 'none';
+        }
 
-        if (!splashScreen) return;
-
-        const steps = [
-            { pct: 25, text: "Initialising ESP32 Neural System..." },
-            { pct: 60, text: "Loading 1D-CNN Quantized Weights (INT8)..." },
-            { pct: 90, text: "Calibrating BioAmp EXG Pill Biopotential Filters..." },
-            { pct: 100, text: "Ready!" }
-        ];
-
-        let idx = 0;
-        const interval = setInterval(() => {
-            if (idx < steps.length) {
-                if (progressBar) progressBar.style.width = `${steps[idx].pct}%`;
-                if (statusText) statusText.textContent = steps[idx].text;
-                idx++;
-            } else {
-                clearInterval(interval);
-                splashScreen.style.opacity = '0';
-                splashScreen.style.visibility = 'hidden';
-                splashScreen.style.pointerEvents = 'none';
-
-                setTimeout(() => {
-                    splashScreen.style.display = 'none';
-
-                    const savedUser = localStorage.getItem('udvega_user');
-                    if (!savedUser) {
-                        const loginModal = document.getElementById('loginModal');
-                        if (loginModal) loginModal.style.display = 'flex';
-                    }
-                }, 400);
-            }
-        }, 300);
-
-        // Emergency unblock timeout to ensure app opens even on slow network
-        setTimeout(() => {
-            if (splashScreen && splashScreen.style.display !== 'none') {
-                splashScreen.style.opacity = '0';
-                splashScreen.style.visibility = 'hidden';
-                splashScreen.style.pointerEvents = 'none';
-                splashScreen.style.display = 'none';
-            }
-        }, 2200);
+        const savedUser = localStorage.getItem('udvega_user');
+        if (!savedUser) {
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) loginModal.style.display = 'flex';
+        }
     }
 
     loadSavedUserProfile() {
