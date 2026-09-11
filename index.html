@@ -69,12 +69,12 @@
             <!-- FORM 1: SIGN UP (NEW USER) -->
             <form id="signupForm" class="login-form">
                 <div class="form-group">
-                    <label><i class="fa-solid fa-user"></i> Full Name</label>
+                    <label id="signupFullNameLabel"><i class="fa-solid fa-user"></i> Full Name</label>
                     <input type="text" id="signupFullName" placeholder="e.g. Santhosh / Sindhu / Bharat / Nani" required>
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fa-solid fa-envelope"></i> Email Address / Username</label>
+                    <label id="signupEmailLabel"><i class="fa-solid fa-envelope"></i> Email Address / Username</label>
                     <input type="text" id="signupEmail" placeholder="e.g. user@example.com" required>
                 </div>
 
@@ -90,7 +90,8 @@
                         <label><i class="fa-solid fa-user-gear"></i> Role / Usage</label>
                         <select id="signupRole">
                             <option value="Subject">Test Subject / Patient</option>
-                            <option value="Doctor">Medical Practitioner / Doctor Admin</option>
+                            <option value="Doctor">Medical Practitioner / Doctor</option>
+                            <option value="HospitalAdmin">Hospital Admin / New Hospital Registration</option>
                             <option value="Personal Wellness">Personal Daily Wellness User</option>
                             <option value="Researcher">ECE Researcher / Student</option>
                         </select>
