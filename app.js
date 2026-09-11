@@ -61,10 +61,17 @@ class UdvegadarshiniApp {
     }
 
     loadUsersDB() {
-        const db = localStorage.getItem('udvega_users_db');
-        if (db) {
-            this.usersDB = JSON.parse(db);
-        } else {
+        try {
+            const db = localStorage.getItem('udvega_users_db');
+            if (db) {
+                this.usersDB = JSON.parse(db);
+            }
+        } catch (e) {
+            console.error("Corrupted users database reset:", e);
+            this.usersDB = [];
+        }
+
+        if (!this.usersDB || !Array.isArray(this.usersDB) || this.usersDB.length === 0) {
             // Default seed users (Doctors & Patients)
             this.usersDB = [
                 {
@@ -103,10 +110,17 @@ class UdvegadarshiniApp {
     }
 
     loadDoctorRequests() {
-        const reqs = localStorage.getItem('udvega_doctor_requests');
-        if (reqs) {
-            this.doctorRequests = JSON.parse(reqs);
-        } else {
+        try {
+            const reqs = localStorage.getItem('udvega_doctor_requests');
+            if (reqs) {
+                this.doctorRequests = JSON.parse(reqs);
+            }
+        } catch (e) {
+            console.error("Corrupted doctor requests database reset:", e);
+            this.doctorRequests = [];
+        }
+
+        if (!this.doctorRequests || !Array.isArray(this.doctorRequests) || this.doctorRequests.length === 0) {
             // Default seed requests (Instagram-style pending access requests)
             this.doctorRequests = [
                 {
@@ -145,47 +159,73 @@ class UdvegadarshiniApp {
         const statusText = document.getElementById('splashStatusText');
         const splashScreen = document.getElementById('splashScreen');
 
+        if (!splashScreen) return;
+
         const steps = [
-            { pct: 20, text: "Initialising ESP32 Neural System..." },
-            { pct: 55, text: "Loading 1D-CNN Quantized Weights (INT8)..." },
-            { pct: 85, text: "Calibrating BioAmp EXG Pill Biopotential Filters..." },
+            { pct: 25, text: "Initialising ESP32 Neural System..." },
+            { pct: 60, text: "Loading 1D-CNN Quantized Weights (INT8)..." },
+            { pct: 90, text: "Calibrating BioAmp EXG Pill Biopotential Filters..." },
             { pct: 100, text: "Ready!" }
         ];
 
         let idx = 0;
         const interval = setInterval(() => {
             if (idx < steps.length) {
-                progressBar.style.width = `${steps[idx].pct}%`;
-                statusText.textContent = steps[idx].text;
+                if (progressBar) progressBar.style.width = `${steps[idx].pct}%`;
+                if (statusText) statusText.textContent = steps[idx].text;
                 idx++;
             } else {
                 clearInterval(interval);
+                splashScreen.style.opacity = '0';
+                splashScreen.style.visibility = 'hidden';
+                splashScreen.style.pointerEvents = 'none';
+
                 setTimeout(() => {
-                    splashScreen.style.opacity = '0';
-                    splashScreen.style.visibility = 'hidden';
+                    splashScreen.style.display = 'none';
 
                     const savedUser = localStorage.getItem('udvega_user');
                     if (!savedUser) {
-                        document.getElementById('loginModal').style.display = 'flex';
+                        const loginModal = document.getElementById('loginModal');
+                        if (loginModal) loginModal.style.display = 'flex';
                     }
-                }, 500);
+                }, 400);
             }
-        }, 500);
+        }, 300);
+
+        // Emergency unblock timeout to ensure app opens even on slow network
+        setTimeout(() => {
+            if (splashScreen && splashScreen.style.display !== 'none') {
+                splashScreen.style.opacity = '0';
+                splashScreen.style.visibility = 'hidden';
+                splashScreen.style.pointerEvents = 'none';
+                splashScreen.style.display = 'none';
+            }
+        }, 2200);
     }
 
     loadSavedUserProfile() {
-        const saved = localStorage.getItem('udvega_user');
-        if (saved) {
-            this.currentUser = JSON.parse(saved);
-            this.updateUserProfileUI();
+        try {
+            const saved = localStorage.getItem('udvega_user');
+            if (saved) {
+                this.currentUser = JSON.parse(saved);
+                this.updateUserProfileUI();
+            }
+        } catch (e) {
+            console.error("Corrupted saved user profile:", e);
+            localStorage.removeItem('udvega_user');
         }
     }
 
     loadSavedJournals() {
-        const saved = localStorage.getItem('udvega_journals');
-        if (saved) {
-            this.journalEntries = JSON.parse(saved);
-            this.renderJournalEntries();
+        try {
+            const saved = localStorage.getItem('udvega_journals');
+            if (saved) {
+                this.journalEntries = JSON.parse(saved);
+                this.renderJournalEntries();
+            }
+        } catch (e) {
+            console.error("Corrupted journal logs reset:", e);
+            this.journalEntries = [];
         }
     }
 
