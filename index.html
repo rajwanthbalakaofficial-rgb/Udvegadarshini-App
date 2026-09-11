@@ -83,10 +83,10 @@
                     <div class="form-group">
                         <label><i class="fa-solid fa-user-gear"></i> Role / Usage</label>
                         <select id="signupRole">
+                            <option value="Subject">Test Subject / Patient</option>
+                            <option value="Doctor">Medical Practitioner / Doctor Admin</option>
                             <option value="Personal Wellness">Personal Daily Wellness User</option>
                             <option value="Researcher">ECE Researcher / Student</option>
-                            <option value="Doctor">Medical Practitioner / Doctor</option>
-                            <option value="Subject">Test Subject / Patient</option>
                         </select>
                     </div>
 
@@ -99,6 +99,35 @@
                             <option value="hindi">🇮🇳 हिन्दी (Hindi)</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- CLINICAL / PATIENT LINKING FIELDS -->
+                <div class="form-row" id="signupClinicalFields">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-hospital"></i> Target Hospital / Medical Center</label>
+                        <select id="signupHospital">
+                            <option value="GVP Multi-Specialty Hospital">GVP Multi-Specialty Hospital</option>
+                            <option value="Apollo Hospitals">Apollo Hospitals</option>
+                            <option value="Care Hospitals">Care Hospitals</option>
+                            <option value="AIIMS Clinical Research Center">AIIMS Clinical Research Center</option>
+                            <option value="KIMS Hospitals">KIMS Hospitals</option>
+                            <option value="General Health Center">General Health Center</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-user-doctor"></i> Assigned Doctor / Consultant</label>
+                        <select id="signupDoctorSelect">
+                            <option value="dr.rajesh@hospital.com|Dr. Rajesh Sharma (Cardiology)">Dr. Rajesh Sharma (Cardiology)</option>
+                            <option value="dr.anitha@apollo.com|Dr. Anitha Reddy (Neurology)">Dr. Anitha Reddy (Neurology)</option>
+                            <option value="dr.kvrao@gvp.ac.in|Dr. K. V. Rao (Neuro-Psychiatry)">Dr. K. V. Rao (Neuro-Psychiatry)</option>
+                            <option value="dr.general@hospital.com|Dr. General Physician">General Hospital Admin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="patient-unblocked-note">
+                    <i class="fa-solid fa-circle-info"></i> <strong>Note:</strong> Linking sends an access request to your Doctor/Hospital. You can use the app and device immediately regardless of approval status.
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-block btn-lg">
@@ -170,6 +199,9 @@
                 <div class="user-info-text">
                     <strong id="userNameText">Guest User</strong>
                     <span id="userRoleText">Subject</span>
+                    <div class="user-doc-link-chip" id="userDocLinkChip" style="display: none;">
+                        <i class="fa-solid fa-user-doctor"></i> <span id="userDocLinkText">Doctor Link: Pending</span>
+                    </div>
                 </div>
                 <button class="btn-icon" id="btnLogout" title="Switch User / Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
@@ -201,6 +233,9 @@
         </button>
         <button class="nav-tab" data-tab="tab-apta">
             <i class="fa-solid fa-user-doctor"></i> Āpta AI (आप्त AI) <span class="badge-unread" id="aptaUnread" style="display:none;">1</span>
+        </button>
+        <button class="nav-tab nav-tab-doctor" data-tab="tab-doctor-portal" id="navDoctorPortalTab">
+            <i class="fa-solid fa-hospital-user"></i> Doctor / Clinical Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>
         </button>
         <button class="nav-tab" data-tab="tab-frequency">
             <i class="fa-solid fa-compact-disc"></i> 432Hz Sound Therapy
@@ -973,7 +1008,182 @@
             </div>
         </section>
 
+        <!-- ================= TAB 7: DOCTOR & HOSPITAL CLINICAL PORTAL ================= -->
+        <section class="tab-page" id="tab-doctor-portal">
+            <div class="doctor-portal-wrapper">
+                
+                <!-- Portal Banner -->
+                <div class="doctor-portal-banner card">
+                    <div class="banner-info">
+                        <div class="banner-badge"><i class="fa-solid fa-hospital-user"></i> Hospital & Clinical Admin Portal</div>
+                        <h2 id="docPortalTitle">Welcome, Dr. Rajesh Sharma</h2>
+                        <p id="docPortalSubtitle">GVP Multi-Specialty Hospital & Research Center | Department of Cardiology & Neuroscience</p>
+                    </div>
+                    <div class="banner-actions">
+                        <span class="badge-status-online"><i class="fa-solid fa-circle"></i> Live Sync Connected</span>
+                    </div>
+                </div>
+
+                <!-- Doctor Stat Cards Row -->
+                <div class="doc-stats-grid">
+                    <div class="card doc-stat-card">
+                        <div class="stat-icon icon-pending"><i class="fa-solid fa-user-clock"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Pending Requests</span>
+                            <h3 id="docStatPendingCount">0</h3>
+                            <span class="stat-sub">Instagram-style Link Requests</span>
+                        </div>
+                    </div>
+                    <div class="card doc-stat-card">
+                        <div class="stat-icon icon-approved"><i class="fa-solid fa-user-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Approved Patients</span>
+                            <h3 id="docStatApprovedCount">0</h3>
+                            <span class="stat-sub">Full Telemetry Access</span>
+                        </div>
+                    </div>
+                    <div class="card doc-stat-card">
+                        <div class="stat-icon icon-total"><i class="fa-solid fa-users"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Assigned</span>
+                            <h3 id="docStatTotalCount">0</h3>
+                            <span class="stat-sub">Registered Under Hospital</span>
+                        </div>
+                    </div>
+                    <div class="card doc-stat-card">
+                        <div class="stat-icon icon-alert"><i class="fa-solid fa-heart-circle-bolt"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">High Stress Alerts</span>
+                            <h3 id="docStatAlertCount">0</h3>
+                            <span class="stat-sub">>70% Stress Score</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 1: INSTAGRAM-STYLE PENDING PATIENT ACCESS REQUESTS -->
+                <div class="card pending-requests-section">
+                    <div class="card-header flex-between">
+                        <div>
+                            <h3><i class="fa-solid fa-inbox"></i> Patient Access Requests <span class="badge-pending-count" id="pendingRequestBadgeCount">0 New</span></h3>
+                            <p class="section-desc">Patients registered under your hospital requesting telemetry link. Accepting gives you access to their real-time stress data. Patient device/app access is never blocked.</p>
+                        </div>
+                    </div>
+
+                    <!-- Pending Requests Grid / List -->
+                    <div class="requests-grid" id="docPendingRequestsContainer">
+                        <!-- Dynamic Pending Request Cards rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- SECTION 2: APPROVED PATIENT DIRECTORY TABLE -->
+                <div class="card patient-directory-section">
+                    <div class="card-header flex-between">
+                        <div>
+                            <h3><i class="fa-solid fa-hospital-user"></i> Hospital Patient Directory</h3>
+                            <p class="section-desc">Manage all patient records registered under your consultation.</p>
+                        </div>
+                        <div class="table-filter-controls">
+                            <div class="search-input-wrapper">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="docPatientSearch" placeholder="Search by Name or Subject ID...">
+                            </div>
+                            <select id="docStatusFilter">
+                                <option value="all">All Patients</option>
+                                <option value="approved" selected>Approved Only</option>
+                                <option value="pending">Pending Approval</option>
+                                <option value="rejected">Rejected / Revoked</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Patients Table Container -->
+                    <div class="table-responsive" id="docPatientsTableContainer">
+                        <table class="doc-patients-table">
+                            <thead>
+                                <tr>
+                                    <th>Subject / Patient ID</th>
+                                    <th>Patient Full Name</th>
+                                    <th>Hospital / Clinic</th>
+                                    <th>Link Status</th>
+                                    <th>Last Recorded Stress</th>
+                                    <th>Registration Date</th>
+                                    <th>Clinical Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="docPatientsTableBody">
+                                <!-- Dynamic Patient Rows rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
     </main>
+
+    <!-- ================= 4. PATIENT CLINICAL TELEMETRY DETAIL MODAL ================= -->
+    <div class="login-modal-overlay" id="patientTelemetryModal" style="display: none;">
+        <div class="telemetry-modal-card card">
+            <div class="modal-header flex-between">
+                <div>
+                    <h2 id="modalPatientName"><i class="fa-solid fa-user-doctor"></i> Patient Telemetry Details</h2>
+                    <p id="modalPatientMeta">Subject ID: SUBJ-3221 | Hospital: GVP Multi-Specialty Hospital</p>
+                </div>
+                <button class="btn-icon" id="btnClosePatientTelemetryModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="telemetry-grid">
+                    <div class="card inner-card">
+                        <h4><i class="fa-solid fa-gauge-high"></i> Current BioAmp EXG Stress Profile</h4>
+                        <div class="modal-stress-meter">
+                            <span class="meter-val" id="modalStressScore">--%</span>
+                            <span class="meter-status" id="modalStressState">Normal</span>
+                        </div>
+                        <div class="meter-bar-container">
+                            <div class="meter-bar-fill" id="modalStressBar"></div>
+                        </div>
+                    </div>
+
+                    <div class="card inner-card">
+                        <h4><i class="fa-solid fa-wave-square"></i> EEG Frequency Bands</h4>
+                        <ul class="modal-eeg-list">
+                            <li><strong>Delta (0.5-4 Hz):</strong> <span id="modalDelta">--</span></li>
+                            <li><strong>Theta (4-8 Hz):</strong> <span id="modalTheta">--</span></li>
+                            <li><strong>Alpha (8-13 Hz):</strong> <span id="modalAlpha">--</span></li>
+                            <li><strong>Beta (13-30 Hz):</strong> <span id="modalBeta">--</span></li>
+                            <li><strong>Gamma (30-40 Hz):</strong> <span id="modalGamma">--</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="patient-logs-section">
+                    <h4><i class="fa-solid fa-clock-rotate-left"></i> Stress History & Session Logs</h4>
+                    <div class="table-responsive">
+                        <table class="doc-patients-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Stress Score</th>
+                                    <th>State</th>
+                                    <th>Beta/Alpha Ratio</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalPatientLogsBody">
+                                <!-- Rendered dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnClosePatientTelemetryModalFooter">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- JS Files -->
     <script src="i18n.js"></script>

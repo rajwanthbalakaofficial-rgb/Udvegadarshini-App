@@ -20,6 +20,7 @@ class UdvegadarshiniApp {
         };
 
         this.usersDB = []; // Registered Users DB
+        this.doctorRequests = []; // Doctor Link Access Requests DB
 
         this.currentMetrics = {
             stressScore: 0,
@@ -43,6 +44,7 @@ class UdvegadarshiniApp {
     init() {
         this.initSplashScreen();
         this.loadUsersDB();
+        this.loadDoctorRequests();
         this.bindEvents();
         this.initChart();
 
@@ -55,6 +57,7 @@ class UdvegadarshiniApp {
         stressGames.init();
 
         this.bindSoundTherapyPresets();
+        this.initDoctorPortalEvents();
     }
 
     loadUsersDB() {
@@ -62,16 +65,78 @@ class UdvegadarshiniApp {
         if (db) {
             this.usersDB = JSON.parse(db);
         } else {
-            // Default seed user
-            this.usersDB = [{
-                email: 'test@example.com',
-                password: '1234',
-                fullName: 'Santhosh / Sindhu / Bharat / Nani',
-                subjectId: 'SUBJ-3221',
-                role: 'Personal Wellness',
-                lang: 'teluglish'
-            }];
+            // Default seed users (Doctors & Patients)
+            this.usersDB = [
+                {
+                    email: 'dr.rajesh@hospital.com',
+                    password: '1234',
+                    fullName: 'Dr. Rajesh Sharma',
+                    subjectId: 'DOC-701',
+                    role: 'Doctor',
+                    hospitalName: 'GVP Multi-Specialty Hospital',
+                    lang: 'teluglish'
+                },
+                {
+                    email: 'dr.anitha@apollo.com',
+                    password: '1234',
+                    fullName: 'Dr. Anitha Reddy',
+                    subjectId: 'DOC-802',
+                    role: 'Doctor',
+                    hospitalName: 'Apollo Hospitals',
+                    lang: 'en'
+                },
+                {
+                    email: 'patient@example.com',
+                    password: '1234',
+                    fullName: 'Santhosh Kumar',
+                    subjectId: 'SUBJ-3221',
+                    role: 'Subject',
+                    hospitalName: 'GVP Multi-Specialty Hospital',
+                    doctorEmail: 'dr.rajesh@hospital.com',
+                    doctorName: 'Dr. Rajesh Sharma (Cardiology)',
+                    doctorApprovalStatus: 'pending',
+                    lang: 'teluglish'
+                }
+            ];
             localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+        }
+    }
+
+    loadDoctorRequests() {
+        const reqs = localStorage.getItem('udvega_doctor_requests');
+        if (reqs) {
+            this.doctorRequests = JSON.parse(reqs);
+        } else {
+            // Default seed requests (Instagram-style pending access requests)
+            this.doctorRequests = [
+                {
+                    requestId: 'REQ-1001',
+                    patientSubjectId: 'SUBJ-3221',
+                    patientFullName: 'Santhosh Kumar',
+                    patientEmail: 'patient@example.com',
+                    hospitalName: 'GVP Multi-Specialty Hospital',
+                    doctorEmail: 'dr.rajesh@hospital.com',
+                    doctorName: 'Dr. Rajesh Sharma (Cardiology)',
+                    status: 'pending',
+                    timestamp: '2026-09-11 21:30',
+                    latestStressScore: 42,
+                    eegData: { delta: 18, theta: 24, alpha: 38, beta: 15, gamma: 5 }
+                },
+                {
+                    requestId: 'REQ-1002',
+                    patientSubjectId: 'SUBJ-8842',
+                    patientFullName: 'Sindhu Varma',
+                    patientEmail: 'sindhu@gvp.ac.in',
+                    hospitalName: 'GVP Multi-Specialty Hospital',
+                    doctorEmail: 'dr.rajesh@hospital.com',
+                    doctorName: 'Dr. Rajesh Sharma (Cardiology)',
+                    status: 'pending',
+                    timestamp: '2026-09-11 22:00',
+                    latestStressScore: 78,
+                    eegData: { delta: 10, theta: 15, alpha: 20, beta: 45, gamma: 10 }
+                }
+            ];
+            localStorage.setItem('udvega_doctor_requests', JSON.stringify(this.doctorRequests));
         }
     }
 
@@ -126,18 +191,63 @@ class UdvegadarshiniApp {
 
     updateUserProfileUI() {
         document.getElementById('userNameText').textContent = this.currentUser.fullName || 'Guest User';
-        document.getElementById('userRoleText').textContent = `${this.currentUser.role} (${this.currentUser.subjectId})`;
+        document.getElementById('userRoleText').textContent = `${this.currentUser.role} (${this.currentUser.subjectId || 'GUEST'})`;
         document.getElementById('userAvatar').textContent = (this.currentUser.fullName || 'G').charAt(0).toUpperCase();
 
         document.getElementById('pdfSubjectId').textContent = this.currentUser.subjectId || 'SUBJ-GUEST';
         document.getElementById('pdfSubjectName').textContent = this.currentUser.fullName || 'Guest User';
+
+        // Doctor Link Chip for Patient
+        const chip = document.getElementById('userDocLinkChip');
+        const chipText = document.getElementById('userDocLinkText');
+
+        if (chip && chipText) {
+            if (this.currentUser.doctorName) {
+                const docSimple = this.currentUser.doctorName.split(' (')[0];
+                const req = this.doctorRequests.find(r => r.patientEmail === this.currentUser.email || r.patientSubjectId === this.currentUser.subjectId);
+                const status = req ? req.status : (this.currentUser.doctorApprovalStatus || 'pending');
+
+                chip.style.display = 'inline-flex';
+                chip.className = `user-doc-link-chip ${status}`;
+                if (status === 'approved') {
+                    chipText.textContent = `Linked: ${docSimple} (Approved ✓)`;
+                } else if (status === 'rejected') {
+                    chipText.textContent = `Linked: ${docSimple} (Access Declined)`;
+                } else {
+                    chipText.textContent = `Linked: ${docSimple} (Pending Approval ⏳)`;
+                }
+            } else {
+                chip.style.display = 'none';
+            }
+        }
+
+        // Toggle Doctor Portal Nav Tab
+        const docTab = document.getElementById('navDoctorPortalTab');
+        if (docTab) {
+            if (this.currentUser.role === 'Doctor') {
+                docTab.style.display = 'inline-flex';
+                const docTitle = document.getElementById('docPortalTitle');
+                const docSub = document.getElementById('docPortalSubtitle');
+                if (docTitle) docTitle.textContent = `Welcome, ${this.currentUser.fullName}`;
+                if (docSub) docSub.textContent = `${this.currentUser.hospitalName || 'Clinical Hospital Center'} | Department of Neuroscience & Cardiology`;
+                this.renderDoctorPortal();
+            } else {
+                docTab.style.display = 'inline-flex'; // Available to explore or view clinical portal
+                this.renderDoctorPortal();
+            }
+        }
     }
 
     saveUserProfile(userObj) {
         this.currentUser = {
             subjectId: userObj.subjectId,
             fullName: userObj.fullName,
-            role: userObj.role
+            email: userObj.email || '',
+            role: userObj.role,
+            hospitalName: userObj.hospitalName || 'GVP Multi-Specialty Hospital',
+            doctorEmail: userObj.doctorEmail || '',
+            doctorName: userObj.doctorName || '',
+            doctorApprovalStatus: userObj.doctorApprovalStatus || 'pending'
         };
         localStorage.setItem('udvega_user', JSON.stringify(this.currentUser));
         this.updateUserProfileUI();
@@ -188,6 +298,16 @@ class UdvegadarshiniApp {
                 const subjectId = document.getElementById('signupSubjectId').value.trim();
                 const role = document.getElementById('signupRole').value;
                 const lang = document.getElementById('signupLanguage').value;
+                const hospitalName = document.getElementById('signupHospital') ? document.getElementById('signupHospital').value : 'GVP Multi-Specialty Hospital';
+                const docSel = document.getElementById('signupDoctorSelect') ? document.getElementById('signupDoctorSelect').value : '';
+
+                let doctorEmail = '';
+                let doctorName = '';
+                if (docSel && docSel.includes('|')) {
+                    const parts = docSel.split('|');
+                    doctorEmail = parts[0];
+                    doctorName = parts[1];
+                }
 
                 // Check if user already exists
                 const existing = this.usersDB.find(u => u.email === email || u.subjectId === subjectId);
@@ -201,13 +321,39 @@ class UdvegadarshiniApp {
                 }
 
                 // Register New Account
-                const newUser = { fullName, email, password, subjectId, role, lang };
+                const newUser = { 
+                    fullName, email, password, subjectId, role, lang,
+                    hospitalName, doctorEmail, doctorName,
+                    doctorApprovalStatus: role === 'Subject' ? 'pending' : 'approved'
+                };
                 this.usersDB.push(newUser);
                 localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
 
+                // Generate Instagram-style Request for Doctor Admin if role is Subject/Patient
+                if (role === 'Subject' || doctorEmail) {
+                    const newReq = {
+                        requestId: 'REQ-' + (1000 + Math.floor(Math.random() * 9000)),
+                        patientSubjectId: subjectId,
+                        patientFullName: fullName,
+                        patientEmail: email,
+                        hospitalName: hospitalName,
+                        doctorEmail: doctorEmail,
+                        doctorName: doctorName,
+                        status: 'pending',
+                        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
+                        latestStressScore: 35,
+                        eegData: { delta: 15, theta: 20, alpha: 40, beta: 20, gamma: 5 }
+                    };
+                    // Check if request already exists
+                    if (!this.doctorRequests.some(r => r.patientEmail === email)) {
+                        this.doctorRequests.push(newReq);
+                        localStorage.setItem('udvega_doctor_requests', JSON.stringify(this.doctorRequests));
+                    }
+                }
+
                 if (alertBox) {
                     alertBox.className = 'auth-alert-box success';
-                    alertBox.textContent = 'Account created successfully! Logging you in...';
+                    alertBox.textContent = 'Account created & Link Request sent! You can start using app & device right away...';
                     alertBox.style.display = 'block';
                 }
 
@@ -765,6 +911,218 @@ class UdvegadarshiniApp {
         document.getElementById('pdfDuration').textContent = `${Math.round((now - this.sessionStartTime) / 60000)} minutes`;
 
         window.print();
+    }
+
+    initDoctorPortalEvents() {
+        const btnCloseModal = document.getElementById('btnClosePatientTelemetryModal');
+        const btnCloseFooter = document.getElementById('btnClosePatientTelemetryModalFooter');
+        if (btnCloseModal) btnCloseModal.onclick = () => this.closePatientTelemetryModal();
+        if (btnCloseFooter) btnCloseFooter.onclick = () => this.closePatientTelemetryModal();
+
+        const searchInput = document.getElementById('docPatientSearch');
+        if (searchInput) {
+            searchInput.oninput = () => this.renderDoctorPortal();
+        }
+
+        const filterSelect = document.getElementById('docStatusFilter');
+        if (filterSelect) {
+            filterSelect.onchange = () => this.renderDoctorPortal();
+        }
+    }
+
+    renderDoctorPortal() {
+        const pendingContainer = document.getElementById('docPendingRequestsContainer');
+        const tableBody = document.getElementById('docPatientsTableBody');
+        const searchVal = (document.getElementById('docPatientSearch')?.value || '').toLowerCase();
+        const filterVal = document.getElementById('docStatusFilter')?.value || 'all';
+
+        // 1. Pending Requests (Instagram style)
+        const pendingList = this.doctorRequests.filter(r => r.status === 'pending');
+        
+        const pendingCountElem = document.getElementById('docStatPendingCount');
+        const approvedCountElem = document.getElementById('docStatApprovedCount');
+        const totalCountElem = document.getElementById('docStatTotalCount');
+        const alertCountElem = document.getElementById('docStatAlertCount');
+        const navBadge = document.getElementById('pendingReqBadge');
+        const reqHeaderBadge = document.getElementById('pendingRequestBadgeCount');
+
+        if (pendingCountElem) pendingCountElem.textContent = pendingList.length;
+        if (reqHeaderBadge) reqHeaderBadge.textContent = `${pendingList.length} New`;
+        if (navBadge) {
+            if (pendingList.length > 0) {
+                navBadge.style.display = 'inline-flex';
+                navBadge.textContent = pendingList.length;
+            } else {
+                navBadge.style.display = 'none';
+            }
+        }
+
+        // Render Pending Request Cards
+        if (pendingContainer) {
+            if (pendingList.length === 0) {
+                pendingContainer.innerHTML = `
+                    <div class="empty-table-msg card" style="grid-column: 1 / -1; text-align: center; padding: 1.5rem;">
+                        <i class="fa-solid fa-circle-check" style="font-size: 1.8rem; color: #10b981; margin-bottom: 0.5rem;"></i>
+                        <p style="margin: 0;">No pending access requests! All patient links are updated.</p>
+                    </div>
+                `;
+            } else {
+                pendingContainer.innerHTML = pendingList.map(req => `
+                    <div class="request-card">
+                        <div class="request-header">
+                            <div class="request-avatar">${req.patientFullName.charAt(0)}</div>
+                            <div class="request-meta">
+                                <strong>${req.patientFullName}</strong>
+                                <span>Subject ID: ${req.patientSubjectId}</span>
+                            </div>
+                        </div>
+                        <div class="request-details">
+                            <p><i class="fa-solid fa-hospital"></i> Hospital: ${req.hospitalName}</p>
+                            <p><i class="fa-solid fa-envelope"></i> Email: ${req.patientEmail}</p>
+                            <p><i class="fa-solid fa-clock"></i> Requested: ${req.timestamp}</p>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn-accept-request" onclick="app.approvePatientRequest('${req.requestId}')">
+                                <i class="fa-solid fa-check-circle"></i> Accept Request
+                            </button>
+                            <button class="btn-reject-request" onclick="app.rejectPatientRequest('${req.requestId}')">
+                                <i class="fa-solid fa-times-circle"></i> Decline
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 2. Filter & Render Patients Table
+        let allPatients = [...this.doctorRequests];
+        
+        let filtered = allPatients.filter(p => {
+            const matchesSearch = p.patientFullName.toLowerCase().includes(searchVal) || p.patientSubjectId.toLowerCase().includes(searchVal) || p.hospitalName.toLowerCase().includes(searchVal);
+            const matchesStatus = filterVal === 'all' || p.status === filterVal;
+            return matchesSearch && matchesStatus;
+        });
+
+        const approvedCount = allPatients.filter(p => p.status === 'approved').length;
+        const alertCount = allPatients.filter(p => (p.latestStressScore || 0) > 70).length;
+
+        if (approvedCountElem) approvedCountElem.textContent = approvedCount;
+        if (totalCountElem) totalCountElem.textContent = allPatients.length;
+        if (alertCountElem) alertCountElem.textContent = alertCount;
+
+        if (tableBody) {
+            if (filtered.length === 0) {
+                tableBody.innerHTML = `
+                    <tr><td colspan="7" class="empty-table-msg" style="text-align: center; padding: 1.5rem;">No patient records match the selected filter.</td></tr>
+                `;
+            } else {
+                tableBody.innerHTML = filtered.map(patient => {
+                    const statusClass = patient.status === 'approved' ? 'status-badge-approved' : (patient.status === 'rejected' ? 'status-badge-rejected' : 'status-badge-pending');
+                    const statusText = patient.status === 'approved' ? 'Approved ✓' : (patient.status === 'rejected' ? 'Access Declined ✗' : 'Pending Approval ⏳');
+                    
+                    return `
+                        <tr>
+                            <td><strong>${patient.patientSubjectId}</strong></td>
+                            <td>${patient.patientFullName}</td>
+                            <td>${patient.hospitalName}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td><strong style="color: ${patient.latestStressScore > 70 ? '#ef4444' : '#06b6d4'}">${patient.latestStressScore || '--'}%</strong></td>
+                            <td>${patient.timestamp}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="app.viewPatientTelemetry('${patient.patientSubjectId}')">
+                                    <i class="fa-solid fa-chart-line"></i> View Telemetry
+                                </button>
+                                ${patient.status === 'pending' ? `
+                                    <button class="btn btn-sm btn-accent" style="margin-left: 0.3rem;" onclick="app.approvePatientRequest('${patient.requestId}')">
+                                        <i class="fa-solid fa-check"></i> Approve
+                                    </button>
+                                ` : ''}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+    }
+
+    approvePatientRequest(requestId) {
+        const req = this.doctorRequests.find(r => r.requestId === requestId);
+        if (req) {
+            req.status = 'approved';
+            localStorage.setItem('udvega_doctor_requests', JSON.stringify(this.doctorRequests));
+            
+            const userInDB = this.usersDB.find(u => u.email === req.patientEmail || u.subjectId === req.patientSubjectId);
+            if (userInDB) {
+                userInDB.doctorApprovalStatus = 'approved';
+                localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+            }
+
+            this.updateUserProfileUI();
+            this.renderDoctorPortal();
+        }
+    }
+
+    rejectPatientRequest(requestId) {
+        const req = this.doctorRequests.find(r => r.requestId === requestId);
+        if (req) {
+            req.status = 'rejected';
+            localStorage.setItem('udvega_doctor_requests', JSON.stringify(this.doctorRequests));
+            
+            const userInDB = this.usersDB.find(u => u.email === req.patientEmail || u.subjectId === req.patientSubjectId);
+            if (userInDB) {
+                userInDB.doctorApprovalStatus = 'rejected';
+                localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+            }
+
+            this.updateUserProfileUI();
+            this.renderDoctorPortal();
+        }
+    }
+
+    viewPatientTelemetry(subjectId) {
+        const patient = this.doctorRequests.find(r => r.patientSubjectId === subjectId || r.patientEmail === subjectId);
+        const modal = document.getElementById('patientTelemetryModal');
+        
+        if (modal) {
+            if (patient) {
+                document.getElementById('modalPatientName').innerHTML = `<i class="fa-solid fa-user-doctor"></i> ${patient.patientFullName} - Telemetry`;
+                document.getElementById('modalPatientMeta').textContent = `Subject ID: ${patient.patientSubjectId} | Hospital: ${patient.hospitalName} | Link Status: ${patient.status.toUpperCase()}`;
+                
+                const score = patient.latestStressScore || 42;
+                document.getElementById('modalStressScore').textContent = `${score}%`;
+                document.getElementById('modalStressState').textContent = score > 70 ? 'High Stress' : (score > 40 ? 'Moderate Focus' : 'Normal / Relaxed');
+                document.getElementById('modalStressBar').style.width = `${score}%`;
+
+                const eeg = patient.eegData || { delta: 18, theta: 24, alpha: 38, beta: 15, gamma: 5 };
+                document.getElementById('modalDelta').textContent = `${eeg.delta} %`;
+                document.getElementById('modalTheta').textContent = `${eeg.theta} %`;
+                document.getElementById('modalAlpha').textContent = `${eeg.alpha} %`;
+                document.getElementById('modalBeta').textContent = `${eeg.beta} %`;
+                document.getElementById('modalGamma').textContent = `${eeg.gamma} %`;
+
+                const logsBody = document.getElementById('modalPatientLogsBody');
+                if (logsBody) {
+                    logsBody.innerHTML = `
+                        <tr>
+                            <td>${patient.timestamp}</td>
+                            <td><strong style="color: ${score > 70 ? '#ef4444' : '#10b981'}">${score}%</strong></td>
+                            <td>${score > 70 ? 'Stressed' : 'Normal'}</td>
+                            <td>${(eeg.beta / (eeg.alpha || 1)).toFixed(2)}</td>
+                            <td>Initial baseline telemetry logged upon registration.</td>
+                        </tr>
+                    `;
+                }
+            } else {
+                document.getElementById('modalPatientName').textContent = 'Patient Telemetry Details';
+                document.getElementById('modalPatientMeta').textContent = `Subject ID: ${subjectId}`;
+            }
+            modal.style.display = 'flex';
+        }
+    }
+
+    closePatientTelemetryModal() {
+        const modal = document.getElementById('patientTelemetryModal');
+        if (modal) modal.style.display = 'none';
     }
 }
 

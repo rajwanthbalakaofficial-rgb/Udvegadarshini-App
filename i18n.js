@@ -192,6 +192,13 @@ class LanguageManager {
         const tabPersonal = document.querySelector('[data-tab="tab-personal"]');
         if (tabPersonal) tabPersonal.innerHTML = `<i class="fa-solid fa-heart-pulse"></i> ${this.t('tabPersonal')}`;
 
+        const tabDoctor = document.querySelector('[data-tab="tab-doctor-portal"]');
+        if (tabDoctor) {
+            const badgeCount = document.getElementById('pendingReqBadge')?.textContent || '0';
+            const badgeDisplay = document.getElementById('pendingReqBadge')?.style.display || 'none';
+            tabDoctor.innerHTML = `<i class="fa-solid fa-hospital-user"></i> Doctor / Clinical Portal <span class="badge-unread" id="pendingReqBadge" style="display:${badgeDisplay};">${badgeCount}</span>`;
+        }
+
         const serialBtn = document.getElementById('btnConnectSerial');
         if (serialBtn) serialBtn.innerHTML = `<i class="fa-solid fa-plug"></i> ${this.t('serialConnect')}`;
 
