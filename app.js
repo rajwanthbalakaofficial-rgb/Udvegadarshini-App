@@ -21,6 +21,7 @@ class UdvegadarshiniApp {
 
         this.usersDB = []; // Registered Users DB
         this.doctorRequests = []; // Doctor Link Access Requests DB
+        this.hospitalsDB = []; // Registered Hospitals DB
 
         this.currentMetrics = {
             stressScore: 0,
@@ -43,6 +44,7 @@ class UdvegadarshiniApp {
 
     init() {
         try { this.initSplashScreen(); } catch(e) { console.error("Splash init error:", e); }
+        try { this.loadHospitalsDB(); } catch(e) { console.error("Hospitals DB error:", e); }
         try { this.loadUsersDB(); } catch(e) { console.error("Users DB error:", e); }
         try { this.loadDoctorRequests(); } catch(e) { console.error("Doctor reqs error:", e); }
         try { this.bindEvents(); } catch(e) { console.error("Bind events error:", e); }
@@ -55,6 +57,32 @@ class UdvegadarshiniApp {
         try { if (typeof stressGames !== 'undefined') stressGames.init(); } catch(e) { console.error("Games error:", e); }
         try { this.bindSoundTherapyPresets(); } catch(e) { console.error("Presets error:", e); }
         try { this.initDoctorPortalEvents(); } catch(e) { console.error("Doctor portal error:", e); }
+    }
+
+    loadHospitalsDB() {
+        try {
+            const h = localStorage.getItem('udvega_hospitals_db');
+            if (h) {
+                this.hospitalsDB = JSON.parse(h);
+            }
+        } catch (e) {
+            console.error("Corrupted hospitals DB reset:", e);
+            this.hospitalsDB = [];
+        }
+
+        if (!this.hospitalsDB || !Array.isArray(this.hospitalsDB) || this.hospitalsDB.length === 0) {
+            this.hospitalsDB = [
+                "GVP Multi-Specialty Hospital",
+                "Apollo Hospitals",
+                "Care Hospitals",
+                "AIIMS Clinical Research Center",
+                "KIMS Hospitals",
+                "General Health Center"
+            ];
+            localStorage.setItem('udvega_hospitals_db', JSON.stringify(this.hospitalsDB));
+        }
+
+        this.populateHospitalDropdown();
     }
 
     loadUsersDB() {
@@ -282,6 +310,34 @@ class UdvegadarshiniApp {
         document.getElementById('loginModal').style.display = 'none';
     }
 
+    populateHospitalDropdown() {
+        const hospitalSelect = document.getElementById('signupHospital');
+        if (!hospitalSelect) return;
+
+        let html = this.hospitalsDB.map(h => `<option value="${h}">${h}</option>`).join('');
+        html += `<option value="custom">➕ Add / Register New Hospital...</option>`;
+        hospitalSelect.innerHTML = html;
+    }
+
+    populateDoctorDropdown(filterHospital = '') {
+        const doctorSelect = document.getElementById('signupDoctorSelect');
+        if (!doctorSelect) return;
+
+        let doctors = this.usersDB.filter(u => u.role === 'Doctor');
+        if (filterHospital && filterHospital !== 'custom') {
+            doctors = doctors.filter(d => !d.hospitalName || d.hospitalName === filterHospital);
+        }
+
+        if (doctors.length === 0) {
+            doctorSelect.innerHTML = `<option value="dr.general@hospital.com|General Hospital Doctor">General Hospital Doctor</option>`;
+            return;
+        }
+
+        doctorSelect.innerHTML = doctors.map(d => 
+            `<option value="${d.email}|${d.fullName}">${d.fullName} (${d.hospitalName || 'General Clinic'})</option>`
+        ).join('');
+    }
+
     updateSignupFormFieldsByRole(role) {
         const idLabel = document.getElementById('signupSubjectIdLabel');
         const idInput = document.getElementById('signupSubjectId');
@@ -289,7 +345,12 @@ class UdvegadarshiniApp {
         const hospitalGroup = document.getElementById('signupHospitalGroup');
         const hospitalLabel = document.getElementById('signupHospitalLabel');
         const doctorGroup = document.getElementById('signupDoctorSelectGroup');
+        const customHospitalGroup = document.getElementById('signupCustomHospitalGroup');
+        const hospitalSelect = document.getElementById('signupHospital');
         const note = document.getElementById('patientUnblockedNote');
+
+        this.populateHospitalDropdown();
+        this.populateDoctorDropdown();
 
         if (role === 'Doctor') {
             if (idLabel) idLabel.innerHTML = `<i class="fa-solid fa-id-card"></i> Doctor License / Reg ID`;
@@ -323,6 +384,10 @@ class UdvegadarshiniApp {
             if (clinicalFields) clinicalFields.style.display = 'none';
             if (note) note.style.display = 'none';
         }
+
+        if (hospitalSelect && customHospitalGroup) {
+            customHospitalGroup.style.display = hospitalSelect.value === 'custom' ? 'block' : 'none';
+        }
     }
 
     bindEvents() {
@@ -331,6 +396,20 @@ class UdvegadarshiniApp {
         if (signupRoleSelect) {
             this.updateSignupFormFieldsByRole(signupRoleSelect.value);
             signupRoleSelect.onchange = (e) => this.updateSignupFormFieldsByRole(e.target.value);
+        }
+
+        // Custom Hospital Toggle Listener
+        const hospitalSelect = document.getElementById('signupHospital');
+        const customHospitalGroup = document.getElementById('signupCustomHospitalGroup');
+        if (hospitalSelect) {
+            hospitalSelect.onchange = (e) => {
+                if (e.target.value === 'custom') {
+                    if (customHospitalGroup) customHospitalGroup.style.display = 'block';
+                } else {
+                    if (customHospitalGroup) customHospitalGroup.style.display = 'none';
+                    this.populateDoctorDropdown(e.target.value);
+                }
+            };
         }
 
         // Auth Tab Switcher (Sign Up vs Log In)
@@ -375,7 +454,27 @@ class UdvegadarshiniApp {
                 const subjectId = document.getElementById('signupSubjectId').value.trim();
                 const role = document.getElementById('signupRole').value;
                 const lang = document.getElementById('signupLanguage').value;
-                const hospitalName = document.getElementById('signupHospital') ? document.getElementById('signupHospital').value : 'GVP Multi-Specialty Hospital';
+                
+                let hospitalName = document.getElementById('signupHospital') ? document.getElementById('signupHospital').value : 'GVP Multi-Specialty Hospital';
+                if (hospitalName === 'custom') {
+                    const customInput = document.getElementById('signupCustomHospital');
+                    const customVal = customInput ? customInput.value.trim() : '';
+                    if (!customVal) {
+                        if (alertBox) {
+                            alertBox.className = 'auth-alert-box';
+                            alertBox.textContent = 'Please type the name of the new Hospital / Medical Center!';
+                            alertBox.style.display = 'block';
+                        }
+                        return;
+                    }
+                    hospitalName = customVal;
+                    if (!this.hospitalsDB.includes(hospitalName)) {
+                        this.hospitalsDB.push(hospitalName);
+                        localStorage.setItem('udvega_hospitals_db', JSON.stringify(this.hospitalsDB));
+                        this.populateHospitalDropdown();
+                    }
+                }
+
                 const docSel = (role === 'Subject' && document.getElementById('signupDoctorSelect')) ? document.getElementById('signupDoctorSelect').value : '';
 
                 let doctorEmail = '';
@@ -408,6 +507,9 @@ class UdvegadarshiniApp {
                 this.usersDB.push(newUser);
                 localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
 
+                // Re-populate doctor list so newly registered doctors appear immediately for patients
+                this.populateDoctorDropdown();
+
                 // Generate Instagram-style Request for Doctor Admin ONLY if role is Subject/Patient
                 if (role === 'Subject' && doctorEmail) {
                     const newReq = {
@@ -432,7 +534,7 @@ class UdvegadarshiniApp {
                 if (alertBox) {
                     alertBox.className = 'auth-alert-box success';
                     alertBox.textContent = role === 'Doctor' ? 
-                        `Doctor Account registered successfully! Opening Admin Portal...` :
+                        `Doctor & Hospital Account registered successfully! Opening Admin Portal...` :
                         `Account created & Link Request sent! You can start using app & device right away...`;
                     alertBox.style.display = 'block';
                 }
