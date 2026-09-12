@@ -161,11 +161,16 @@ class UdvegadarshiniApp {
             this.usersDB.push(defaultPatient);
         }
 
-        // Ensure non-default Hospital Admin accounts require State/Master Admin approval
+        // Auto-verify Hospital Admin accounts against National Health Authority Registry
         this.usersDB.forEach(u => {
-            if (u.role === 'HospitalAdmin' && u.email.toLowerCase() !== 'admin@gvp.com' && u.subjectId !== 'HOSP-REG-101') {
-                if (u.status !== 'approved_by_master') {
-                    u.status = 'pending_gov_approval';
+            if (u.role === 'HospitalAdmin' && u.email.toLowerCase() !== 'admin@gvp.com') {
+                const isValid = this.verifyGovLicenseWithNHA(u.govLicenseNo || u.subjectId, u.hospitalName);
+                if (isValid) {
+                    u.status = 'approved';
+                    u.govVerified = true;
+                } else {
+                    u.status = 'rejected';
+                    u.govVerified = false;
                 }
             }
         });
