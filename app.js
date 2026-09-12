@@ -161,6 +161,15 @@ class UdvegadarshiniApp {
             this.usersDB.push(defaultPatient);
         }
 
+        // Ensure non-default Hospital Admin accounts require State/Master Admin approval
+        this.usersDB.forEach(u => {
+            if (u.role === 'HospitalAdmin' && u.email.toLowerCase() !== 'admin@gvp.com' && u.subjectId !== 'HOSP-REG-101') {
+                if (u.status !== 'approved_by_master') {
+                    u.status = 'pending_gov_approval';
+                }
+            }
+        });
+
         localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
     }
 
@@ -251,7 +260,38 @@ class UdvegadarshiniApp {
         try {
             const saved = localStorage.getItem('udvega_user');
             if (saved) {
-                this.currentUser = JSON.parse(saved);
+                const user = JSON.parse(saved);
+
+                // Enforce approval check for saved session
+                if (user.role === 'HospitalAdmin' && user.email.toLowerCase() !== 'admin@gvp.com' && user.status === 'pending_gov_approval') {
+                    localStorage.removeItem('udvega_user');
+                    this.currentUser = { subjectId: 'GUEST', fullName: 'Guest User', role: 'Personal Wellness' };
+                    const loginModal = document.getElementById('loginModal');
+                    if (loginModal) loginModal.style.display = 'flex';
+                    const alertBox = document.getElementById('authAlertBox');
+                    if (alertBox) {
+                        alertBox.className = 'auth-alert-box';
+                        alertBox.textContent = `Hospital Verification Pending ⏳: Your Hospital registration (${user.hospitalName}) is awaiting State Healthcare Authority & Master Admin verification. Access is BLOCKED until approved.`;
+                        alertBox.style.display = 'block';
+                    }
+                    return;
+                }
+
+                if (user.role === 'Doctor' && user.status === 'pending_hospital_approval') {
+                    localStorage.removeItem('udvega_user');
+                    this.currentUser = { subjectId: 'GUEST', fullName: 'Guest User', role: 'Personal Wellness' };
+                    const loginModal = document.getElementById('loginModal');
+                    if (loginModal) loginModal.style.display = 'flex';
+                    const alertBox = document.getElementById('authAlertBox');
+                    if (alertBox) {
+                        alertBox.className = 'auth-alert-box';
+                        alertBox.textContent = `Login Pending ⏳: Doctor registration for ${user.fullName} is awaiting Hospital Admin approval. Access is BLOCKED until approved.`;
+                        alertBox.style.display = 'block';
+                    }
+                    return;
+                }
+
+                this.currentUser = user;
                 this.updateUserProfileUI();
             }
         } catch (e) {
