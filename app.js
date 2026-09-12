@@ -317,7 +317,8 @@ class UdvegadarshiniApp {
         const docSub = document.getElementById('docPortalSubtitle');
 
         if (this.currentUser.role === 'HospitalAdmin') {
-            // HIDE ALL CONSUMER TABS & CONTROLS FOR HOSPITAL ADMIN
+            // FORCE CLINICAL MODE & HIDE ALL CONSUMER TABS & CONTROLS FOR HOSPITAL ADMIN
+            this.setMode('clinical');
             allNavTabs.forEach(tab => {
                 if (tab !== docTab) tab.style.display = 'none';
             });
@@ -341,7 +342,8 @@ class UdvegadarshiniApp {
             if (docTab) docTab.click();
 
         } else if (this.currentUser.role === 'Doctor') {
-            // HIDE ALL CONSUMER TABS & CONTROLS FOR DOCTOR
+            // FORCE CLINICAL MODE & HIDE ALL CONSUMER TABS & CONTROLS FOR DOCTOR
+            this.setMode('clinical');
             allNavTabs.forEach(tab => {
                 if (tab !== docTab) tab.style.display = 'none';
             });
@@ -366,6 +368,7 @@ class UdvegadarshiniApp {
 
         } else {
             // SHOW CONSUMER TABS & CONTROLS FOR PATIENTS / WELLNESS USERS
+            this.setMode('personal');
             allNavTabs.forEach(tab => tab.style.display = 'inline-flex');
             if (modeToggleBox) modeToggleBox.style.display = 'inline-flex';
             connControls.forEach(ctrl => ctrl.style.display = 'inline-flex');
