@@ -271,7 +271,19 @@ class UdvegadarshiniApp {
                     const alertBox = document.getElementById('authAlertBox');
                     if (alertBox) {
                         alertBox.className = 'auth-alert-box';
-                        alertBox.textContent = `Hospital Verification Pending ⏳: Your Hospital registration (${user.hospitalName}) is awaiting State Healthcare Authority & Master Admin verification. Access is BLOCKED until approved.`;
+                        alertBox.innerHTML = `
+                            <div style="padding: 0.2rem 0;">
+                                <strong style="color: #f59e0b;"><i class="fa-solid fa-hourglass-half"></i> Hospital Verification Pending ⏳</strong>
+                                <p style="margin: 0.4rem 0 0.6rem 0; font-size: 0.88rem;">Your Hospital Admin registration (<strong>${user.hospitalName}</strong>) is awaiting State Healthcare Authority verification.</p>
+                                <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.6rem;">License No: <code>${user.govLicenseNo || user.subjectId}</code> | Admin Email: <code>${user.email}</code></div>
+                                <div style="margin-top: 0.5rem; padding: 0.6rem; background: rgba(16, 185, 129, 0.15); border: 1px dashed #10b981; border-radius: 8px;">
+                                    <span style="font-size: 0.8rem; color: #a7f3d0; display: block; margin-bottom: 0.4rem;">⚡ <strong>State Authority Demo Instant Verification:</strong></span>
+                                    <button type="button" class="btn btn-sm btn-success" onclick="app.approveHospitalAccount('${user.email}')" style="background: #10b981; border: none; color: #ffffff; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.82rem; font-weight: 600;">
+                                        <i class="fa-solid fa-shield-check"></i> Approve & Grant License Seal Now
+                                    </button>
+                                </div>
+                            </div>
+                        `;
                         alertBox.style.display = 'block';
                     }
                     return;
@@ -788,7 +800,19 @@ class UdvegadarshiniApp {
                     if (match.role === 'HospitalAdmin' && match.status === 'pending_gov_approval') {
                         if (alertBox) {
                             alertBox.className = 'auth-alert-box';
-                            alertBox.textContent = `Hospital Verification Pending ⏳: Your Hospital Admin registration (${match.hospitalName}) is awaiting State Healthcare Authority verification. License (${match.govLicenseNo || match.subjectId}) submitted.`;
+                            alertBox.innerHTML = `
+                                <div style="padding: 0.2rem 0;">
+                                    <strong style="color: #f59e0b;"><i class="fa-solid fa-hourglass-half"></i> Hospital Verification Pending ⏳</strong>
+                                    <p style="margin: 0.4rem 0 0.6rem 0; font-size: 0.88rem;">Your Hospital Admin registration for <strong>${match.hospitalName}</strong> is awaiting State Healthcare Authority verification.</p>
+                                    <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.6rem;">License No: <code>${match.govLicenseNo || match.subjectId}</code> | Admin Email: <code>${match.email}</code></div>
+                                    <div style="margin-top: 0.5rem; padding: 0.6rem; background: rgba(16, 185, 129, 0.15); border: 1px dashed #10b981; border-radius: 8px;">
+                                        <span style="font-size: 0.8rem; color: #a7f3d0; display: block; margin-bottom: 0.4rem;">⚡ <strong>State Authority Demo Instant Verification:</strong></span>
+                                        <button type="button" class="btn btn-sm btn-success" onclick="app.approveHospitalAccount('${match.email}')" style="background: #10b981; border: none; color: #ffffff; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.82rem; font-weight: 600;">
+                                            <i class="fa-solid fa-shield-check"></i> Approve & Grant License Seal Now
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
                             alertBox.style.display = 'block';
                         }
                         return;
@@ -1543,6 +1567,43 @@ class UdvegadarshiniApp {
             govLicDisplay.textContent = this.currentUser.govLicenseNo || this.currentUser.subjectId || 'NABH-AP-2026-8841';
         }
 
+        // Render State Healthcare Authority Verification Portal (Visible to admin@gvp.com Master Admin)
+        const stateAuthBanner = document.getElementById('hospStateAuthorityBanner');
+        const pendingHospitalsList = document.getElementById('pendingHospitalsList');
+
+        if (stateAuthBanner && pendingHospitalsList) {
+            if (this.currentUser.email && this.currentUser.email.toLowerCase() === 'admin@gvp.com') {
+                const pendingHospitals = this.usersDB.filter(u => u.role === 'HospitalAdmin' && u.status === 'pending_gov_approval');
+                if (pendingHospitals.length > 0) {
+                    stateAuthBanner.style.display = 'block';
+                    pendingHospitalsList.innerHTML = pendingHospitals.map(hosp => `
+                        <div class="request-card" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(16,185,129,0.4); padding: 1rem; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.6rem;">
+                                <div style="background: rgba(16,185,129,0.2); color: #34d399; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"><i class="fa-solid fa-hospital"></i></div>
+                                <div>
+                                    <strong style="color: #f8fafc; display: block;">${hosp.hospitalName}</strong>
+                                    <span style="font-size: 0.78rem; color: #94a3b8;">Contact Admin: ${hosp.fullName} (${hosp.email})</span>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.8rem;">
+                                <div><i class="fa-solid fa-award"></i> License No: <code>${hosp.govLicenseNo || hosp.subjectId}</code></div>
+                                <div><i class="fa-solid fa-id-card"></i> Reg ID: <code>${hosp.subjectId}</code></div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-sm btn-success" onclick="app.approveHospitalAccount('${hosp.email}')" style="flex: 1; background: #10b981; border: none; color: #fff; font-weight: 600; cursor: pointer; padding: 0.4rem; border-radius: 6px;">
+                                    <i class="fa-solid fa-shield-check"></i> Grant State License Seal
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    stateAuthBanner.style.display = 'none';
+                }
+            } else {
+                stateAuthBanner.style.display = 'none';
+            }
+        }
+
         // Calculate Hospital Aggregate Analytics & Critical Alerts
         const hospitalPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hospitalName));
         const criticalPatients = hospitalPatients.filter(p => {
@@ -1744,6 +1805,31 @@ class UdvegadarshiniApp {
             localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
             this.populateDoctorDropdown();
             this.renderHospitalAdminPortal();
+        }
+    }
+
+    approveHospitalAccount(email) {
+        const hosp = this.usersDB.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (hosp) {
+            hosp.status = 'approved';
+            hosp.govVerified = true;
+            localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+            
+            const alertBox = document.getElementById('authAlertBox');
+            if (alertBox && alertBox.style.display !== 'none') {
+                alertBox.className = 'auth-alert-box success';
+                alertBox.innerHTML = `
+                    <div style="padding: 0.3rem 0;">
+                        <i class="fa-solid fa-circle-check" style="font-size: 1.2rem; color: #10b981;"></i> 
+                        <strong style="color: #34d399; font-size: 0.95rem;">Hospital License Approved! ✓</strong>
+                        <p style="margin: 0.3rem 0 0 0; font-size: 0.85rem; color: #e2e8f0;">State Healthcare Authority approval granted for <strong>${hosp.hospitalName}</strong>. You can now log in!</p>
+                    </div>
+                `;
+            }
+
+            if (this.currentUser && this.currentUser.email && this.currentUser.email.toLowerCase() === 'admin@gvp.com') {
+                this.renderHospitalAdminPortal();
+            }
         }
     }
 

@@ -1217,6 +1217,20 @@
                         </div>
                     </div>
 
+                    <!-- STATE HEALTHCARE AUTHORITY PENDING HOSPITALS VERIFICATION BANNER (VISIBLE TO MASTER ADMIN ONLY) -->
+                    <div class="card" id="hospStateAuthorityBanner" style="display: none; background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 95, 70, 0.3)); border: 1px solid #10b981; margin-bottom: 1.5rem; padding: 1.2rem;">
+                        <div class="flex-between" style="flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid rgba(16,185,129,0.3); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+                            <div>
+                                <h3 style="margin: 0; color: #a7f3d0;"><i class="fa-solid fa-landmark-flag"></i> State Healthcare Authority Verification Portal</h3>
+                                <p style="margin: 0; font-size: 0.85rem; color: #cbd5e1;">Review & approve new hospital license registrations submitted for NABH verification.</p>
+                            </div>
+                            <span class="badge-tag" style="background: #10b981; color: #fff; font-weight: bold;"><i class="fa-solid fa-shield-check"></i> Master Authority Active</span>
+                        </div>
+                        <div id="pendingHospitalsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                            <!-- Dynamic Pending Hospital Cards -->
+                        </div>
+                    </div>
+
                     <!-- EMERGENCY HIGH STRESS CRITICAL ALERT TICKER BANNER -->
                     <div class="critical-alert-banner card" id="hospCriticalAlertBanner" style="display: none; background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(185, 28, 28, 0.3)); border: 1px solid #ef4444; margin-bottom: 1.5rem;">
                         <div class="flex-between" style="flex-wrap: wrap; gap: 10px; align-items: center;">
