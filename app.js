@@ -500,7 +500,9 @@ class UdvegadarshiniApp {
             if (idLabel) idLabel.innerHTML = `<i class="fa-solid fa-id-card"></i> Hospital License / Reg ID`;
             if (idInput) {
                 idInput.placeholder = 'e.g. HOSP-REG-101';
-                if (!idInput.value || idInput.value === 'SUBJ-3221' || idInput.value === 'DOC-701' || idInput.value === 'USER-101') idInput.value = 'HOSP-REG-101';
+                if (!idInput.value || idInput.value === 'HOSP-REG-101' || idInput.value === 'SUBJ-3221' || idInput.value === 'DOC-701' || idInput.value === 'USER-101' || idInput.value.startsWith('HOSP-REG-') || idInput.value.startsWith('DOC-') || idInput.value.startsWith('SUBJ-') || idInput.value.startsWith('USER-')) {
+                    idInput.value = 'HOSP-REG-' + Math.floor(1000 + Math.random() * 9000);
+                }
             }
             if (clinicalFields) clinicalFields.style.display = 'none';
             if (hospitalGroup) hospitalGroup.style.display = 'none';
@@ -515,7 +517,9 @@ class UdvegadarshiniApp {
             if (idLabel) idLabel.innerHTML = `<i class="fa-solid fa-id-card"></i> Doctor License / Reg ID`;
             if (idInput) {
                 idInput.placeholder = 'e.g. DOC-701 or REG-9942';
-                if (!idInput.value || idInput.value === 'SUBJ-3221' || idInput.value === 'HOSP-REG-101' || idInput.value === 'USER-101') idInput.value = 'DOC-701';
+                if (!idInput.value || idInput.value === 'DOC-701' || idInput.value === 'SUBJ-3221' || idInput.value === 'HOSP-REG-101' || idInput.value === 'USER-101' || idInput.value.startsWith('HOSP-REG-') || idInput.value.startsWith('DOC-') || idInput.value.startsWith('SUBJ-') || idInput.value.startsWith('USER-')) {
+                    idInput.value = 'DOC-' + Math.floor(100 + Math.random() * 900);
+                }
             }
             if (clinicalFields) clinicalFields.style.display = 'grid';
             if (hospitalGroup) hospitalGroup.style.display = 'block';
@@ -530,7 +534,9 @@ class UdvegadarshiniApp {
             if (idLabel) idLabel.innerHTML = `<i class="fa-solid fa-id-card"></i> Subject / Patient ID`;
             if (idInput) {
                 idInput.placeholder = 'e.g. SUBJ-3221';
-                if (!idInput.value || idInput.value === 'DOC-701' || idInput.value === 'HOSP-REG-101' || idInput.value === 'USER-101') idInput.value = 'SUBJ-3221';
+                if (!idInput.value || idInput.value === 'SUBJ-3221' || idInput.value === 'DOC-701' || idInput.value === 'HOSP-REG-101' || idInput.value === 'USER-101' || idInput.value.startsWith('HOSP-REG-') || idInput.value.startsWith('DOC-') || idInput.value.startsWith('SUBJ-') || idInput.value.startsWith('USER-')) {
+                    idInput.value = 'SUBJ-' + Math.floor(1000 + Math.random() * 9000);
+                }
             }
             if (clinicalFields) clinicalFields.style.display = 'grid';
             if (hospitalGroup) hospitalGroup.style.display = 'block';
@@ -546,7 +552,9 @@ class UdvegadarshiniApp {
             if (idLabel) idLabel.innerHTML = `<i class="fa-solid fa-id-card"></i> User / Member ID`;
             if (idInput) {
                 idInput.placeholder = 'e.g. USER-101';
-                if (!idInput.value || idInput.value === 'DOC-701' || idInput.value === 'HOSP-REG-101' || idInput.value === 'SUBJ-3221') idInput.value = 'USER-101';
+                if (!idInput.value || idInput.value === 'USER-101' || idInput.value === 'DOC-701' || idInput.value === 'HOSP-REG-101' || idInput.value === 'SUBJ-3221' || idInput.value.startsWith('HOSP-REG-') || idInput.value.startsWith('DOC-') || idInput.value.startsWith('SUBJ-') || idInput.value.startsWith('USER-')) {
+                    idInput.value = 'USER-' + Math.floor(100 + Math.random() * 900);
+                }
             }
             if (clinicalFields) clinicalFields.style.display = 'none';
             if (customHospitalGroup) customHospitalGroup.style.display = 'none';
@@ -685,12 +693,22 @@ class UdvegadarshiniApp {
                     doctorName = parts[1];
                 }
 
-                // Check if user already exists
-                const existing = this.usersDB.find(u => u.email === email || u.subjectId === subjectId);
-                if (existing) {
+                // Check if user already exists (by email or by ID)
+                const existingEmail = this.usersDB.find(u => u.email === email);
+                if (existingEmail) {
                     if (alertBox) {
                         alertBox.className = 'auth-alert-box';
-                        alertBox.textContent = 'User already registered! Please click Log In tab.';
+                        alertBox.textContent = `Email (${email}) is already registered! Please click the Log In tab.`;
+                        alertBox.style.display = 'block';
+                    }
+                    return;
+                }
+
+                const existingId = this.usersDB.find(u => u.subjectId === subjectId);
+                if (existingId) {
+                    if (alertBox) {
+                        alertBox.className = 'auth-alert-box';
+                        alertBox.textContent = `License / Reg ID (${subjectId}) is already in use by another account. Please use a unique ID!`;
                         alertBox.style.display = 'block';
                     }
                     return;
