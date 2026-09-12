@@ -661,11 +661,11 @@ class UdvegadarshiniApp {
                     fullName, email, password, subjectId, role, lang,
                     hospitalName: role === 'Doctor' || role === 'Subject' || role === 'HospitalAdmin' ? hospitalName : '',
                     govLicenseNo: govLicenseNo || subjectId || 'NABH-AP-2026-8841',
-                    govVerified: true,
+                    govVerified: role === 'HospitalAdmin' ? false : true,
                     doctorEmail: role === 'Subject' ? doctorEmail : '',
                     doctorName: role === 'Subject' ? doctorName : '',
                     doctorApprovalStatus: role === 'Subject' ? 'pending' : 'approved',
-                    status: role === 'Doctor' ? 'pending_hospital_approval' : 'approved'
+                    status: role === 'Doctor' ? 'pending_hospital_approval' : (role === 'HospitalAdmin' ? 'pending_gov_approval' : 'approved')
                 };
                 this.usersDB.push(newUser);
                 localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
@@ -699,14 +699,14 @@ class UdvegadarshiniApp {
                     if (role === 'Doctor') {
                         alertBox.textContent = `Doctor Account Registered! ⏳ Pending approval from Hospital Admin (${hospitalName}). You can log in once approved.`;
                     } else if (role === 'HospitalAdmin') {
-                        alertBox.textContent = `Hospital Admin Account registered successfully! Opening Hospital Admin Portal...`;
+                        alertBox.textContent = `Hospital Registration Submitted! ⏳ Pending State Healthcare & NABH Registry verification for ${hospitalName}. License (${govLicenseNo}) submitted. You can log in once verified.`;
                     } else {
                         alertBox.textContent = `Account created & Link Request sent! You can start using app & device right away...`;
                     }
                     alertBox.style.display = 'block';
                 }
 
-                if (role !== 'Doctor') {
+                if (role !== 'Doctor' && role !== 'HospitalAdmin') {
                     setTimeout(() => this.saveUserProfile(newUser), 1000);
                 }
             };
@@ -727,6 +727,15 @@ class UdvegadarshiniApp {
                 );
 
                 if (match) {
+                    if (match.role === 'HospitalAdmin' && match.status === 'pending_gov_approval') {
+                        if (alertBox) {
+                            alertBox.className = 'auth-alert-box';
+                            alertBox.textContent = `Hospital Verification Pending ⏳: Your Hospital Admin registration (${match.hospitalName}) is awaiting State Healthcare Authority verification. License (${match.govLicenseNo || match.subjectId}) submitted.`;
+                            alertBox.style.display = 'block';
+                        }
+                        return;
+                    }
+
                     if (match.role === 'Doctor' && match.status === 'pending_hospital_approval') {
                         if (alertBox) {
                             alertBox.className = 'auth-alert-box';
