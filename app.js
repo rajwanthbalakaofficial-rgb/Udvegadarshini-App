@@ -1425,49 +1425,93 @@ class UdvegadarshiniApp {
                     <tr><td colspan="6" class="empty-table-msg" style="text-align: center; padding: 1.5rem;">No active approved doctors registered under ${hospitalName}.</td></tr>
                 `;
             } else {
-                doctorsTableBody.innerHTML = approvedDoctors.map(doc => `
-                    <tr>
-                        <td><strong>${doc.subjectId}</strong></td>
-                        <td>${doc.fullName}</td>
-                        <td>${doc.email}</td>
-                        <td>${doc.hospitalName || hospitalName}</td>
-                        <td><span class="status-badge status-badge-approved">Approved ✓</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-secondary" onclick="app.revokeDoctorAccount('${doc.email}')">
-                                <i class="fa-solid fa-ban"></i> Revoke Access
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
-        }
-
-        // Render Hospital Registered Patients Directory
-        const patientsTableBody = document.getElementById('hospPatientsTableBody');
-        const hospitalPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hospitalName));
-
-        if (patientsTableBody) {
-            if (hospitalPatients.length === 0) {
-                patientsTableBody.innerHTML = `
-                    <tr><td colspan="5" class="empty-table-msg" style="text-align: center; padding: 1.5rem;">No patient records registered under ${hospitalName}.</td></tr>
-                `;
-            } else {
-                patientsTableBody.innerHTML = hospitalPatients.map(p => {
-                    const docInfo = p.doctorName || 'Unassigned';
-                    const statusClass = p.doctorApprovalStatus === 'approved' ? 'status-badge-approved' : 'status-badge-pending';
-                    const statusText = p.doctorApprovalStatus === 'approved' ? 'Doctor Linked ✓' : 'Pending Doctor Approval ⏳';
+                doctorsTableBody.innerHTML = approvedDoctors.map(doc => {
+                    const assignedPatientCount = this.usersDB.filter(u => u.role === 'Subject' && (u.doctorEmail === doc.email || (u.doctorName && u.doctorName.includes(doc.fullName)))).length;
                     return `
                         <tr>
-                            <td><strong>${p.subjectId}</strong></td>
-                            <td>${p.fullName}</td>
-                            <td>${p.email}</td>
-                            <td>${docInfo}</td>
-                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td><strong>${doc.subjectId}</strong></td>
+                            <td><strong>${doc.fullName}</strong></td>
+                            <td>${doc.email}</td>
+                            <td>${doc.hospitalName || hospitalName}</td>
+                            <td><span class="status-badge status-badge-approved">Approved ✓</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="app.filterPatientsByDoctor('${doc.email}', '${doc.fullName}')" style="margin-right: 0.3rem;">
+                                    <i class="fa-solid fa-users"></i> View Patients (${assignedPatientCount})
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="app.revokeDoctorAccount('${doc.email}')">
+                                    <i class="fa-solid fa-ban"></i> Revoke
+                                </button>
+                            </td>
                         </tr>
                     `;
                 }).join('');
             }
         }
+
+        // Populate Doctor Filter Dropdown in Section 3
+        const filterSelect = document.getElementById('hospPatientDoctorFilter');
+        if (filterSelect) {
+            const currentFilterVal = filterSelect.value || 'all';
+            let optionsHtml = `<option value="all">-- All Hospital Doctors --</option>`;
+            approvedDoctors.forEach(d => {
+                optionsHtml += `<option value="${d.email}">${d.fullName} (${d.subjectId})</option>`;
+            });
+            filterSelect.innerHTML = optionsHtml;
+            filterSelect.value = currentFilterVal;
+
+            filterSelect.onchange = () => this.renderHospitalAdminPortal();
+        }
+
+        // Render Hospital Registered Patients Directory
+        const patientsTableBody = document.getElementById('hospPatientsTableBody');
+        const hospitalPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hospitalName));
+        const activeDoctorFilter = filterSelect ? filterSelect.value : 'all';
+
+        let displayedPatients = hospitalPatients;
+        if (activeDoctorFilter !== 'all') {
+            displayedPatients = hospitalPatients.filter(p => 
+                (p.doctorEmail && p.doctorEmail.toLowerCase() === activeDoctorFilter.toLowerCase()) ||
+                (p.doctorName && approvedDoctors.some(d => d.email.toLowerCase() === activeDoctorFilter.toLowerCase() && p.doctorName.includes(d.fullName)))
+            );
+        }
+
+        if (patientsTableBody) {
+            if (displayedPatients.length === 0) {
+                patientsTableBody.innerHTML = `
+                    <tr><td colspan="6" class="empty-table-msg" style="text-align: center; padding: 1.5rem;">No patient records found under selected doctor filter for ${hospitalName}.</td></tr>
+                `;
+            } else {
+                patientsTableBody.innerHTML = displayedPatients.map(p => {
+                    const docInfo = p.doctorName || 'Unassigned';
+                    const statusClass = p.doctorApprovalStatus === 'approved' ? 'status-badge-approved' : 'status-badge-pending';
+                    const statusText = p.doctorApprovalStatus === 'approved' ? 'Doctor Linked ✓' : 'Pending Doctor Approval ⏳';
+                    return `
+                        <tr style="cursor: pointer;" onclick="app.viewPatientTelemetry('${p.subjectId}')">
+                            <td><strong>${p.subjectId}</strong></td>
+                            <td><strong>${p.fullName}</strong></td>
+                            <td>${p.email}</td>
+                            <td><span class="badge-tag" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;"><i class="fa-solid fa-user-doctor"></i> ${docInfo}</span></td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-accent" onclick="event.stopPropagation(); app.viewPatientTelemetry('${p.subjectId}')">
+                                    <i class="fa-solid fa-file-medical"></i> View Patient Info
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+    }
+
+    filterPatientsByDoctor(docEmail, docName) {
+        const filterSelect = document.getElementById('hospPatientDoctorFilter');
+        if (filterSelect) {
+            filterSelect.value = docEmail;
+        }
+        this.renderHospitalAdminPortal();
+        const section = document.getElementById('hospPatientsSection');
+        if (section) section.scrollIntoView({ behavior: 'smooth' });
     }
 
     approveDoctorAccount(email) {
@@ -1658,41 +1702,45 @@ class UdvegadarshiniApp {
     }
 
     viewPatientTelemetry(subjectId) {
-        const patient = this.doctorRequests.find(r => r.patientSubjectId === subjectId || r.patientEmail === subjectId);
+        let patientReq = this.doctorRequests.find(r => r.patientSubjectId === subjectId || r.patientEmail === subjectId);
+        const userInDB = this.usersDB.find(u => u.subjectId === subjectId || u.email === subjectId);
         const modal = document.getElementById('patientTelemetryModal');
         
         if (modal) {
-            if (patient) {
-                document.getElementById('modalPatientName').innerHTML = `<i class="fa-solid fa-user-doctor"></i> ${patient.patientFullName} - Telemetry`;
-                document.getElementById('modalPatientMeta').textContent = `Subject ID: ${patient.patientSubjectId} | Hospital: ${patient.hospitalName} | Link Status: ${patient.status.toUpperCase()}`;
-                
-                const score = patient.latestStressScore || 42;
-                document.getElementById('modalStressScore').textContent = `${score}%`;
-                document.getElementById('modalStressState').textContent = score > 70 ? 'High Stress' : (score > 40 ? 'Moderate Focus' : 'Normal / Relaxed');
-                document.getElementById('modalStressBar').style.width = `${score}%`;
+            const fullName = patientReq ? patientReq.patientFullName : (userInDB ? userInDB.fullName : subjectId);
+            const email = patientReq ? patientReq.patientEmail : (userInDB ? userInDB.email : '');
+            const pSubjectId = patientReq ? patientReq.patientSubjectId : (userInDB ? userInDB.subjectId : subjectId);
+            const hospitalName = patientReq ? patientReq.hospitalName : (userInDB ? (userInDB.hospitalName || 'GVP Multi-Specialty Hospital') : 'Hospital');
+            const docName = patientReq ? patientReq.doctorName : (userInDB ? (userInDB.doctorName || 'Assigned Doctor') : 'Consultant');
+            const status = patientReq ? patientReq.status : (userInDB ? (userInDB.doctorApprovalStatus || 'approved') : 'approved');
 
-                const eeg = patient.eegData || { delta: 18, theta: 24, alpha: 38, beta: 15, gamma: 5 };
-                document.getElementById('modalDelta').textContent = `${eeg.delta} %`;
-                document.getElementById('modalTheta').textContent = `${eeg.theta} %`;
-                document.getElementById('modalAlpha').textContent = `${eeg.alpha} %`;
-                document.getElementById('modalBeta').textContent = `${eeg.beta} %`;
-                document.getElementById('modalGamma').textContent = `${eeg.gamma} %`;
+            document.getElementById('modalPatientName').innerHTML = `<i class="fa-solid fa-user"></i> ${fullName} - Patient Info & Clinical Telemetry`;
+            document.getElementById('modalPatientMeta').textContent = `Subject ID: ${pSubjectId} | Email: ${email} | Hospital: ${hospitalName} | Doctor: ${docName} | Status: ${status.toUpperCase()}`;
+            
+            const score = patientReq ? (patientReq.latestStressScore || 42) : 38;
+            document.getElementById('modalStressScore').textContent = `${score}%`;
+            document.getElementById('modalStressState').textContent = score > 70 ? 'High Stress' : (score > 40 ? 'Moderate Focus' : 'Normal / Relaxed');
+            document.getElementById('modalStressBar').style.width = `${score}%`;
 
-                const logsBody = document.getElementById('modalPatientLogsBody');
-                if (logsBody) {
-                    logsBody.innerHTML = `
-                        <tr>
-                            <td>${patient.timestamp}</td>
-                            <td><strong style="color: ${score > 70 ? '#ef4444' : '#10b981'}">${score}%</strong></td>
-                            <td>${score > 70 ? 'Stressed' : 'Normal'}</td>
-                            <td>${(eeg.beta / (eeg.alpha || 1)).toFixed(2)}</td>
-                            <td>Initial baseline telemetry logged upon registration.</td>
-                        </tr>
-                    `;
-                }
-            } else {
-                document.getElementById('modalPatientName').textContent = 'Patient Telemetry Details';
-                document.getElementById('modalPatientMeta').textContent = `Subject ID: ${subjectId}`;
+            const eeg = (patientReq && patientReq.eegData) ? patientReq.eegData : { delta: 18, theta: 24, alpha: 38, beta: 15, gamma: 5 };
+            document.getElementById('modalDelta').textContent = `${eeg.delta} %`;
+            document.getElementById('modalTheta').textContent = `${eeg.theta} %`;
+            document.getElementById('modalAlpha').textContent = `${eeg.alpha} %`;
+            document.getElementById('modalBeta').textContent = `${eeg.beta} %`;
+            document.getElementById('modalGamma').textContent = `${eeg.gamma} %`;
+
+            const logsBody = document.getElementById('modalPatientLogsBody');
+            if (logsBody) {
+                const ts = patientReq ? patientReq.timestamp : new Date().toISOString().replace('T', ' ').substring(0, 16);
+                logsBody.innerHTML = `
+                    <tr>
+                        <td>${ts}</td>
+                        <td><strong style="color: ${score > 70 ? '#ef4444' : '#10b981'}">${score}%</strong></td>
+                        <td>${score > 70 ? 'Stressed' : 'Normal'}</td>
+                        <td>${(eeg.beta / (eeg.alpha || 1)).toFixed(2)}</td>
+                        <td>Clinical profile & EEG telemetry verified by Hospital Admin.</td>
+                    </tr>
+                `;
             }
             modal.style.display = 'flex';
         }

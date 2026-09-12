@@ -1180,11 +1180,18 @@
                             </table>
                         </div>
                     <!-- SECTION 3: HOSPITAL PATIENTS DIRECTORY & DOCTOR ASSIGNMENTS -->
-                    <div class="card patient-directory-section">
-                        <div class="card-header flex-between">
+                    <div class="card patient-directory-section" id="hospPatientsSection">
+                        <div class="card-header flex-between" style="flex-wrap: wrap; gap: 10px;">
                             <div>
                                 <h3><i class="fa-solid fa-users"></i> Hospital Registered Patients & Doctor Assignments</h3>
                                 <p class="section-desc">Overview of patients registered under your hospital and their assigned consulting doctors.</p>
+                            </div>
+                            <div class="doc-filter-box" style="display: flex; align-items: center; gap: 8px;">
+                                <label style="font-size: 0.85rem; color: #94a3b8;"><i class="fa-solid fa-user-doctor"></i> Filter by Doctor:</label>
+                                <select id="hospPatientDoctorFilter" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(99, 102, 241, 0.3); color: #f8fafc; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">
+                                    <option value="all">-- All Hospital Doctors --</option>
+                                    <!-- Dynamic Doctor options rendered by JS -->
+                                </select>
                             </div>
                         </div>
 
@@ -1196,7 +1203,8 @@
                                         <th>Patient Full Name</th>
                                         <th>Patient Email</th>
                                         <th>Assigned Doctor</th>
-                                        <th>Doctor Approval Status</th>
+                                        <th>Doctor Link Status</th>
+                                        <th>Patient Details & Telemetry</th>
                                     </tr>
                                 </thead>
                                 <tbody id="hospPatientsTableBody">
