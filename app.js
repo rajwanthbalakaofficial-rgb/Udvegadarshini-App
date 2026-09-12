@@ -96,55 +96,72 @@ class UdvegadarshiniApp {
             this.usersDB = [];
         }
 
-        if (!this.usersDB || !Array.isArray(this.usersDB) || this.usersDB.length === 0) {
-            // Default seed users (Hospital Admin, Doctors & Patients)
-            this.usersDB = [
-                {
-                    email: 'admin@gvp.com',
-                    password: '1234',
-                    fullName: 'GVP Hospital Admin',
-                    subjectId: 'HOSP-REG-101',
-                    role: 'HospitalAdmin',
-                    hospitalName: 'GVP Multi-Specialty Hospital',
-                    status: 'approved',
-                    lang: 'teluglish'
-                },
-                {
-                    email: 'dr.rajesh@hospital.com',
-                    password: '1234',
-                    fullName: 'Dr. Rajesh Sharma',
-                    subjectId: 'DOC-701',
-                    role: 'Doctor',
-                    hospitalName: 'GVP Multi-Specialty Hospital',
-                    status: 'approved',
-                    lang: 'teluglish'
-                },
-                {
-                    email: 'dr.anitha@apollo.com',
-                    password: '1234',
-                    fullName: 'Dr. Anitha Reddy',
-                    subjectId: 'DOC-802',
-                    role: 'Doctor',
-                    hospitalName: 'Apollo Hospitals',
-                    status: 'approved',
-                    lang: 'en'
-                },
-                {
-                    email: 'patient@example.com',
-                    password: '1234',
-                    fullName: 'Santhosh Kumar',
-                    subjectId: 'SUBJ-3221',
-                    role: 'Subject',
-                    hospitalName: 'GVP Multi-Specialty Hospital',
-                    doctorEmail: 'dr.rajesh@hospital.com',
-                    doctorName: 'Dr. Rajesh Sharma (Cardiology)',
-                    doctorApprovalStatus: 'pending',
-                    status: 'approved',
-                    lang: 'teluglish'
-                }
-            ];
-            localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+        if (!this.usersDB || !Array.isArray(this.usersDB)) {
+            this.usersDB = [];
         }
+
+        // Guarantee default seed users (Hospital Admin, Doctors & Patients) are always present
+        const defaultAdmin = {
+            email: 'admin@gvp.com',
+            password: '1234',
+            fullName: 'GVP Hospital Admin',
+            subjectId: 'HOSP-REG-101',
+            role: 'HospitalAdmin',
+            hospitalName: 'GVP Multi-Specialty Hospital',
+            status: 'approved',
+            lang: 'teluglish'
+        };
+
+        const defaultDoc1 = {
+            email: 'dr.rajesh@hospital.com',
+            password: '1234',
+            fullName: 'Dr. Rajesh Sharma',
+            subjectId: 'DOC-701',
+            role: 'Doctor',
+            hospitalName: 'GVP Multi-Specialty Hospital',
+            status: 'approved',
+            lang: 'teluglish'
+        };
+
+        const defaultDoc2 = {
+            email: 'dr.anitha@apollo.com',
+            password: '1234',
+            fullName: 'Dr. Anitha Reddy',
+            subjectId: 'DOC-802',
+            role: 'Doctor',
+            hospitalName: 'Apollo Hospitals',
+            status: 'approved',
+            lang: 'en'
+        };
+
+        const defaultPatient = {
+            email: 'patient@example.com',
+            password: '1234',
+            fullName: 'Santhosh Kumar',
+            subjectId: 'SUBJ-3221',
+            role: 'Subject',
+            hospitalName: 'GVP Multi-Specialty Hospital',
+            doctorEmail: 'dr.rajesh@hospital.com',
+            doctorName: 'Dr. Rajesh Sharma (Cardiology)',
+            doctorApprovalStatus: 'pending',
+            status: 'approved',
+            lang: 'teluglish'
+        };
+
+        if (!this.usersDB.some(u => (u.email && u.email.toLowerCase() === defaultAdmin.email.toLowerCase()) || (u.subjectId && u.subjectId.toLowerCase() === defaultAdmin.subjectId.toLowerCase()))) {
+            this.usersDB.push(defaultAdmin);
+        }
+        if (!this.usersDB.some(u => u.email && u.email.toLowerCase() === defaultDoc1.email.toLowerCase())) {
+            this.usersDB.push(defaultDoc1);
+        }
+        if (!this.usersDB.some(u => u.email && u.email.toLowerCase() === defaultDoc2.email.toLowerCase())) {
+            this.usersDB.push(defaultDoc2);
+        }
+        if (!this.usersDB.some(u => u.email && u.email.toLowerCase() === defaultPatient.email.toLowerCase())) {
+            this.usersDB.push(defaultPatient);
+        }
+
+        localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
     }
 
     loadDoctorRequests() {
@@ -672,7 +689,9 @@ class UdvegadarshiniApp {
                 const password = document.getElementById('loginPassword').value;
 
                 const match = this.usersDB.find(u => 
-                    (u.email.toLowerCase() === loginInput || u.subjectId.toLowerCase() === loginInput) &&
+                    ((u.email && u.email.toLowerCase() === loginInput) || 
+                     (u.subjectId && u.subjectId.toLowerCase() === loginInput) ||
+                     (u.fullName && u.fullName.toLowerCase() === loginInput)) &&
                     u.password === password
                 );
 
