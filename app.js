@@ -755,6 +755,78 @@ class UdvegadarshiniApp {
             document.getElementById('loginModal').style.display = 'flex';
         };
 
+        // Add Doctor Modal Handlers (Hospital Admin Direct Registration)
+        const btnOpenAddDoc = document.getElementById('btnOpenAddDoctorModal');
+        const btnCloseAddDoc = document.getElementById('btnCloseAddDoctorModal');
+        const addDocModal = document.getElementById('addDoctorModal');
+        const addDocForm = document.getElementById('addDoctorForm');
+        const addDocAlert = document.getElementById('addDoctorAlertBox');
+
+        if (btnOpenAddDoc && addDocModal) {
+            btnOpenAddDoc.onclick = () => {
+                addDocModal.style.display = 'flex';
+                if (addDocForm) addDocForm.reset();
+                if (addDocAlert) addDocAlert.style.display = 'none';
+            };
+        }
+
+        if (btnCloseAddDoc && addDocModal) {
+            btnCloseAddDoc.onclick = () => {
+                addDocModal.style.display = 'none';
+            };
+        }
+
+        if (addDocForm) {
+            addDocForm.onsubmit = (e) => {
+                e.preventDefault();
+                const fullName = document.getElementById('addDocFullName').value.trim();
+                const email = document.getElementById('addDocEmail').value.trim().toLowerCase();
+                const subjectId = document.getElementById('addDocRegId').value.trim();
+                const password = document.getElementById('addDocPassword').value;
+                const specialization = document.getElementById('addDocSpecialization').value.trim();
+
+                const existing = this.usersDB.find(u => u.email === email || u.subjectId === subjectId);
+                if (existing) {
+                    if (addDocAlert) {
+                        addDocAlert.className = 'auth-alert-box';
+                        addDocAlert.textContent = 'Doctor with this Email or Reg ID already exists in the system!';
+                        addDocAlert.style.display = 'block';
+                    }
+                    return;
+                }
+
+                const hospitalName = this.currentUser.hospitalName || 'GVP Multi-Specialty Hospital';
+                const newDoc = {
+                    fullName,
+                    email,
+                    subjectId,
+                    password,
+                    role: 'Doctor',
+                    lang: 'en',
+                    hospitalName: hospitalName,
+                    specialization: specialization || 'Neuro-Cardiology',
+                    status: 'approved',
+                    doctorApprovalStatus: 'approved'
+                };
+
+                this.usersDB.push(newDoc);
+                localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+
+                this.populateDoctorDropdown();
+                this.renderHospitalAdminPortal();
+
+                if (addDocAlert) {
+                    addDocAlert.className = 'auth-alert-box success';
+                    addDocAlert.textContent = `Doctor ${fullName} registered & auto-approved successfully!`;
+                    addDocAlert.style.display = 'block';
+                }
+
+                setTimeout(() => {
+                    addDocModal.style.display = 'none';
+                }, 1200);
+            };
+        }
+
         // Mode Toggle Buttons
         const btnPersonal = document.getElementById('btnModePersonal');
         const btnClinical = document.getElementById('btnModeClinical');

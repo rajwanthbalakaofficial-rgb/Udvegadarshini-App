@@ -187,6 +187,61 @@
         </div>
     </div>
 
+    <!-- ================= 2B. ADD NEW DOCTOR MODAL (HOSPITAL ADMIN DIRECT REGISTRATION) ================= -->
+    <div class="login-modal-overlay" id="addDoctorModal" style="display: none;">
+        <div class="login-card card" style="max-width: 520px;">
+            
+            <div class="login-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <div class="login-icon" style="background: rgba(16, 185, 129, 0.2); color: #10b981;"><i class="fa-solid fa-user-doctor"></i></div>
+                    <h2 style="margin-top: 0.5rem;">Add New Doctor Directly</h2>
+                    <p style="margin: 0; font-size: 0.88rem; color: #94a3b8;">Directly register & auto-approve a consulting doctor under your hospital.</p>
+                </div>
+                <button type="button" class="btn-icon" id="btnCloseAddDoctorModal" style="background: rgba(255,255,255,0.08); border-radius: 50%; width: 34px; height: 34px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="auth-alert-box" id="addDoctorAlertBox" style="display: none;"></div>
+
+            <form id="addDoctorForm" class="login-form">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-user-doctor"></i> Doctor Full Name</label>
+                    <input type="text" id="addDocFullName" placeholder="e.g. Dr. S. K. Verma" required>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-envelope"></i> Professional Email Address</label>
+                    <input type="email" id="addDocEmail" placeholder="e.g. dr.verma@hospital.com" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-id-card"></i> License / Reg ID</label>
+                        <input type="text" id="addDocRegId" placeholder="e.g. DOC-9021" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-key"></i> Security PIN / Password</label>
+                        <input type="password" id="addDocPassword" placeholder="Create PIN" maxlength="12" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-building-user"></i> Department / Specialization</label>
+                    <input type="text" id="addDocSpecialization" placeholder="e.g. Neuro-Cardiology / Psychiatry" required value="Neuro-Cardiology">
+                </div>
+
+                <div class="patient-unblocked-note" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: #6ee7b7; margin-bottom: 1rem;">
+                    <i class="fa-solid fa-circle-check"></i> Doctors registered directly by Hospital Admin are <strong>Auto-Approved</strong> immediately and can log in right away.
+                </div>
+
+                <button type="submit" class="btn btn-accent btn-block btn-lg" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <i class="fa-solid fa-user-check"></i> Save & Auto-Approve Doctor
+                </button>
+            </form>
+
+        </div>
+    </div>
+
     <!-- Top Navigation Header -->
     <header class="app-header">
         <div class="logo-container">
@@ -1102,6 +1157,9 @@
                                 <h3><i class="fa-solid fa-hospital-user"></i> Hospital Active Doctors Directory</h3>
                                 <p class="section-desc">Manage verified consulting doctors registered under your hospital.</p>
                             </div>
+                            <button class="btn btn-accent btn-sm" id="btnOpenAddDoctorModal">
+                                <i class="fa-solid fa-user-plus"></i> Add New Doctor Directly
+                            </button>
                         </div>
 
                         <div class="table-responsive">
