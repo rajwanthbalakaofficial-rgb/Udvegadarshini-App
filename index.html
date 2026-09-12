@@ -15,7 +15,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=2.1.0">
+    <link rel="stylesheet" href="styles.css?v=2.2.0">
 </head>
 <body class="dark-theme">
 
@@ -1035,7 +1035,7 @@
                 <!-- Portal Banner -->
                 <div class="doctor-portal-banner card">
                     <div class="banner-info">
-                        <div class="banner-badge"><i class="fa-solid fa-hospital-user"></i> Hospital & Clinical Admin Portal</div>
+                        <div class="banner-badge" id="portalBannerBadge"><i class="fa-solid fa-hospital-user"></i> Clinical Portal</div>
                         <h2 id="docPortalTitle">Welcome, Dr. Rajesh Sharma</h2>
                         <p id="docPortalSubtitle">GVP Multi-Specialty Hospital & Research Center | Department of Cardiology & Neuroscience</p>
                     </div>
@@ -1044,96 +1044,173 @@
                     </div>
                 </div>
 
-                <!-- Doctor Stat Cards Row -->
-                <div class="doc-stats-grid">
-                    <div class="card doc-stat-card">
-                        <div class="stat-icon icon-pending"><i class="fa-solid fa-user-clock"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Pending Requests</span>
-                            <h3 id="docStatPendingCount">0</h3>
-                            <span class="stat-sub">Instagram-style Link Requests</span>
-                        </div>
-                    </div>
-                    <div class="card doc-stat-card">
-                        <div class="stat-icon icon-approved"><i class="fa-solid fa-user-check"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Approved Patients</span>
-                            <h3 id="docStatApprovedCount">0</h3>
-                            <span class="stat-sub">Full Telemetry Access</span>
-                        </div>
-                    </div>
-                    <div class="card doc-stat-card">
-                        <div class="stat-icon icon-total"><i class="fa-solid fa-users"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Total Assigned</span>
-                            <h3 id="docStatTotalCount">0</h3>
-                            <span class="stat-sub">Registered Under Hospital</span>
-                        </div>
-                    </div>
-                    <div class="card doc-stat-card">
-                        <div class="stat-icon icon-alert"><i class="fa-solid fa-heart-circle-bolt"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">High Stress Alerts</span>
-                            <h3 id="docStatAlertCount">0</h3>
-                            <span class="stat-sub">>70% Stress Score</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SECTION 1: INSTAGRAM-STYLE PENDING PATIENT ACCESS REQUESTS -->
-                <div class="card pending-requests-section">
-                    <div class="card-header flex-between">
-                        <div>
-                            <h3><i class="fa-solid fa-inbox"></i> Patient Access Requests <span class="badge-pending-count" id="pendingRequestBadgeCount">0 New</span></h3>
-                            <p class="section-desc">Patients registered under your hospital requesting telemetry link. Accepting gives you access to their real-time stress data. Patient device/app access is never blocked.</p>
-                        </div>
-                    </div>
-
-                    <!-- Pending Requests Grid / List -->
-                    <div class="requests-grid" id="docPendingRequestsContainer">
-                        <!-- Dynamic Pending Request Cards rendered by JS -->
-                    </div>
-                </div>
-
-                <!-- SECTION 2: APPROVED PATIENT DIRECTORY TABLE -->
-                <div class="card patient-directory-section">
-                    <div class="card-header flex-between">
-                        <div>
-                            <h3><i class="fa-solid fa-hospital-user"></i> Hospital Patient Directory</h3>
-                            <p class="section-desc">Manage all patient records registered under your consultation.</p>
-                        </div>
-                        <div class="table-filter-controls">
-                            <div class="search-input-wrapper">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                                <input type="text" id="docPatientSearch" placeholder="Search by Name or Subject ID...">
+                <!-- ================= MODE 1: HOSPITAL ADMIN DASHBOARD ================= -->
+                <div id="hospitalAdminView" style="display: none;">
+                    <!-- Hospital Admin Stat Cards Row -->
+                    <div class="doc-stats-grid">
+                        <div class="card doc-stat-card">
+                            <div class="stat-icon icon-pending"><i class="fa-solid fa-user-clock"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Pending Doctor Approvals</span>
+                                <h3 id="hospStatPendingDoctorsCount">0</h3>
+                                <span class="stat-sub">Waiting for Admin Verification</span>
                             </div>
-                            <select id="docStatusFilter">
-                                <option value="all">All Patients</option>
-                                <option value="approved" selected>Approved Only</option>
-                                <option value="pending">Pending Approval</option>
-                                <option value="rejected">Rejected / Revoked</option>
-                            </select>
+                        </div>
+                        <div class="card doc-stat-card">
+                            <div class="stat-icon icon-approved"><i class="fa-solid fa-user-check"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Approved Doctors</span>
+                                <h3 id="hospStatApprovedDoctorsCount">0</h3>
+                                <span class="stat-sub">Active Clinical Staff</span>
+                            </div>
+                        </div>
+                        <div class="card doc-stat-card">
+                            <div class="stat-icon icon-total"><i class="fa-solid fa-user-doctor"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Hospital Doctors</span>
+                                <h3 id="hospStatTotalDoctorsCount">0</h3>
+                                <span class="stat-sub">Registered Staff Members</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Patients Table Container -->
-                    <div class="table-responsive" id="docPatientsTableContainer">
-                        <table class="doc-patients-table">
-                            <thead>
-                                <tr>
-                                    <th>Subject / Patient ID</th>
-                                    <th>Patient Full Name</th>
-                                    <th>Hospital / Clinic</th>
-                                    <th>Link Status</th>
-                                    <th>Last Recorded Stress</th>
-                                    <th>Registration Date</th>
-                                    <th>Clinical Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="docPatientsTableBody">
-                                <!-- Dynamic Patient Rows rendered by JS -->
-                            </tbody>
-                        </table>
+                    <!-- SECTION 1: PENDING DOCTOR REGISTRATION APPROVALS -->
+                    <div class="card pending-requests-section">
+                        <div class="card-header flex-between">
+                            <div>
+                                <h3><i class="fa-solid fa-user-shield"></i> Pending Doctor Registration Requests <span class="badge-pending-count" id="pendingDoctorBadgeCount">0 New</span></h3>
+                                <p class="section-desc">Newly registered doctors under your hospital. Approve doctors to activate their clinical login and allow patients to select them.</p>
+                            </div>
+                        </div>
+
+                        <!-- Pending Doctor Requests Cards -->
+                        <div class="requests-grid" id="hospPendingDoctorsContainer">
+                            <!-- Dynamic Pending Doctor Cards rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: APPROVED HOSPITAL DOCTORS DIRECTORY -->
+                    <div class="card patient-directory-section">
+                        <div class="card-header flex-between">
+                            <div>
+                                <h3><i class="fa-solid fa-hospital-user"></i> Hospital Active Doctors Directory</h3>
+                                <p class="section-desc">Manage verified consulting doctors registered under your hospital.</p>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="doc-patients-table">
+                                <thead>
+                                    <tr>
+                                        <th>Doctor License / Reg ID</th>
+                                        <th>Doctor Full Name</th>
+                                        <th>Official Email</th>
+                                        <th>Hospital / Department</th>
+                                        <th>Approval Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hospDoctorsTableBody">
+                                    <!-- Dynamic Approved Doctor Rows rendered by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= MODE 2: DOCTOR CLINICAL PORTAL ================= -->
+                <div id="doctorPortalView">
+                    <!-- Doctor Stat Cards Row -->
+                    <div class="doc-stats-grid">
+                        <div class="card doc-stat-card">
+                            <div class="stat-icon icon-pending"><i class="fa-solid fa-user-clock"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Pending Requests</span>
+                                <h3 id="docStatPendingCount">0</h3>
+                                <span class="stat-sub">Instagram-style Link Requests</span>
+                            </div>
+                        </div>
+                        <div class="card doc-stat-card">
+                            <div class="stat-icon icon-approved"><i class="fa-solid fa-user-check"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Approved Patients</span>
+                                <h3 id="docStatApprovedCount">0</h3>
+                                <span class="stat-sub">Full Telemetry Access</span>
+                            </div>
+                        </div>
+                        <div class="card doc-stat-card">
+                            <div class="stat-icon icon-total"><i class="fa-solid fa-users"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Assigned</span>
+                                <h3 id="docStatTotalCount">0</h3>
+                                <span class="stat-sub">Registered Under Your Name</span>
+                            </div>
+                        </div>
+                        <div class="card doc-stat-card">
+                            <div class="stat-icon icon-alert"><i class="fa-solid fa-heart-circle-bolt"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">High Stress Alerts</span>
+                                <h3 id="docStatAlertCount">0</h3>
+                                <span class="stat-sub">>70% Stress Score</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 1: INSTAGRAM-STYLE PENDING PATIENT ACCESS REQUESTS -->
+                    <div class="card pending-requests-section">
+                        <div class="card-header flex-between">
+                            <div>
+                                <h3><i class="fa-solid fa-inbox"></i> Patient Access Requests <span class="badge-pending-count" id="pendingRequestBadgeCount">0 New</span></h3>
+                                <p class="section-desc">Patients registered under your consultation requesting telemetry link. Accepting gives access to their real-time stress data.</p>
+                            </div>
+                        </div>
+
+                        <!-- Pending Requests Grid / List -->
+                        <div class="requests-grid" id="docPendingRequestsContainer">
+                            <!-- Dynamic Pending Request Cards rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: APPROVED PATIENT DIRECTORY TABLE -->
+                    <div class="card patient-directory-section">
+                        <div class="card-header flex-between">
+                            <div>
+                                <h3><i class="fa-solid fa-hospital-user"></i> Assigned Patient Directory</h3>
+                                <p class="section-desc">Manage all patient records registered under your direct consultation.</p>
+                            </div>
+                            <div class="table-filter-controls">
+                                <div class="search-input-wrapper">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <input type="text" id="docPatientSearch" placeholder="Search by Name or Subject ID...">
+                                </div>
+                                <select id="docStatusFilter">
+                                    <option value="all">All Patients</option>
+                                    <option value="approved" selected>Approved Only</option>
+                                    <option value="pending">Pending Approval</option>
+                                    <option value="rejected">Rejected / Revoked</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Patients Table Container -->
+                        <div class="table-responsive" id="docPatientsTableContainer">
+                            <table class="doc-patients-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject / Patient ID</th>
+                                        <th>Patient Full Name</th>
+                                        <th>Hospital / Clinic</th>
+                                        <th>Link Status</th>
+                                        <th>Last Recorded Stress</th>
+                                        <th>Registration Date</th>
+                                        <th>Clinical Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="docPatientsTableBody">
+                                    <!-- Dynamic Patient Rows rendered by JS -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -1210,6 +1287,6 @@
     <script src="audio-frequency.js"></script>
     <script src="apta-ai.js"></script>
     <script src="games.js"></script>
-    <script src="app.js?v=2.1.0"></script>
+    <script src="app.js?v=2.2.0"></script>
 </body>
 </html>

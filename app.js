@@ -97,8 +97,18 @@ class UdvegadarshiniApp {
         }
 
         if (!this.usersDB || !Array.isArray(this.usersDB) || this.usersDB.length === 0) {
-            // Default seed users (Doctors & Patients)
+            // Default seed users (Hospital Admin, Doctors & Patients)
             this.usersDB = [
+                {
+                    email: 'admin@gvp.com',
+                    password: '1234',
+                    fullName: 'GVP Hospital Admin',
+                    subjectId: 'HOSP-REG-101',
+                    role: 'HospitalAdmin',
+                    hospitalName: 'GVP Multi-Specialty Hospital',
+                    status: 'approved',
+                    lang: 'teluglish'
+                },
                 {
                     email: 'dr.rajesh@hospital.com',
                     password: '1234',
@@ -106,6 +116,7 @@ class UdvegadarshiniApp {
                     subjectId: 'DOC-701',
                     role: 'Doctor',
                     hospitalName: 'GVP Multi-Specialty Hospital',
+                    status: 'approved',
                     lang: 'teluglish'
                 },
                 {
@@ -115,6 +126,7 @@ class UdvegadarshiniApp {
                     subjectId: 'DOC-802',
                     role: 'Doctor',
                     hospitalName: 'Apollo Hospitals',
+                    status: 'approved',
                     lang: 'en'
                 },
                 {
@@ -127,6 +139,7 @@ class UdvegadarshiniApp {
                     doctorEmail: 'dr.rajesh@hospital.com',
                     doctorName: 'Dr. Rajesh Sharma (Cardiology)',
                     doctorApprovalStatus: 'pending',
+                    status: 'approved',
                     lang: 'teluglish'
                 }
             ];
@@ -280,20 +293,46 @@ class UdvegadarshiniApp {
         const personalTab = document.querySelector('[data-tab="tab-personal"]');
         const soundTab = document.querySelector('[data-tab="tab-frequency"]');
         const gamesTab = document.querySelector('[data-tab="tab-games"]');
+        const hospAdminView = document.getElementById('hospitalAdminView');
+        const docPortalView = document.getElementById('doctorPortalView');
+        const bannerBadge = document.getElementById('portalBannerBadge');
+        const docTitle = document.getElementById('docPortalTitle');
+        const docSub = document.getElementById('docPortalSubtitle');
 
-        if (this.currentUser.role === 'Doctor') {
+        if (this.currentUser.role === 'HospitalAdmin') {
             if (docTab) docTab.style.display = 'inline-flex';
             if (personalTab) personalTab.style.display = 'none';
             if (soundTab) soundTab.style.display = 'none';
             if (gamesTab) gamesTab.style.display = 'none';
 
-            const docTitle = document.getElementById('docPortalTitle');
-            const docSub = document.getElementById('docPortalSubtitle');
+            if (hospAdminView) hospAdminView.style.display = 'block';
+            if (docPortalView) docPortalView.style.display = 'none';
+
+            if (bannerBadge) bannerBadge.innerHTML = `<i class="fa-solid fa-hospital"></i> Hospital Executive Admin Portal`;
             if (docTitle) docTitle.textContent = `Welcome, ${this.currentUser.fullName}`;
-            if (docSub) docSub.textContent = `${this.currentUser.hospitalName || 'Clinical Hospital Center'} | Department of Neuroscience & Cardiology`;
+            if (docSub) docSub.textContent = `${this.currentUser.hospitalName || 'Clinical Health Center'} | Doctor Verification & Hospital Staff Management`;
+            this.renderHospitalAdminPortal();
+
+            // Auto-switch to Doctor Portal tab for Hospital Admin
+            const activeTab = document.querySelector('.nav-tab.active');
+            if (!activeTab || activeTab.dataset.tab === 'tab-personal' || activeTab.dataset.tab === 'tab-frequency' || activeTab.dataset.tab === 'tab-games') {
+                if (docTab) docTab.click();
+            }
+        } else if (this.currentUser.role === 'Doctor') {
+            if (docTab) docTab.style.display = 'inline-flex';
+            if (personalTab) personalTab.style.display = 'none';
+            if (soundTab) soundTab.style.display = 'none';
+            if (gamesTab) gamesTab.style.display = 'none';
+
+            if (hospAdminView) hospAdminView.style.display = 'none';
+            if (docPortalView) docPortalView.style.display = 'block';
+
+            if (bannerBadge) bannerBadge.innerHTML = `<i class="fa-solid fa-user-doctor"></i> Doctor Clinical Telemetry Portal`;
+            if (docTitle) docTitle.textContent = `Welcome, ${this.currentUser.fullName}`;
+            if (docSub) docSub.textContent = `${this.currentUser.hospitalName || 'Clinical Hospital Center'} | Department of Neuro-Cardiology`;
             this.renderDoctorPortal();
 
-            // Auto-switch to Doctor Portal tab if currently on a patient-only tab
+            // Auto-switch to Doctor Portal tab for Doctor
             const activeTab = document.querySelector('.nav-tab.active');
             if (!activeTab || activeTab.dataset.tab === 'tab-personal' || activeTab.dataset.tab === 'tab-frequency' || activeTab.dataset.tab === 'tab-games') {
                 if (docTab) docTab.click();
@@ -303,6 +342,9 @@ class UdvegadarshiniApp {
             if (personalTab) personalTab.style.display = 'inline-flex';
             if (soundTab) soundTab.style.display = 'inline-flex';
             if (gamesTab) gamesTab.style.display = 'inline-flex';
+
+            if (hospAdminView) hospAdminView.style.display = 'none';
+            if (docPortalView) docPortalView.style.display = 'block';
             this.renderDoctorPortal();
         }
     }
@@ -338,7 +380,8 @@ class UdvegadarshiniApp {
         const doctorSelect = document.getElementById('signupDoctorSelect');
         if (!doctorSelect) return;
 
-        let doctors = this.usersDB.filter(u => u.role === 'Doctor');
+        // ONLY SHOW APPROVED DOCTORS FOR PATIENTS TO SELECT!
+        let doctors = this.usersDB.filter(u => u.role === 'Doctor' && u.status !== 'pending_hospital_approval' && u.status !== 'rejected');
         if (filterHospital && filterHospital !== 'custom') {
             doctors = doctors.filter(d => !d.hospitalName || d.hospitalName === filterHospital);
         }
@@ -564,7 +607,8 @@ class UdvegadarshiniApp {
                     hospitalName: role === 'Doctor' || role === 'Subject' || role === 'HospitalAdmin' ? hospitalName : '',
                     doctorEmail: role === 'Subject' ? doctorEmail : '',
                     doctorName: role === 'Subject' ? doctorName : '',
-                    doctorApprovalStatus: role === 'Subject' ? 'pending' : 'approved'
+                    doctorApprovalStatus: role === 'Subject' ? 'pending' : 'approved',
+                    status: role === 'Doctor' ? 'pending_hospital_approval' : 'approved'
                 };
                 this.usersDB.push(newUser);
                 localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
@@ -595,13 +639,19 @@ class UdvegadarshiniApp {
 
                 if (alertBox) {
                     alertBox.className = 'auth-alert-box success';
-                    alertBox.textContent = (role === 'Doctor' || role === 'HospitalAdmin') ? 
-                        `Hospital & Admin Account registered successfully! Opening Clinical Admin Portal...` :
-                        `Account created & Link Request sent! You can start using app & device right away...`;
+                    if (role === 'Doctor') {
+                        alertBox.textContent = `Doctor Account Registered! ⏳ Pending approval from Hospital Admin (${hospitalName}). You can log in once approved.`;
+                    } else if (role === 'HospitalAdmin') {
+                        alertBox.textContent = `Hospital Admin Account registered successfully! Opening Hospital Admin Portal...`;
+                    } else {
+                        alertBox.textContent = `Account created & Link Request sent! You can start using app & device right away...`;
+                    }
                     alertBox.style.display = 'block';
                 }
 
-                setTimeout(() => this.saveUserProfile(newUser), 1000);
+                if (role !== 'Doctor') {
+                    setTimeout(() => this.saveUserProfile(newUser), 1000);
+                }
             };
         }
 
@@ -618,6 +668,24 @@ class UdvegadarshiniApp {
                 );
 
                 if (match) {
+                    if (match.role === 'Doctor' && match.status === 'pending_hospital_approval') {
+                        if (alertBox) {
+                            alertBox.className = 'auth-alert-box';
+                            alertBox.textContent = `Login Pending ⏳: Your Doctor registration is waiting for approval from your Hospital Admin (${match.hospitalName || 'Hospital'}).`;
+                            alertBox.style.display = 'block';
+                        }
+                        return;
+                    }
+
+                    if (match.status === 'rejected') {
+                        if (alertBox) {
+                            alertBox.className = 'auth-alert-box';
+                            alertBox.textContent = `Access Declined ✗: Your registration request was rejected by your Hospital Admin.`;
+                            alertBox.style.display = 'block';
+                        }
+                        return;
+                    }
+
                     if (alertBox) {
                         alertBox.className = 'auth-alert-box success';
                         alertBox.textContent = `Welcome back, ${match.fullName}! Opening dashboard...`;
@@ -1184,14 +1252,136 @@ class UdvegadarshiniApp {
         }
     }
 
+    renderHospitalAdminPortal() {
+        const pendingContainer = document.getElementById('hospPendingDoctorsContainer');
+        const doctorsTableBody = document.getElementById('hospDoctorsTableBody');
+        const pendingBadge = document.getElementById('pendingDoctorBadgeCount');
+        const countPending = document.getElementById('hospStatPendingDoctorsCount');
+        const countApproved = document.getElementById('hospStatApprovedDoctorsCount');
+        const countTotal = document.getElementById('hospStatTotalDoctorsCount');
+
+        const hospitalName = this.currentUser.hospitalName || 'GVP Multi-Specialty Hospital';
+
+        // Filter doctors registered under THIS hospital
+        const allHospitalDoctors = this.usersDB.filter(u => u.role === 'Doctor' && (!u.hospitalName || u.hospitalName === hospitalName));
+        const pendingDoctors = allHospitalDoctors.filter(u => u.status === 'pending_hospital_approval');
+        const approvedDoctors = allHospitalDoctors.filter(u => u.status === 'approved' || !u.status);
+
+        if (countPending) countPending.textContent = pendingDoctors.length;
+        if (countApproved) countApproved.textContent = approvedDoctors.length;
+        if (countTotal) countTotal.textContent = allHospitalDoctors.length;
+        if (pendingBadge) pendingBadge.textContent = `${pendingDoctors.length} New`;
+
+        // Render Pending Doctor Cards
+        if (pendingContainer) {
+            if (pendingDoctors.length === 0) {
+                pendingContainer.innerHTML = `
+                    <div class="empty-table-msg card" style="grid-column: 1 / -1; text-align: center; padding: 1.5rem;">
+                        <i class="fa-solid fa-user-check" style="font-size: 1.8rem; color: #10b981; margin-bottom: 0.5rem;"></i>
+                        <p style="margin: 0;">No pending Doctor approval requests! All doctor registrations under ${hospitalName} are verified.</p>
+                    </div>
+                `;
+            } else {
+                pendingContainer.innerHTML = pendingDoctors.map(doc => `
+                    <div class="request-card">
+                        <div class="request-header">
+                            <div class="request-avatar" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">${doc.fullName.charAt(0)}</div>
+                            <div class="request-meta">
+                                <strong>${doc.fullName}</strong>
+                                <span>License / Reg ID: ${doc.subjectId}</span>
+                            </div>
+                        </div>
+                        <div class="request-details">
+                            <p><i class="fa-solid fa-hospital"></i> Hospital: ${doc.hospitalName || hospitalName}</p>
+                            <p><i class="fa-solid fa-envelope"></i> Email: ${doc.email}</p>
+                            <p><i class="fa-solid fa-user-gear"></i> Status: Pending Admin Verification</p>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn-accept-request" onclick="app.approveDoctorAccount('${doc.email}')">
+                                <i class="fa-solid fa-user-check"></i> Approve Doctor
+                            </button>
+                            <button class="btn-reject-request" onclick="app.rejectDoctorAccount('${doc.email}')">
+                                <i class="fa-solid fa-user-xmark"></i> Decline
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Render Approved Doctors Table
+        if (doctorsTableBody) {
+            if (approvedDoctors.length === 0) {
+                doctorsTableBody.innerHTML = `
+                    <tr><td colspan="6" class="empty-table-msg" style="text-align: center; padding: 1.5rem;">No active approved doctors registered under ${hospitalName}.</td></tr>
+                `;
+            } else {
+                doctorsTableBody.innerHTML = approvedDoctors.map(doc => `
+                    <tr>
+                        <td><strong>${doc.subjectId}</strong></td>
+                        <td>${doc.fullName}</td>
+                        <td>${doc.email}</td>
+                        <td>${doc.hospitalName || hospitalName}</td>
+                        <td><span class="status-badge status-badge-approved">Approved ✓</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" onclick="app.revokeDoctorAccount('${doc.email}')">
+                                <i class="fa-solid fa-ban"></i> Revoke Access
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+    }
+
+    approveDoctorAccount(email) {
+        const doc = this.usersDB.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (doc) {
+            doc.status = 'approved';
+            localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+            this.populateDoctorDropdown();
+            this.renderHospitalAdminPortal();
+        }
+    }
+
+    rejectDoctorAccount(email) {
+        const doc = this.usersDB.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (doc) {
+            doc.status = 'rejected';
+            localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+            this.populateDoctorDropdown();
+            this.renderHospitalAdminPortal();
+        }
+    }
+
+    revokeDoctorAccount(email) {
+        const doc = this.usersDB.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (doc) {
+            doc.status = 'pending_hospital_approval';
+            localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+            this.populateDoctorDropdown();
+            this.renderHospitalAdminPortal();
+        }
+    }
+
     renderDoctorPortal() {
         const pendingContainer = document.getElementById('docPendingRequestsContainer');
         const tableBody = document.getElementById('docPatientsTableBody');
         const searchVal = (document.getElementById('docPatientSearch')?.value || '').toLowerCase();
         const filterVal = document.getElementById('docStatusFilter')?.value || 'all';
 
-        // 1. Pending Requests (Instagram style)
-        const pendingList = this.doctorRequests.filter(r => r.status === 'pending');
+        // 1. Filter Patient Requests specifically for THIS doctor (if logged in as Doctor)
+        let myDoctorRequests = [...this.doctorRequests];
+        if (this.currentUser.role === 'Doctor') {
+            const currentEmail = (this.currentUser.email || '').toLowerCase();
+            const currentName = (this.currentUser.fullName || '').toLowerCase();
+            myDoctorRequests = this.doctorRequests.filter(r => 
+                (r.doctorEmail && r.doctorEmail.toLowerCase() === currentEmail) ||
+                (r.doctorName && r.doctorName.toLowerCase().includes(currentName))
+            );
+        }
+
+        const pendingList = myDoctorRequests.filter(r => r.status === 'pending');
         
         const pendingCountElem = document.getElementById('docStatPendingCount');
         const approvedCountElem = document.getElementById('docStatApprovedCount');
@@ -1249,19 +1439,17 @@ class UdvegadarshiniApp {
         }
 
         // 2. Filter & Render Patients Table
-        let allPatients = [...this.doctorRequests];
-        
-        let filtered = allPatients.filter(p => {
+        let filtered = myDoctorRequests.filter(p => {
             const matchesSearch = p.patientFullName.toLowerCase().includes(searchVal) || p.patientSubjectId.toLowerCase().includes(searchVal) || p.hospitalName.toLowerCase().includes(searchVal);
             const matchesStatus = filterVal === 'all' || p.status === filterVal;
             return matchesSearch && matchesStatus;
         });
 
-        const approvedCount = allPatients.filter(p => p.status === 'approved').length;
-        const alertCount = allPatients.filter(p => (p.latestStressScore || 0) > 70).length;
+        const approvedCount = myDoctorRequests.filter(p => p.status === 'approved').length;
+        const alertCount = myDoctorRequests.filter(p => (p.latestStressScore || 0) > 70).length;
 
         if (approvedCountElem) approvedCountElem.textContent = approvedCount;
-        if (totalCountElem) totalCountElem.textContent = allPatients.length;
+        if (totalCountElem) totalCountElem.textContent = myDoctorRequests.length;
         if (alertCountElem) alertCountElem.textContent = alertCount;
 
         if (tableBody) {
