@@ -1121,6 +1121,31 @@
                                 </tbody>
                             </table>
                         </div>
+                    <!-- SECTION 3: HOSPITAL PATIENTS DIRECTORY & DOCTOR ASSIGNMENTS -->
+                    <div class="card patient-directory-section">
+                        <div class="card-header flex-between">
+                            <div>
+                                <h3><i class="fa-solid fa-users"></i> Hospital Registered Patients & Doctor Assignments</h3>
+                                <p class="section-desc">Overview of patients registered under your hospital and their assigned consulting doctors.</p>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="doc-patients-table">
+                                <thead>
+                                    <tr>
+                                        <th>Patient ID</th>
+                                        <th>Patient Full Name</th>
+                                        <th>Patient Email</th>
+                                        <th>Assigned Doctor</th>
+                                        <th>Doctor Approval Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hospPatientsTableBody">
+                                    <!-- Dynamic Hospital Patient Rows rendered by JS -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 

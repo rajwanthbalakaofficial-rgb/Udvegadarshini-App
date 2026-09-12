@@ -305,11 +305,11 @@ class UdvegadarshiniApp {
             }
         }
 
-        // Toggle Doctor Portal Nav Tab & Filter tabs dynamically by role
+        // Toggle Doctor / Hospital Admin Nav Tab & Hide Consumer tabs for Clinical roles
         const docTab = document.getElementById('navDoctorPortalTab');
-        const personalTab = document.querySelector('[data-tab="tab-personal"]');
-        const soundTab = document.querySelector('[data-tab="tab-frequency"]');
-        const gamesTab = document.querySelector('[data-tab="tab-games"]');
+        const allNavTabs = document.querySelectorAll('.main-nav .nav-tab');
+        const modeToggleBox = document.querySelector('.mode-toggle-box');
+        const connControls = document.querySelectorAll('#btnConnectSerial, #btnConnectBLE, #btnToggleSim, #connectionBadge');
         const hospAdminView = document.getElementById('hospitalAdminView');
         const docPortalView = document.getElementById('doctorPortalView');
         const bannerBadge = document.getElementById('portalBannerBadge');
@@ -317,13 +317,17 @@ class UdvegadarshiniApp {
         const docSub = document.getElementById('docPortalSubtitle');
 
         if (this.currentUser.role === 'HospitalAdmin') {
+            // HIDE ALL CONSUMER TABS & CONTROLS FOR HOSPITAL ADMIN
+            allNavTabs.forEach(tab => {
+                if (tab !== docTab) tab.style.display = 'none';
+            });
+            if (modeToggleBox) modeToggleBox.style.display = 'none';
+            connControls.forEach(ctrl => ctrl.style.display = 'none');
+
             if (docTab) {
                 docTab.style.display = 'inline-flex';
                 docTab.innerHTML = `<i class="fa-solid fa-hospital"></i> Hospital Admin Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>`;
             }
-            if (personalTab) personalTab.style.display = 'none';
-            if (soundTab) soundTab.style.display = 'none';
-            if (gamesTab) gamesTab.style.display = 'none';
 
             if (hospAdminView) hospAdminView.style.display = 'block';
             if (docPortalView) docPortalView.style.display = 'none';
@@ -333,19 +337,21 @@ class UdvegadarshiniApp {
             if (docSub) docSub.textContent = `${this.currentUser.hospitalName || 'Clinical Health Center'} | Doctor Verification & Hospital Staff Management`;
             this.renderHospitalAdminPortal();
 
-            // Auto-switch to Doctor Portal tab for Hospital Admin
-            const activeTab = document.querySelector('.nav-tab.active');
-            if (!activeTab || activeTab.dataset.tab === 'tab-personal' || activeTab.dataset.tab === 'tab-frequency' || activeTab.dataset.tab === 'tab-games') {
-                if (docTab) docTab.click();
-            }
+            // Auto-switch to Hospital Admin Portal tab
+            if (docTab) docTab.click();
+
         } else if (this.currentUser.role === 'Doctor') {
+            // HIDE ALL CONSUMER TABS & CONTROLS FOR DOCTOR
+            allNavTabs.forEach(tab => {
+                if (tab !== docTab) tab.style.display = 'none';
+            });
+            if (modeToggleBox) modeToggleBox.style.display = 'none';
+            connControls.forEach(ctrl => ctrl.style.display = 'none');
+
             if (docTab) {
                 docTab.style.display = 'inline-flex';
                 docTab.innerHTML = `<i class="fa-solid fa-user-doctor"></i> Doctor Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>`;
             }
-            if (personalTab) personalTab.style.display = 'none';
-            if (soundTab) soundTab.style.display = 'none';
-            if (gamesTab) gamesTab.style.display = 'none';
 
             if (hospAdminView) hospAdminView.style.display = 'none';
             if (docPortalView) docPortalView.style.display = 'block';
@@ -355,19 +361,19 @@ class UdvegadarshiniApp {
             if (docSub) docSub.textContent = `${this.currentUser.hospitalName || 'Clinical Hospital Center'} | Department of Neuro-Cardiology`;
             this.renderDoctorPortal();
 
-            // Auto-switch to Doctor Portal tab for Doctor
-            const activeTab = document.querySelector('.nav-tab.active');
-            if (!activeTab || activeTab.dataset.tab === 'tab-personal' || activeTab.dataset.tab === 'tab-frequency' || activeTab.dataset.tab === 'tab-games') {
-                if (docTab) docTab.click();
-            }
+            // Auto-switch to Doctor Portal tab
+            if (docTab) docTab.click();
+
         } else {
+            // SHOW CONSUMER TABS & CONTROLS FOR PATIENTS / WELLNESS USERS
+            allNavTabs.forEach(tab => tab.style.display = 'inline-flex');
+            if (modeToggleBox) modeToggleBox.style.display = 'inline-flex';
+            connControls.forEach(ctrl => ctrl.style.display = 'inline-flex');
+
             if (docTab) {
                 docTab.style.display = 'inline-flex';
                 docTab.innerHTML = `<i class="fa-solid fa-hospital-user"></i> Hospital & Doctor Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>`;
             }
-            if (personalTab) personalTab.style.display = 'inline-flex';
-            if (soundTab) soundTab.style.display = 'inline-flex';
-            if (gamesTab) gamesTab.style.display = 'inline-flex';
 
             if (hospAdminView) hospAdminView.style.display = 'none';
             if (docPortalView) docPortalView.style.display = 'block';
@@ -1358,6 +1364,33 @@ class UdvegadarshiniApp {
                         </td>
                     </tr>
                 `).join('');
+            }
+        }
+
+        // Render Hospital Registered Patients Directory
+        const patientsTableBody = document.getElementById('hospPatientsTableBody');
+        const hospitalPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hospitalName));
+
+        if (patientsTableBody) {
+            if (hospitalPatients.length === 0) {
+                patientsTableBody.innerHTML = `
+                    <tr><td colspan="5" class="empty-table-msg" style="text-align: center; padding: 1.5rem;">No patient records registered under ${hospitalName}.</td></tr>
+                `;
+            } else {
+                patientsTableBody.innerHTML = hospitalPatients.map(p => {
+                    const docInfo = p.doctorName || 'Unassigned';
+                    const statusClass = p.doctorApprovalStatus === 'approved' ? 'status-badge-approved' : 'status-badge-pending';
+                    const statusText = p.doctorApprovalStatus === 'approved' ? 'Doctor Linked ✓' : 'Pending Doctor Approval ⏳';
+                    return `
+                        <tr>
+                            <td><strong>${p.subjectId}</strong></td>
+                            <td>${p.fullName}</td>
+                            <td>${p.email}</td>
+                            <td>${docInfo}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        </tr>
+                    `;
+                }).join('');
             }
         }
     }
