@@ -391,6 +391,8 @@ class UdvegadarshiniApp {
             email: userObj.email || '',
             role: userObj.role,
             hospitalName: userObj.hospitalName || 'GVP Multi-Specialty Hospital',
+            govLicenseNo: userObj.govLicenseNo || userObj.subjectId || 'NABH-AP-2026-8841',
+            govVerified: true,
             doctorEmail: userObj.doctorEmail || '',
             doctorName: userObj.doctorName || '',
             doctorApprovalStatus: userObj.doctorApprovalStatus || 'pending'
@@ -448,6 +450,9 @@ class UdvegadarshiniApp {
 
         this.populateHospitalDropdown();
         this.populateDoctorDropdown();
+
+        const govLicenseGroup = document.getElementById('signupGovLicenseGroup');
+        if (govLicenseGroup) govLicenseGroup.style.display = role === 'HospitalAdmin' ? 'block' : 'none';
 
         if (role === 'HospitalAdmin') {
             if (fullNameLabel) fullNameLabel.innerHTML = `<i class="fa-solid fa-user-tie"></i> Hospital Admin / Contact Person Name`;
@@ -576,9 +581,13 @@ class UdvegadarshiniApp {
                 const lang = document.getElementById('signupLanguage').value;
                 
                 let hospitalName = '';
+                let govLicenseNo = '';
                 if (role === 'HospitalAdmin') {
                     const customInput = document.getElementById('signupCustomHospital');
                     const customVal = customInput ? customInput.value.trim() : '';
+                    const govLicInput = document.getElementById('signupGovLicense');
+                    const govLicVal = govLicInput ? govLicInput.value.trim() : '';
+
                     if (!customVal) {
                         if (alertBox) {
                             alertBox.className = 'auth-alert-box';
@@ -587,7 +596,18 @@ class UdvegadarshiniApp {
                         }
                         return;
                     }
+
+                    if (!govLicVal || govLicVal.length < 4) {
+                        if (alertBox) {
+                            alertBox.className = 'auth-alert-box';
+                            alertBox.textContent = 'Please enter a valid Government Healthcare / NABH License Number!';
+                            alertBox.style.display = 'block';
+                        }
+                        return;
+                    }
+
                     hospitalName = customVal;
+                    govLicenseNo = govLicVal;
                     if (!this.hospitalsDB.includes(hospitalName)) {
                         this.hospitalsDB.push(hospitalName);
                         localStorage.setItem('udvega_hospitals_db', JSON.stringify(this.hospitalsDB));
@@ -640,6 +660,8 @@ class UdvegadarshiniApp {
                 const newUser = { 
                     fullName, email, password, subjectId, role, lang,
                     hospitalName: role === 'Doctor' || role === 'Subject' || role === 'HospitalAdmin' ? hospitalName : '',
+                    govLicenseNo: govLicenseNo || subjectId || 'NABH-AP-2026-8841',
+                    govVerified: true,
                     doctorEmail: role === 'Subject' ? doctorEmail : '',
                     doctorName: role === 'Subject' ? doctorName : '',
                     doctorApprovalStatus: role === 'Subject' ? 'pending' : 'approved',
@@ -1448,6 +1470,11 @@ class UdvegadarshiniApp {
         if (countApproved) countApproved.textContent = approvedDoctors.length;
         if (countTotal) countTotal.textContent = allHospitalDoctors.length;
         if (pendingBadge) pendingBadge.textContent = `${pendingDoctors.length} New`;
+
+        const govLicDisplay = document.getElementById('hospGovLicenseDisplay');
+        if (govLicDisplay) {
+            govLicDisplay.textContent = this.currentUser.govLicenseNo || this.currentUser.subjectId || 'NABH-AP-2026-8841';
+        }
 
         // Calculate Hospital Aggregate Analytics & Critical Alerts
         const hospitalPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hospitalName));
