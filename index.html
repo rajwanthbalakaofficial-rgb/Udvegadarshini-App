@@ -15,7 +15,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=2.5.0">
+    <link rel="stylesheet" href="styles.css?v=2.6.0">
 </head>
 <body class="dark-theme">
 
@@ -239,6 +239,41 @@
                 </button>
             </form>
 
+        </div>
+    </div>
+
+    <!-- ================= 2C. REASSIGN DOCTOR MODAL (HOSPITAL ADMIN PATIENT TRANSFER) ================= -->
+    <div class="login-modal-overlay" id="reassignDoctorModal" style="display: none;">
+        <div class="login-card card" style="max-width: 500px;">
+            <div class="login-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <div class="login-icon" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;"><i class="fa-solid fa-user-gear"></i></div>
+                    <h2 style="margin-top: 0.5rem;">Re-assign Consulting Doctor</h2>
+                    <p style="margin: 0; font-size: 0.88rem; color: #94a3b8;">Transfer patient consultation to another approved hospital doctor.</p>
+                </div>
+                <button type="button" class="btn-icon" id="btnCloseReassignModal" style="background: rgba(255,255,255,0.08); border-radius: 50%; width: 34px; height: 34px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="auth-alert-box" id="reassignAlertBox" style="display: none;"></div>
+
+            <form id="reassignDoctorForm" class="login-form">
+                <input type="hidden" id="reassignPatientSubjectId">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-user"></i> Patient Name & ID</label>
+                    <input type="text" id="reassignPatientInfo" readonly style="background: rgba(255,255,255,0.05); color: #cbd5e1; font-weight: 600;">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-user-doctor"></i> Select New Consulting Doctor</label>
+                    <select id="reassignNewDoctorSelect" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(99, 102, 241, 0.4); color: #f8fafc; padding: 0.65rem; border-radius: 8px; font-size: 0.95rem; width: 100%;">
+                        <!-- Dynamic Doctor options -->
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 1rem;">
+                    <i class="fa-solid fa-arrow-right-arrow-left"></i> Confirm Patient Re-assignment
+                </button>
+            </form>
         </div>
     </div>
 
@@ -1107,6 +1142,53 @@
 
                 <!-- ================= MODE 1: HOSPITAL ADMIN DASHBOARD ================= -->
                 <div id="hospitalAdminView" style="display: none;">
+                    
+                    <!-- EMERGENCY HIGH STRESS CRITICAL ALERT TICKER BANNER -->
+                    <div class="critical-alert-banner card" id="hospCriticalAlertBanner" style="display: none; background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(185, 28, 28, 0.3)); border: 1px solid #ef4444; margin-bottom: 1.5rem;">
+                        <div class="flex-between" style="flex-wrap: wrap; gap: 10px; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="pulse-alert-icon" style="background: #ef4444; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; animation: pulse 1.5s infinite;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                <div>
+                                    <h4 style="margin: 0; color: #fca5a5;"><i class="fa-solid fa-heart-circle-bolt"></i> Emergency High-Stress Patients Detected (<span id="hospCriticalCountBadge">0</span>)</h4>
+                                    <p style="margin: 0; font-size: 0.85rem; color: #f8fafc;" id="hospCriticalAlertMessage">The following patients exhibit high EEG stress index (> 70%). Immediate clinical consultation advised.</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-accent" id="btnExportHospitalReport" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff;">
+                                <i class="fa-solid fa-file-pdf"></i> Export Hospital Roster (PDF)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- HOSPITAL EXECUTIVE CLINICAL ANALYTICS CARD -->
+                    <div class="card hosp-analytics-card" style="margin-bottom: 1.5rem;">
+                        <div class="card-header flex-between" style="flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h3><i class="fa-solid fa-chart-pie"></i> Hospital Executive Clinical Analytics</h3>
+                                <p class="section-desc">Real-time aggregate stress metrics & department load across all hospital patients.</p>
+                            </div>
+                            <button class="btn btn-sm btn-secondary" id="btnExportHospitalReportHeader">
+                                <i class="fa-solid fa-print"></i> Print Roster PDF
+                            </button>
+                        </div>
+                        <div class="hosp-analytics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                            <div class="analytics-sub-card" style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                                <span style="font-size: 0.82rem; color: #94a3b8; text-transform: uppercase;">Hospital Avg Stress</span>
+                                <h2 id="hospAnalyticsAvgStress" style="margin: 0.3rem 0; color: #38bdf8;">--%</h2>
+                                <span style="font-size: 0.78rem; color: #10b981;"><i class="fa-solid fa-shield-halved"></i> Aggregate Patient Baseline</span>
+                            </div>
+                            <div class="analytics-sub-card" style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                                <span style="font-size: 0.82rem; color: #94a3b8; text-transform: uppercase;">High Stress Critical</span>
+                                <h2 id="hospAnalyticsCriticalCount" style="margin: 0.3rem 0; color: #f43f5e;">0</h2>
+                                <span style="font-size: 0.78rem; color: #f43f5e;"><i class="fa-solid fa-circle-exclamation"></i> Patients > 70% Stress Index</span>
+                            </div>
+                            <div class="analytics-sub-card" style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                                <span style="font-size: 0.82rem; color: #94a3b8; text-transform: uppercase;">Dominant Clinical State</span>
+                                <h2 id="hospAnalyticsDominantState" style="margin: 0.3rem 0; font-size: 1.3rem; color: #a7f3d0;">Balanced Baseline</h2>
+                                <span style="font-size: 0.78rem; color: #94a3b8;">Hospital Population Status</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Hospital Admin Stat Cards Row -->
                     <div class="doc-stats-grid">
                         <div class="card doc-stat-card">
@@ -1152,14 +1234,25 @@
 
                     <!-- SECTION 2: APPROVED HOSPITAL DOCTORS DIRECTORY -->
                     <div class="card patient-directory-section">
-                        <div class="card-header flex-between">
+                        <div class="card-header flex-between" style="flex-wrap: wrap; gap: 10px;">
                             <div>
                                 <h3><i class="fa-solid fa-hospital-user"></i> Hospital Active Doctors Directory</h3>
                                 <p class="section-desc">Manage verified consulting doctors registered under your hospital.</p>
                             </div>
-                            <button class="btn btn-accent btn-sm" id="btnOpenAddDoctorModal">
-                                <i class="fa-solid fa-user-plus"></i> Add New Doctor Directly
-                            </button>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <label style="font-size: 0.85rem; color: #94a3b8;"><i class="fa-solid fa-building-user"></i> Dept Filter:</label>
+                                <select id="hospDoctorDeptFilter" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(99, 102, 241, 0.3); color: #f8fafc; padding: 0.35rem 0.65rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">
+                                    <option value="all">All Departments</option>
+                                    <option value="Neuro-Cardiology">Neuro-Cardiology</option>
+                                    <option value="Neurology">Neurology</option>
+                                    <option value="Psychiatry">Psychiatry</option>
+                                    <option value="General Medicine">General Medicine</option>
+                                    <option value="ICU Telemetry">ICU Telemetry</option>
+                                </select>
+                                <button class="btn btn-accent btn-sm" id="btnOpenAddDoctorModal">
+                                    <i class="fa-solid fa-user-plus"></i> Add New Doctor Directly
+                                </button>
+                            </div>
                         </div>
 
                         <div class="table-responsive">
@@ -1384,6 +1477,6 @@
     <script src="audio-frequency.js"></script>
     <script src="apta-ai.js"></script>
     <script src="games.js"></script>
-    <script src="app.js?v=2.5.0"></script>
+    <script src="app.js?v=2.6.0"></script>
 </body>
 </html>

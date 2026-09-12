@@ -827,6 +827,65 @@ class UdvegadarshiniApp {
             };
         }
 
+        // Re-assign Doctor Modal Handlers
+        const btnCloseReassign = document.getElementById('btnCloseReassignModal');
+        const reassignModal = document.getElementById('reassignDoctorModal');
+        const reassignForm = document.getElementById('reassignDoctorForm');
+        const reassignAlert = document.getElementById('reassignAlertBox');
+
+        if (btnCloseReassign && reassignModal) {
+            btnCloseReassign.onclick = () => {
+                reassignModal.style.display = 'none';
+            };
+        }
+
+        if (reassignForm) {
+            reassignForm.onsubmit = (e) => {
+                e.preventDefault();
+                const subjectId = document.getElementById('reassignPatientSubjectId').value;
+                const newDocSel = document.getElementById('reassignNewDoctorSelect').value;
+
+                if (!newDocSel || !newDocSel.includes('|')) return;
+                const [docEmail, docName] = newDocSel.split('|');
+
+                const patientInDB = this.usersDB.find(u => u.subjectId === subjectId || u.email === subjectId);
+                if (patientInDB) {
+                    patientInDB.doctorEmail = docEmail;
+                    patientInDB.doctorName = docName;
+                    patientInDB.doctorApprovalStatus = 'approved';
+                    localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+                }
+
+                const patientReq = this.doctorRequests.find(r => r.patientSubjectId === subjectId || r.patientEmail === subjectId);
+                if (patientReq) {
+                    patientReq.doctorEmail = docEmail;
+                    patientReq.doctorName = docName;
+                    patientReq.status = 'approved';
+                    localStorage.setItem('udvega_doctor_requests', JSON.stringify(this.doctorRequests));
+                }
+
+                this.renderHospitalAdminPortal();
+
+                if (reassignAlert) {
+                    reassignAlert.className = 'auth-alert-box success';
+                    reassignAlert.textContent = `Patient successfully transferred to ${docName}!`;
+                    reassignAlert.style.display = 'block';
+                }
+
+                setTimeout(() => {
+                    if (reassignModal) reassignModal.style.display = 'none';
+                }, 1000);
+            };
+        }
+
+        // Export Hospital PDF Report Handlers
+        const btnExportHosp = document.getElementById('btnExportHospitalReport');
+        const btnExportHospHeader = document.getElementById('btnExportHospitalReportHeader');
+
+        const triggerHospPdf = () => this.exportHospitalPDFReport();
+        if (btnExportHosp) btnExportHosp.onclick = triggerHospPdf;
+        if (btnExportHospHeader) btnExportHospHeader.onclick = triggerHospPdf;
+
         // Mode Toggle Buttons
         const btnPersonal = document.getElementById('btnModePersonal');
         const btnClinical = document.getElementById('btnModeClinical');
@@ -1381,6 +1440,49 @@ class UdvegadarshiniApp {
         if (countTotal) countTotal.textContent = allHospitalDoctors.length;
         if (pendingBadge) pendingBadge.textContent = `${pendingDoctors.length} New`;
 
+        // Calculate Hospital Aggregate Analytics & Critical Alerts
+        const hospitalPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hospitalName));
+        const criticalPatients = hospitalPatients.filter(p => {
+            const req = this.doctorRequests.find(r => r.patientEmail === p.email || r.patientSubjectId === p.subjectId);
+            return (req && req.latestStressScore > 70) || (p.latestStressScore > 70);
+        });
+
+        const criticalBanner = document.getElementById('hospCriticalAlertBanner');
+        const criticalBadge = document.getElementById('hospCriticalCountBadge');
+        const criticalMsg = document.getElementById('hospCriticalAlertMessage');
+
+        if (criticalBanner) {
+            if (criticalPatients.length > 0) {
+                criticalBanner.style.display = 'block';
+                if (criticalBadge) criticalBadge.textContent = criticalPatients.length;
+                if (criticalMsg) criticalMsg.textContent = `Critical High-Stress Patients Detected: ${criticalPatients.map(c => c.fullName + ' (' + c.subjectId + ')').join(', ')}. Immediate clinical consultation advised.`;
+            } else {
+                criticalBanner.style.display = 'none';
+            }
+        }
+
+        // Executive Analytics Stats
+        const avgStressElem = document.getElementById('hospAnalyticsAvgStress');
+        const criticalCountElem = document.getElementById('hospAnalyticsCriticalCount');
+        const dominantStateElem = document.getElementById('hospAnalyticsDominantState');
+
+        let totalStress = 0;
+        let countedPatients = 0;
+        hospitalPatients.forEach(p => {
+            const req = this.doctorRequests.find(r => r.patientEmail === p.email || r.patientSubjectId === p.subjectId);
+            const score = req ? (req.latestStressScore || 38) : 38;
+            totalStress += score;
+            countedPatients++;
+        });
+
+        const avgScore = countedPatients > 0 ? Math.round(totalStress / countedPatients) : 38;
+        if (avgStressElem) avgStressElem.textContent = `${avgScore}%`;
+        if (criticalCountElem) criticalCountElem.textContent = criticalPatients.length;
+        if (dominantStateElem) {
+            dominantStateElem.textContent = avgScore > 70 ? 'High Stress Alert' : (avgScore > 45 ? 'Elevated Focus' : 'Balanced Baseline');
+            dominantStateElem.style.color = avgScore > 70 ? '#f43f5e' : (avgScore > 45 ? '#f59e0b' : '#a7f3d0');
+        }
+
         // Render Pending Doctor Cards
         if (pendingContainer) {
             if (pendingDoctors.length === 0) {
@@ -1403,7 +1505,7 @@ class UdvegadarshiniApp {
                         <div class="request-details">
                             <p><i class="fa-solid fa-hospital"></i> Hospital: ${doc.hospitalName || hospitalName}</p>
                             <p><i class="fa-solid fa-envelope"></i> Email: ${doc.email}</p>
-                            <p><i class="fa-solid fa-user-gear"></i> Status: Pending Admin Verification</p>
+                            <p><i class="fa-solid fa-building-user"></i> Dept: ${doc.specialization || 'Neuro-Cardiology'}</p>
                         </div>
                         <div class="request-actions">
                             <button class="btn-accept-request" onclick="app.approveDoctorAccount('${doc.email}')">
@@ -1418,21 +1520,34 @@ class UdvegadarshiniApp {
             }
         }
 
+        // Department Filter for Approved Doctors
+        const deptFilter = document.getElementById('hospDoctorDeptFilter')?.value || 'all';
+        let filteredApprovedDoctors = approvedDoctors;
+        if (deptFilter !== 'all') {
+            filteredApprovedDoctors = approvedDoctors.filter(d => (d.specialization || 'Neuro-Cardiology').toLowerCase().includes(deptFilter.toLowerCase()));
+        }
+
+        const deptSelect = document.getElementById('hospDoctorDeptFilter');
+        if (deptSelect) {
+            deptSelect.onchange = () => this.renderHospitalAdminPortal();
+        }
+
         // Render Approved Doctors Table
         if (doctorsTableBody) {
-            if (approvedDoctors.length === 0) {
+            if (filteredApprovedDoctors.length === 0) {
                 doctorsTableBody.innerHTML = `
-                    <tr><td colspan="6" class="empty-table-msg" style="text-align: center; padding: 1.5rem;">No active approved doctors registered under ${hospitalName}.</td></tr>
+                    <tr><td colspan="6" class="empty-table-msg" style="text-align: center; padding: 1.5rem;">No active doctors registered under department: ${deptFilter}.</td></tr>
                 `;
             } else {
-                doctorsTableBody.innerHTML = approvedDoctors.map(doc => {
+                doctorsTableBody.innerHTML = filteredApprovedDoctors.map(doc => {
                     const assignedPatientCount = this.usersDB.filter(u => u.role === 'Subject' && (u.doctorEmail === doc.email || (u.doctorName && u.doctorName.includes(doc.fullName)))).length;
+                    const deptStr = doc.specialization || 'Neuro-Cardiology';
                     return `
                         <tr>
                             <td><strong>${doc.subjectId}</strong></td>
                             <td><strong>${doc.fullName}</strong></td>
                             <td>${doc.email}</td>
-                            <td>${doc.hospitalName || hospitalName}</td>
+                            <td><span class="badge-tag" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;"><i class="fa-solid fa-building-user"></i> ${deptStr}</span></td>
                             <td><span class="status-badge status-badge-approved">Approved ✓</span></td>
                             <td>
                                 <button class="btn btn-sm btn-primary" onclick="app.filterPatientsByDoctor('${doc.email}', '${doc.fullName}')" style="margin-right: 0.3rem;">
@@ -1464,7 +1579,6 @@ class UdvegadarshiniApp {
 
         // Render Hospital Registered Patients Directory
         const patientsTableBody = document.getElementById('hospPatientsTableBody');
-        const hospitalPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hospitalName));
         const activeDoctorFilter = filterSelect ? filterSelect.value : 'all';
 
         let displayedPatients = hospitalPatients;
@@ -1493,8 +1607,11 @@ class UdvegadarshiniApp {
                             <td><span class="badge-tag" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;"><i class="fa-solid fa-user-doctor"></i> ${docInfo}</span></td>
                             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                             <td>
-                                <button class="btn btn-sm btn-accent" onclick="event.stopPropagation(); app.viewPatientTelemetry('${p.subjectId}')">
-                                    <i class="fa-solid fa-file-medical"></i> View Patient Info
+                                <button class="btn btn-sm btn-accent" onclick="event.stopPropagation(); app.viewPatientTelemetry('${p.subjectId}')" style="margin-right: 0.3rem;">
+                                    <i class="fa-solid fa-file-medical"></i> Details
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); app.openReassignDoctorModal('${p.subjectId}')">
+                                    <i class="fa-solid fa-arrow-right-arrow-left"></i> Transfer
                                 </button>
                             </td>
                         </tr>
@@ -1749,6 +1866,41 @@ class UdvegadarshiniApp {
     closePatientTelemetryModal() {
         const modal = document.getElementById('patientTelemetryModal');
         if (modal) modal.style.display = 'none';
+    }
+
+    openReassignDoctorModal(subjectId) {
+        const patient = this.usersDB.find(u => u.subjectId === subjectId || u.email === subjectId);
+        const modal = document.getElementById('reassignDoctorModal');
+        const infoInput = document.getElementById('reassignPatientInfo');
+        const idInput = document.getElementById('reassignPatientSubjectId');
+        const docSelect = document.getElementById('reassignNewDoctorSelect');
+        const alertBox = document.getElementById('reassignAlertBox');
+
+        if (modal && patient) {
+            if (infoInput) infoInput.value = `${patient.fullName} (${patient.subjectId})`;
+            if (idInput) idInput.value = patient.subjectId;
+            if (alertBox) alertBox.style.display = 'none';
+
+            const hospitalName = this.currentUser.hospitalName || 'GVP Multi-Specialty Hospital';
+            const approvedDoctors = this.usersDB.filter(u => u.role === 'Doctor' && (u.status === 'approved' || !u.status) && (!u.hospitalName || u.hospitalName === hospitalName));
+
+            if (docSelect) {
+                docSelect.innerHTML = approvedDoctors.map(d => 
+                    `<option value="${d.email}|${d.fullName}">${d.fullName} (${d.specialization || 'Neuro-Cardiology'})</option>`
+                ).join('');
+            }
+            modal.style.display = 'flex';
+        }
+    }
+
+    exportHospitalPDFReport() {
+        const hospitalName = this.currentUser.hospitalName || 'GVP Multi-Specialty Hospital';
+        const pdfSubjectName = document.getElementById('pdfSubjectName');
+        const pdfSubjectId = document.getElementById('pdfSubjectId');
+        if (pdfSubjectName) pdfSubjectName.textContent = `${hospitalName} - Executive Roster`;
+        if (pdfSubjectId) pdfSubjectId.textContent = `ADMIN (${this.currentUser.subjectId || 'HOSP-REG-101'})`;
+
+        window.print();
     }
 }
 
