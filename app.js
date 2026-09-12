@@ -886,6 +886,15 @@ class UdvegadarshiniApp {
         if (btnExportHosp) btnExportHosp.onclick = triggerHospPdf;
         if (btnExportHospHeader) btnExportHospHeader.onclick = triggerHospPdf;
 
+        // Doctor Profile Modal Handlers
+        const btnCloseDocProf1 = document.getElementById('btnCloseDocProfileModal');
+        const btnCloseDocProf2 = document.getElementById('btnCloseDocProfileModalBtn');
+        const docProfModal = document.getElementById('doctorProfileModal');
+
+        const closeDocProf = () => { if (docProfModal) docProfModal.style.display = 'none'; };
+        if (btnCloseDocProf1) btnCloseDocProf1.onclick = closeDocProf;
+        if (btnCloseDocProf2) btnCloseDocProf2.onclick = closeDocProf;
+
         // Mode Toggle Buttons
         const btnPersonal = document.getElementById('btnModePersonal');
         const btnClinical = document.getElementById('btnModeClinical');
@@ -1543,17 +1552,20 @@ class UdvegadarshiniApp {
                     const assignedPatientCount = this.usersDB.filter(u => u.role === 'Subject' && (u.doctorEmail === doc.email || (u.doctorName && u.doctorName.includes(doc.fullName)))).length;
                     const deptStr = doc.specialization || 'Neuro-Cardiology';
                     return `
-                        <tr>
+                        <tr style="cursor: pointer;" onclick="app.openDoctorProfileModal('${doc.email}')">
                             <td><strong>${doc.subjectId}</strong></td>
                             <td><strong>${doc.fullName}</strong></td>
                             <td>${doc.email}</td>
                             <td><span class="badge-tag" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;"><i class="fa-solid fa-building-user"></i> ${deptStr}</span></td>
                             <td><span class="status-badge status-badge-approved">Approved ✓</span></td>
                             <td>
-                                <button class="btn btn-sm btn-primary" onclick="app.filterPatientsByDoctor('${doc.email}', '${doc.fullName}')" style="margin-right: 0.3rem;">
-                                    <i class="fa-solid fa-users"></i> View Patients (${assignedPatientCount})
+                                <button class="btn btn-sm btn-accent" onclick="event.stopPropagation(); app.openDoctorProfileModal('${doc.email}')" style="margin-right: 0.3rem;">
+                                    <i class="fa-solid fa-id-card"></i> Profile
                                 </button>
-                                <button class="btn btn-sm btn-secondary" onclick="app.revokeDoctorAccount('${doc.email}')">
+                                <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); app.filterPatientsByDoctor('${doc.email}', '${doc.fullName}')" style="margin-right: 0.3rem;">
+                                    <i class="fa-solid fa-users"></i> Patients (${assignedPatientCount})
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); app.revokeDoctorAccount('${doc.email}')">
                                     <i class="fa-solid fa-ban"></i> Revoke
                                 </button>
                             </td>
@@ -1901,6 +1913,63 @@ class UdvegadarshiniApp {
         if (pdfSubjectId) pdfSubjectId.textContent = `ADMIN (${this.currentUser.subjectId || 'HOSP-REG-101'})`;
 
         window.print();
+    }
+
+    openDoctorProfileModal(docEmail) {
+        const doc = this.usersDB.find(u => (u.email && u.email.toLowerCase() === docEmail.toLowerCase()) || u.subjectId === docEmail);
+        const modal = document.getElementById('doctorProfileModal');
+
+        if (modal && doc) {
+            document.getElementById('docModalAvatar').textContent = (doc.fullName || 'D').charAt(0).toUpperCase();
+            document.getElementById('docModalFullName').textContent = doc.fullName;
+            document.getElementById('docModalDept').innerHTML = `<i class="fa-solid fa-building-user"></i> Department of ${doc.specialization || 'Neuro-Cardiology'}`;
+            document.getElementById('docModalRegId').textContent = doc.subjectId || 'DOC-201';
+            document.getElementById('docModalHospital').textContent = doc.hospitalName || (this.currentUser.hospitalName || 'GVP Multi-Specialty Hospital');
+            document.getElementById('docModalEmail').textContent = doc.email;
+            
+            const statusElem = document.getElementById('docModalStatus');
+            if (statusElem) {
+                const isApproved = doc.status === 'approved' || !doc.status;
+                statusElem.className = isApproved ? 'status-badge status-badge-approved' : 'status-badge status-badge-pending';
+                statusElem.textContent = isApproved ? 'Approved ✓' : 'Pending Approval ⏳';
+            }
+
+            const assignedPatients = this.usersDB.filter(u => u.role === 'Subject' && (u.doctorEmail === doc.email || (u.doctorName && u.doctorName.includes(doc.fullName))));
+            
+            document.getElementById('docModalPatientCount').textContent = assignedPatients.length;
+            const patientTableBody = document.getElementById('docModalPatientListBody');
+
+            if (patientTableBody) {
+                if (assignedPatients.length === 0) {
+                    patientTableBody.innerHTML = `
+                        <tr><td colspan="4" class="empty-table-msg" style="text-align: center; padding: 1rem;">No patients currently assigned to ${doc.fullName}.</td></tr>
+                    `;
+                } else {
+                    patientTableBody.innerHTML = assignedPatients.map(p => {
+                        const statusClass = p.doctorApprovalStatus === 'approved' ? 'status-badge-approved' : 'status-badge-pending';
+                        const statusText = p.doctorApprovalStatus === 'approved' ? 'Linked ✓' : 'Pending ⏳';
+                        return `
+                            <tr style="cursor: pointer;" onclick="app.viewPatientTelemetry('${p.subjectId}')">
+                                <td><strong>${p.subjectId}</strong></td>
+                                <td>${p.fullName}</td>
+                                <td>${p.email}</td>
+                                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+
+            const filterBtn = document.getElementById('btnDocModalFilterPatients');
+            if (filterBtn) {
+                filterBtn.onclick = () => {
+                    modal.style.display = 'none';
+                    this.filterPatientsByDoctor(doc.email, doc.fullName);
+                };
+            }
+
+            modal.style.display = 'flex';
+        }
     }
 }
 

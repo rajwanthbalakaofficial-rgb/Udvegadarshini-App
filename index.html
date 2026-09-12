@@ -15,7 +15,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=2.6.0">
+    <link rel="stylesheet" href="styles.css?v=2.7.0">
 </head>
 <body class="dark-theme">
 
@@ -274,6 +274,55 @@
                     <i class="fa-solid fa-arrow-right-arrow-left"></i> Confirm Patient Re-assignment
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- ================= 2D. DOCTOR PROFILE & STAFF DETAILS MODAL ================= -->
+    <div class="login-modal-overlay" id="doctorProfileModal" style="display: none;">
+        <div class="login-card card" style="max-width: 580px; width: 92%;">
+            <div class="login-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="request-avatar" id="docModalAvatar" style="width: 52px; height: 52px; font-size: 1.4rem;">D</div>
+                    <div>
+                        <h2 style="margin: 0;" id="docModalFullName">Dr. Rajesh Sharma</h2>
+                        <p style="margin: 0; font-size: 0.85rem; color: #818cf8;" id="docModalDept"><i class="fa-solid fa-building-user"></i> Department of Neuro-Cardiology</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-icon" id="btnCloseDocProfileModal" style="background: rgba(255,255,255,0.08); border-radius: 50%; width: 34px; height: 34px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="inner-card" style="margin-bottom: 1rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(99, 102, 241, 0.2);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; font-size: 0.85rem;">
+                    <div><span style="color: #94a3b8;">License / Reg ID:</span> <strong id="docModalRegId" style="color: #fff;">DOC-201</strong></div>
+                    <div><span style="color: #94a3b8;">Hospital:</span> <strong id="docModalHospital" style="color: #fff;">GVP Hospital</strong></div>
+                    <div><span style="color: #94a3b8;">Official Email:</span> <strong id="docModalEmail" style="color: #818cf8;">dr.rajesh@hospital.com</strong></div>
+                    <div><span style="color: #94a3b8;">Verification Status:</span> <span class="status-badge status-badge-approved" id="docModalStatus">Approved ✓</span></div>
+                </div>
+            </div>
+
+            <h4 style="margin-bottom: 0.5rem; font-size: 0.92rem; color: #cbd5e1;"><i class="fa-solid fa-users"></i> Assigned Patients Roster (<span id="docModalPatientCount">0</span>)</h4>
+            <div class="table-responsive" style="max-height: 200px; overflow-y: auto; margin-bottom: 1rem;">
+                <table class="doc-patients-table" style="margin-top: 0;">
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="docModalPatientListBody">
+                        <!-- Dynamic patient rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer flex-between" style="gap: 10px; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <button class="btn btn-secondary" id="btnCloseDocProfileModalBtn">Close</button>
+                <button class="btn btn-primary" id="btnDocModalFilterPatients">
+                    <i class="fa-solid fa-users-line"></i> View Patients in Dashboard
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1477,6 +1526,6 @@
     <script src="audio-frequency.js"></script>
     <script src="apta-ai.js"></script>
     <script src="games.js"></script>
-    <script src="app.js?v=2.6.0"></script>
+    <script src="app.js?v=2.7.0"></script>
 </body>
 </html>
