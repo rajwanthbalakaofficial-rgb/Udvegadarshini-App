@@ -15,7 +15,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=2.2.0">
+    <link rel="stylesheet" href="styles.css?v=2.3.0">
 </head>
 <body class="dark-theme">
 
@@ -160,9 +160,15 @@
 
             <!-- FORM 2: LOG IN (EXISTING USER) -->
             <form id="loginForm" class="login-form" style="display: none;">
+                <div class="auth-role-hints">
+                    <span class="badge-role-hint"><i class="fa-solid fa-hospital"></i> Hospital Admin</span>
+                    <span class="badge-role-hint"><i class="fa-solid fa-user-doctor"></i> Doctor</span>
+                    <span class="badge-role-hint"><i class="fa-solid fa-user"></i> Patient</span>
+                </div>
+
                 <div class="form-group">
-                    <label><i class="fa-solid fa-envelope"></i> Registered Email or Subject ID</label>
-                    <input type="text" id="loginEmail" placeholder="Enter your email or SUBJ-ID" required>
+                    <label><i class="fa-solid fa-envelope"></i> Registered Email or ID (Hospital / Doctor / Patient)</label>
+                    <input type="text" id="loginEmail" placeholder="Enter Email, Subject ID, or Hospital Reg ID" required>
                 </div>
 
                 <div class="form-group">
@@ -171,7 +177,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-accent btn-block btn-lg">
-                    <i class="fa-solid fa-right-to-bracket"></i> Log In to Your Dashboard
+                    <i class="fa-solid fa-right-to-bracket"></i> Log In to Dashboard
                 </button>
                 <button type="button" class="btn btn-secondary btn-block btnGuestAction">
                     <i class="fa-solid fa-user-secret"></i> Continue as Guest
@@ -1287,6 +1293,6 @@
     <script src="audio-frequency.js"></script>
     <script src="apta-ai.js"></script>
     <script src="games.js"></script>
-    <script src="app.js?v=2.2.0"></script>
+    <script src="app.js?v=2.3.0"></script>
 </body>
 </html>

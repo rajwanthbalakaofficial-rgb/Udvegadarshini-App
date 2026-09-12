@@ -300,7 +300,10 @@ class UdvegadarshiniApp {
         const docSub = document.getElementById('docPortalSubtitle');
 
         if (this.currentUser.role === 'HospitalAdmin') {
-            if (docTab) docTab.style.display = 'inline-flex';
+            if (docTab) {
+                docTab.style.display = 'inline-flex';
+                docTab.innerHTML = `<i class="fa-solid fa-hospital"></i> Hospital Admin Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>`;
+            }
             if (personalTab) personalTab.style.display = 'none';
             if (soundTab) soundTab.style.display = 'none';
             if (gamesTab) gamesTab.style.display = 'none';
@@ -319,7 +322,10 @@ class UdvegadarshiniApp {
                 if (docTab) docTab.click();
             }
         } else if (this.currentUser.role === 'Doctor') {
-            if (docTab) docTab.style.display = 'inline-flex';
+            if (docTab) {
+                docTab.style.display = 'inline-flex';
+                docTab.innerHTML = `<i class="fa-solid fa-user-doctor"></i> Doctor Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>`;
+            }
             if (personalTab) personalTab.style.display = 'none';
             if (soundTab) soundTab.style.display = 'none';
             if (gamesTab) gamesTab.style.display = 'none';
@@ -338,7 +344,10 @@ class UdvegadarshiniApp {
                 if (docTab) docTab.click();
             }
         } else {
-            if (docTab) docTab.style.display = 'inline-flex';
+            if (docTab) {
+                docTab.style.display = 'inline-flex';
+                docTab.innerHTML = `<i class="fa-solid fa-hospital-user"></i> Hospital & Doctor Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>`;
+            }
             if (personalTab) personalTab.style.display = 'inline-flex';
             if (soundTab) soundTab.style.display = 'inline-flex';
             if (gamesTab) gamesTab.style.display = 'inline-flex';
