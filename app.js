@@ -275,20 +275,35 @@ class UdvegadarshiniApp {
             }
         }
 
-        // Toggle Doctor Portal Nav Tab
+        // Toggle Doctor Portal Nav Tab & Filter tabs dynamically by role
         const docTab = document.getElementById('navDoctorPortalTab');
-        if (docTab) {
-            if (this.currentUser.role === 'Doctor') {
-                docTab.style.display = 'inline-flex';
-                const docTitle = document.getElementById('docPortalTitle');
-                const docSub = document.getElementById('docPortalSubtitle');
-                if (docTitle) docTitle.textContent = `Welcome, ${this.currentUser.fullName}`;
-                if (docSub) docSub.textContent = `${this.currentUser.hospitalName || 'Clinical Hospital Center'} | Department of Neuroscience & Cardiology`;
-                this.renderDoctorPortal();
-            } else {
-                docTab.style.display = 'inline-flex'; // Available to explore or view clinical portal
-                this.renderDoctorPortal();
+        const personalTab = document.querySelector('[data-tab="tab-personal"]');
+        const soundTab = document.querySelector('[data-tab="tab-frequency"]');
+        const gamesTab = document.querySelector('[data-tab="tab-games"]');
+
+        if (this.currentUser.role === 'Doctor') {
+            if (docTab) docTab.style.display = 'inline-flex';
+            if (personalTab) personalTab.style.display = 'none';
+            if (soundTab) soundTab.style.display = 'none';
+            if (gamesTab) gamesTab.style.display = 'none';
+
+            const docTitle = document.getElementById('docPortalTitle');
+            const docSub = document.getElementById('docPortalSubtitle');
+            if (docTitle) docTitle.textContent = `Welcome, ${this.currentUser.fullName}`;
+            if (docSub) docSub.textContent = `${this.currentUser.hospitalName || 'Clinical Hospital Center'} | Department of Neuroscience & Cardiology`;
+            this.renderDoctorPortal();
+
+            // Auto-switch to Doctor Portal tab if currently on a patient-only tab
+            const activeTab = document.querySelector('.nav-tab.active');
+            if (!activeTab || activeTab.dataset.tab === 'tab-personal' || activeTab.dataset.tab === 'tab-frequency' || activeTab.dataset.tab === 'tab-games') {
+                if (docTab) docTab.click();
             }
+        } else {
+            if (docTab) docTab.style.display = 'inline-flex';
+            if (personalTab) personalTab.style.display = 'inline-flex';
+            if (soundTab) soundTab.style.display = 'inline-flex';
+            if (gamesTab) gamesTab.style.display = 'inline-flex';
+            this.renderDoctorPortal();
         }
     }
 
