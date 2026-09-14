@@ -88,13 +88,13 @@ class UdvegadarshiniApp {
 
     loadUsersDB() {
         // Perform clean database wipe & seed pre-approved demo accounts for ALL roles
-        const dbResetDone = localStorage.getItem('udvega_db_reset_v7_clean');
+        const dbResetDone = localStorage.getItem('udvega_db_reset_v8_clean');
         if (!dbResetDone) {
             localStorage.removeItem('udvega_users_db');
             localStorage.removeItem('udvega_hospitals_db');
             localStorage.removeItem('udvega_doctor_requests');
             localStorage.removeItem('udvega_user');
-            localStorage.setItem('udvega_db_reset_v7_clean', 'true');
+            localStorage.setItem('udvega_db_reset_v8_clean', 'true');
         }
 
         try {
@@ -112,9 +112,9 @@ class UdvegadarshiniApp {
 
         const defaultDemoUsers = [
             {
-                email: 'admin@gvp.com',
-                password: '1234',
-                fullName: 'State Master Healthcare Admin',
+                email: 'rajwanthbalakaofficial@gmail.com',
+                password: '1819',
+                fullName: 'Rajwanth Balaka',
                 subjectId: 'MASTER-ADMIN-001',
                 role: 'HospitalAdmin',
                 hospitalName: 'State Healthcare Authority Headquarters',
@@ -122,7 +122,7 @@ class UdvegadarshiniApp {
                 govVerified: true,
                 status: 'approved',
                 lang: 'teluglish',
-                phone: '+91 98765 00001',
+                phone: '+91 7093058824',
                 phoneVerified: true
             },
             {
@@ -283,7 +283,7 @@ class UdvegadarshiniApp {
                 const user = JSON.parse(saved);
 
                 // Enforce approval check for saved session
-                if (user.role === 'HospitalAdmin' && user.email.toLowerCase() !== 'admin@gvp.com' && (user.status === 'pending_gov_approval' || !user.govVerified)) {
+                if (user.role === 'HospitalAdmin' && user.email.toLowerCase() !== 'rajwanthbalakaofficial@gmail.com' && (user.status === 'pending_gov_approval' || !user.govVerified)) {
                     localStorage.removeItem('udvega_user');
                     this.currentUser = { subjectId: 'GUEST', fullName: 'Guest User', role: 'Personal Wellness' };
                     const loginModal = document.getElementById('loginModal');
@@ -294,7 +294,7 @@ class UdvegadarshiniApp {
                         alertBox.innerHTML = `
                             <div style="padding: 0.2rem 0;">
                                 <strong style="color: #ef4444;"><i class="fa-solid fa-lock"></i> Access Blocked: Approval Required ⛔</strong>
-                                <p style="margin: 0.4rem 0 0.5rem 0; font-size: 0.88rem;">Your Hospital Admin registration for <strong>${user.hospitalName}</strong> is pending approval from Master Admin (<code>admin@gvp.com</code>).</p>
+                                <p style="margin: 0.4rem 0 0.5rem 0; font-size: 0.88rem;">Your Hospital Admin registration for <strong>${user.hospitalName}</strong> is pending approval from Master Admin (<code>rajwanthbalakaofficial@gmail.com</code>).</p>
                                 <span style="font-size: 0.78rem; color: #94a3b8; display: block;">You CANNOT log in until the Master Admin verifies and grants approval to your hospital!</span>
                             </div>
                         `;
@@ -393,16 +393,16 @@ class UdvegadarshiniApp {
             if (modeToggleBox) modeToggleBox.style.display = 'none';
             connControls.forEach(ctrl => ctrl.style.display = 'none');
 
-            if (this.currentUser.email && this.currentUser.email.toLowerCase() === 'admin@gvp.com') {
-                // MASTER ADMIN SUPER USER LOGIN (admin@gvp.com)
-                this.currentUser.fullName = 'State Master Healthcare Admin';
+            if (this.currentUser.email && this.currentUser.email.toLowerCase() === 'rajwanthbalakaofficial@gmail.com') {
+                // MASTER ADMIN SUPER USER LOGIN (rajwanthbalakaofficial@gmail.com)
+                this.currentUser.fullName = 'Rajwanth Balaka';
                 this.currentUser.subjectId = 'MASTER-ADMIN-001';
                 this.currentUser.hospitalName = 'State Healthcare Authority Headquarters';
                 localStorage.setItem('udvega_user', JSON.stringify(this.currentUser));
 
-                document.getElementById('userNameText').textContent = 'State Master Healthcare Admin';
-                document.getElementById('userRoleText').textContent = 'Super Admin (MASTER-ADMIN-001)';
-                document.getElementById('userAvatar').textContent = 'M';
+                document.getElementById('userNameText').textContent = 'Rajwanth Balaka';
+                document.getElementById('userRoleText').textContent = 'State Master Admin (MASTER-ADMIN-001)';
+                document.getElementById('userAvatar').textContent = 'R';
 
                 if (docTab) {
                     docTab.style.display = 'inline-flex';
@@ -415,7 +415,7 @@ class UdvegadarshiniApp {
                 if (patientClinicalView) patientClinicalView.style.display = 'none';
 
                 if (bannerBadge) bannerBadge.innerHTML = `<i class="fa-solid fa-shield-halved"></i> State Healthcare Master Command`;
-                if (docTitle) docTitle.textContent = `Welcome, State Master Admin`;
+                if (docTitle) docTitle.textContent = `Welcome, Rajwanth Balaka (State Master Admin)`;
                 if (docSub) docSub.textContent = `State Accreditation Authority & Hardware Band Distribution Headquarters`;
 
                 this.renderMasterAdminPortal();
@@ -902,7 +902,7 @@ class UdvegadarshiniApp {
                         alertBox.innerHTML = `
                             <div style="padding: 0.2rem 0;">
                                 <strong style="color: #f59e0b;"><i class="fa-solid fa-hourglass-half"></i> Hospital Registration Submitted ⏳</strong>
-                                <p style="margin: 0.3rem 0 0; font-size: 0.88rem;">Registration for <strong>${hospitalName}</strong> submitted! Pending approval from Master Admin (<code>admin@gvp.com</code>). You CANNOT log in until approved.</p>
+                                <p style="margin: 0.3rem 0 0; font-size: 0.88rem;">Registration for <strong>${hospitalName}</strong> submitted! Pending approval from Master Admin (<code>rajwanthbalakaofficial@gmail.com</code>). You CANNOT log in until approved.</p>
                             </div>
                         `;
                     } else {
@@ -940,13 +940,13 @@ class UdvegadarshiniApp {
                 );
 
                 if (match) {
-                    if (match.role === 'HospitalAdmin' && match.email.toLowerCase() !== 'admin@gvp.com' && (match.status === 'pending_gov_approval' || !match.govVerified)) {
+                    if (match.role === 'HospitalAdmin' && match.email.toLowerCase() !== 'rajwanthbalakaofficial@gmail.com' && (match.status === 'pending_gov_approval' || !match.govVerified)) {
                         if (alertBox) {
                             alertBox.className = 'auth-alert-box';
                             alertBox.innerHTML = `
                                 <div style="padding: 0.2rem 0;">
                                     <strong style="color: #ef4444;"><i class="fa-solid fa-lock"></i> Access Blocked: Approval Required ⛔</strong>
-                                    <p style="margin: 0.4rem 0 0.5rem 0; font-size: 0.88rem;">Your Hospital Admin registration for <strong>${match.hospitalName}</strong> is pending approval from Master Admin (<code>admin@gvp.com</code>).</p>
+                                    <p style="margin: 0.4rem 0 0.5rem 0; font-size: 0.88rem;">Your Hospital Admin registration for <strong>${match.hospitalName}</strong> is pending approval from Master Admin (<code>rajwanthbalakaofficial@gmail.com</code>).</p>
                                     <span style="font-size: 0.78rem; color: #cbd5e1; display: block;">You CANNOT log in until Master Admin verifies and grants approval to your hospital!</span>
                                 </div>
                             `;
@@ -2227,7 +2227,7 @@ class UdvegadarshiniApp {
                 `;
             }
 
-            if (this.currentUser && this.currentUser.email && this.currentUser.email.toLowerCase() === 'admin@gvp.com') {
+            if (this.currentUser && this.currentUser.email && this.currentUser.email.toLowerCase() === 'rajwanthbalakaofficial@gmail.com') {
                 this.renderHospitalAdminPortal();
             }
         }
@@ -3028,7 +3028,7 @@ class UdvegadarshiniApp {
     }
 
     quickDemoLogin(roleType) {
-        let emailTarget = 'admin@gvp.com';
+        let emailTarget = 'rajwanthbalakaofficial@gmail.com';
         if (roleType === 'hospital') emailTarget = 'yashoda@hospital.com';
         else if (roleType === 'doctor') emailTarget = 'doctor@gvp.com';
         else if (roleType === 'patient') emailTarget = 'patient@gmail.com';
