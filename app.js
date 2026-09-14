@@ -112,18 +112,24 @@ class UdvegadarshiniApp {
         const masterAdmin = {
             email: 'admin@gvp.com',
             password: '1234',
-            fullName: 'GVP Master Healthcare Admin',
-            subjectId: 'HOSP-REG-101',
+            fullName: 'State Master Healthcare Admin',
+            subjectId: 'MASTER-ADMIN-001',
             role: 'HospitalAdmin',
-            hospitalName: 'GVP Multi-Specialty Hospital',
-            govLicenseNo: 'NABH-AP-2026-8841',
+            hospitalName: 'State Healthcare Authority Headquarters',
+            govLicenseNo: 'STATE-AUTH-2026-HQ',
             govVerified: true,
             status: 'approved',
             lang: 'teluglish'
         };
 
-        // Guarantee ONLY Master Admin exists on clean startup (or add if missing)
-        if (!this.usersDB.some(u => u.email && u.email.toLowerCase() === masterAdmin.email.toLowerCase())) {
+        // Guarantee ONLY Master Admin exists on clean startup (or update if exists)
+        const existingMaster = this.usersDB.find(u => u.email && u.email.toLowerCase() === masterAdmin.email.toLowerCase());
+        if (existingMaster) {
+            existingMaster.fullName = 'State Master Healthcare Admin';
+            existingMaster.subjectId = 'MASTER-ADMIN-001';
+            existingMaster.hospitalName = 'State Healthcare Authority Headquarters';
+            existingMaster.govLicenseNo = 'STATE-AUTH-2026-HQ';
+        } else {
             this.usersDB.push(masterAdmin);
         }
 
@@ -351,6 +357,15 @@ class UdvegadarshiniApp {
 
             if (this.currentUser.email && this.currentUser.email.toLowerCase() === 'admin@gvp.com') {
                 // MASTER ADMIN SUPER USER LOGIN (admin@gvp.com)
+                this.currentUser.fullName = 'State Master Healthcare Admin';
+                this.currentUser.subjectId = 'MASTER-ADMIN-001';
+                this.currentUser.hospitalName = 'State Healthcare Authority Headquarters';
+                localStorage.setItem('udvega_user', JSON.stringify(this.currentUser));
+
+                document.getElementById('userNameText').textContent = 'State Master Healthcare Admin';
+                document.getElementById('userRoleText').textContent = 'Super Admin (MASTER-ADMIN-001)';
+                document.getElementById('userAvatar').textContent = 'M';
+
                 if (docTab) {
                     docTab.style.display = 'inline-flex';
                     docTab.innerHTML = `<i class="fa-solid fa-crown"></i> Master Admin Portal`;
@@ -361,7 +376,7 @@ class UdvegadarshiniApp {
                 if (docPortalView) docPortalView.style.display = 'none';
 
                 if (bannerBadge) bannerBadge.innerHTML = `<i class="fa-solid fa-shield-halved"></i> State Healthcare Master Command`;
-                if (docTitle) docTitle.textContent = `Welcome, Master Admin (${this.currentUser.fullName})`;
+                if (docTitle) docTitle.textContent = `Welcome, State Master Admin`;
                 if (docSub) docSub.textContent = `State Accreditation Authority & Hardware Band Distribution Headquarters`;
 
                 this.renderMasterAdminPortal();
