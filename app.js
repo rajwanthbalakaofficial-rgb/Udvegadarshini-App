@@ -342,6 +342,7 @@ class UdvegadarshiniApp {
         const masterAdminView = document.getElementById('masterAdminView');
         const hospAdminView = document.getElementById('hospitalAdminView');
         const docPortalView = document.getElementById('doctorPortalView');
+        const patientClinicalView = document.getElementById('patientClinicalView');
         const bannerBadge = document.getElementById('portalBannerBadge');
         const docTitle = document.getElementById('docPortalTitle');
         const docSub = document.getElementById('docPortalSubtitle');
@@ -374,6 +375,7 @@ class UdvegadarshiniApp {
                 if (masterAdminView) masterAdminView.style.display = 'block';
                 if (hospAdminView) hospAdminView.style.display = 'none';
                 if (docPortalView) docPortalView.style.display = 'none';
+                if (patientClinicalView) patientClinicalView.style.display = 'none';
 
                 if (bannerBadge) bannerBadge.innerHTML = `<i class="fa-solid fa-shield-halved"></i> State Healthcare Master Command`;
                 if (docTitle) docTitle.textContent = `Welcome, State Master Admin`;
@@ -390,6 +392,7 @@ class UdvegadarshiniApp {
                 if (masterAdminView) masterAdminView.style.display = 'none';
                 if (hospAdminView) hospAdminView.style.display = 'block';
                 if (docPortalView) docPortalView.style.display = 'none';
+                if (patientClinicalView) patientClinicalView.style.display = 'none';
 
                 if (bannerBadge) bannerBadge.innerHTML = `<i class="fa-solid fa-hospital"></i> Hospital Executive Admin Portal`;
                 if (docTitle) docTitle.textContent = `Welcome, ${this.currentUser.fullName}`;
@@ -418,6 +421,7 @@ class UdvegadarshiniApp {
             if (masterAdminView) masterAdminView.style.display = 'none';
             if (hospAdminView) hospAdminView.style.display = 'none';
             if (docPortalView) docPortalView.style.display = 'block';
+            if (patientClinicalView) patientClinicalView.style.display = 'none';
 
             if (bannerBadge) bannerBadge.innerHTML = `<i class="fa-solid fa-user-doctor"></i> Doctor Clinical Telemetry Portal`;
             if (docTitle) docTitle.textContent = `Welcome, ${this.currentUser.fullName}`;
@@ -436,13 +440,19 @@ class UdvegadarshiniApp {
 
             if (docTab) {
                 docTab.style.display = 'inline-flex';
-                docTab.innerHTML = `<i class="fa-solid fa-hospital-user"></i> Hospital & Doctor Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>`;
+                docTab.innerHTML = `<i class="fa-solid fa-user-doctor"></i> My Doctor Consultation`;
             }
 
             if (masterAdminView) masterAdminView.style.display = 'none';
             if (hospAdminView) hospAdminView.style.display = 'none';
-            if (docPortalView) docPortalView.style.display = 'block';
-            this.renderDoctorPortal();
+            if (docPortalView) docPortalView.style.display = 'none';
+            if (patientClinicalView) patientClinicalView.style.display = 'block';
+
+            if (bannerBadge) bannerBadge.innerHTML = `<i class="fa-solid fa-hospital-user"></i> Patient Telemetry & Doctor Consultation`;
+            if (docTitle) docTitle.textContent = `Welcome, ${this.currentUser.fullName || 'Patient'}`;
+            if (docSub) docSub.textContent = `Subject ID: ${this.currentUser.subjectId || 'N/A'} | Direct Consultation & Telemetry Connection`;
+
+            this.renderPatientClinicalView();
         }
     }
 
@@ -2425,6 +2435,105 @@ class UdvegadarshiniApp {
 
             this.updateUserProfileUI();
             this.renderDoctorPortal();
+        }
+    }
+
+    renderPatientClinicalView() {
+        const patientViewDocName = document.getElementById('patientViewDocName');
+        const patientViewHospName = document.getElementById('patientViewHospName');
+        const patientViewStatusBadge = document.getElementById('patientViewStatusBadge');
+        const patientViewSubjectId = document.getElementById('patientViewSubjectId');
+        const patientSessionLogsBody = document.getElementById('patientSessionLogsBody');
+        const btnPatientDownloadPDF = document.getElementById('btnPatientDownloadPDF');
+
+        if (patientViewSubjectId) {
+            patientViewSubjectId.textContent = this.currentUser.subjectId || 'SUBJ-GUEST';
+        }
+
+        let doctorName = this.currentUser.doctorName || '';
+        let hospName = this.currentUser.hospitalName || 'GVP Multi-Specialty Hospital';
+        let req = this.doctorRequests.find(r => 
+            (r.patientEmail && r.patientEmail.toLowerCase() === (this.currentUser.email || '').toLowerCase()) || 
+            (r.patientSubjectId && r.patientSubjectId === this.currentUser.subjectId)
+        );
+
+        let status = req ? req.status : (this.currentUser.doctorApprovalStatus || 'pending');
+
+        if (req && req.doctorName) doctorName = req.doctorName;
+        if (req && req.hospitalName) hospName = req.hospitalName;
+
+        if (patientViewDocName) {
+            patientViewDocName.innerHTML = doctorName 
+                ? `Assigned Doctor: <strong>${doctorName}</strong>`
+                : `Assigned Doctor: <span style="color: #94a3b8; font-weight: normal;">Not linked yet</span>`;
+        }
+
+        if (patientViewHospName) {
+            patientViewHospName.innerHTML = `<i class="fa-solid fa-hospital"></i> Hospital: ${hospName}`;
+        }
+
+        if (patientViewStatusBadge) {
+            if (!doctorName) {
+                patientViewStatusBadge.innerHTML = `
+                    <span class="status-badge" style="font-size: 0.85rem; padding: 0.4rem 0.9rem; background: rgba(148, 163, 184, 0.2); color: #cbd5e1;">
+                        <i class="fa-solid fa-link-slash"></i> No Doctor Selected
+                    </span>
+                `;
+            } else if (status === 'approved') {
+                patientViewStatusBadge.innerHTML = `
+                    <span class="status-badge status-badge-approved" style="font-size: 0.85rem; padding: 0.4rem 0.9rem; background: rgba(16, 185, 129, 0.2); color: #34d399;">
+                        <i class="fa-solid fa-circle-check"></i> Linked & Telemetry Synchronized ✓
+                    </span>
+                `;
+            } else if (status === 'rejected') {
+                patientViewStatusBadge.innerHTML = `
+                    <span class="status-badge status-badge-rejected" style="font-size: 0.85rem; padding: 0.4rem 0.9rem; background: rgba(239, 68, 68, 0.2); color: #f87171;">
+                        <i class="fa-solid fa-circle-xmark"></i> Access Request Declined
+                    </span>
+                `;
+            } else {
+                patientViewStatusBadge.innerHTML = `
+                    <span class="status-badge status-badge-pending" style="font-size: 0.85rem; padding: 0.4rem 0.9rem; background: rgba(245, 158, 11, 0.2); color: #fbbf24;">
+                        <i class="fa-solid fa-clock"></i> Link Request Pending Doctor Approval ⏳
+                    </span>
+                `;
+            }
+        }
+
+        if (patientSessionLogsBody) {
+            if (this.journalEntries && this.journalEntries.length > 0) {
+                patientSessionLogsBody.innerHTML = this.journalEntries.slice(0, 15).map(entry => {
+                    const stressVal = entry.stressScore || entry.stressLevel || Math.round((entry.stressIndex || 0.4) * 100);
+                    let stateBadge = `<span class="badge-tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399;"><i class="fa-solid fa-smile"></i> Balanced Baseline</span>`;
+                    if (stressVal > 70) {
+                        stateBadge = `<span class="badge-tag" style="background: rgba(239, 68, 68, 0.2); color: #f87171;"><i class="fa-solid fa-triangle-exclamation"></i> High Stress Alert</span>`;
+                    } else if (stressVal > 40) {
+                        stateBadge = `<span class="badge-tag" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;"><i class="fa-solid fa-face-meh"></i> Elevated Focus</span>`;
+                    }
+
+                    return `
+                        <tr>
+                            <td><i class="fa-regular fa-calendar-check" style="color:#06b6d4;"></i> ${entry.timestamp || entry.date || new Date().toLocaleString()}</td>
+                            <td><strong style="color:${stressVal > 70 ? '#f87171' : stressVal > 40 ? '#fbbf24' : '#34d399'};">${stressVal}%</strong></td>
+                            <td>${stateBadge}</td>
+                            <td><span class="badge-tag" style="background: rgba(6, 182, 212, 0.15); color: #38bdf8;"><i class="fa-solid fa-cloud-arrow-up"></i> Synced to Cloud</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                patientSessionLogsBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #94a3b8; padding: 1.5rem;">
+                            <i class="fa-solid fa-brain" style="font-size: 1.5rem; color: #6366f1; margin-bottom: 0.5rem; display: block;"></i>
+                            No EEG stress session logs recorded yet. Start a session or connect hardware to log readings for your doctor.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        if (btnPatientDownloadPDF) {
+            btnPatientDownloadPDF.onclick = () => this.exportPDFReport();
         }
     }
 
