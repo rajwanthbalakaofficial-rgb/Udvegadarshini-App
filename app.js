@@ -468,8 +468,8 @@ class UdvegadarshiniApp {
             // Auto-switch to Doctor Portal tab
             if (docTab) docTab.click();
 
-        } else {
-            // SHOW CONSUMER TABS & CONTROLS FOR PATIENTS / WELLNESS USERS
+        } else if (this.currentUser.role === 'Subject') {
+            // PATIENT CLINICAL CONSULTATION VIEW
             this.setMode('personal');
             allNavTabs.forEach(tab => tab.style.display = 'inline-flex');
             if (modeToggleBox) modeToggleBox.style.display = 'inline-flex';
@@ -490,6 +490,32 @@ class UdvegadarshiniApp {
             if (docSub) docSub.textContent = `Subject ID: ${this.currentUser.subjectId || 'N/A'} | Direct Consultation & Telemetry Connection`;
 
             this.renderPatientClinicalView();
+
+        } else {
+            // PERSONAL DAILY WELLNESS USER / RESEARCHER / GUEST (NO CLINICAL DOCTOR TAB)
+            this.setMode('personal');
+            allNavTabs.forEach(tab => {
+                if (tab === docTab) tab.style.display = 'none';
+                else tab.style.display = 'inline-flex';
+            });
+            if (modeToggleBox) modeToggleBox.style.display = 'inline-flex';
+            connControls.forEach(ctrl => ctrl.style.display = 'inline-flex');
+
+            if (docTab) {
+                docTab.style.display = 'none';
+            }
+
+            if (masterAdminView) masterAdminView.style.display = 'none';
+            if (hospAdminView) hospAdminView.style.display = 'none';
+            if (docPortalView) docPortalView.style.display = 'none';
+            if (patientClinicalView) patientClinicalView.style.display = 'none';
+
+            // Auto switch off doctor portal tab if currently active
+            const activeTab = document.querySelector('.main-nav .nav-tab.active');
+            if (activeTab === docTab) {
+                const monitorTab = document.querySelector('[data-tab="tab-monitor"]');
+                if (monitorTab) monitorTab.click();
+            }
         }
     }
 
