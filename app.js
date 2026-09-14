@@ -132,12 +132,17 @@ class UdvegadarshiniApp {
             this.usersDB = [masterAdmin];
         }
 
-        // Ensure non-master Hospital Admin accounts require Master Admin approval (admin@gvp.com)
+        // Ensure non-master Hospital Admin accounts & Doctor accounts require proper approvals
         this.usersDB.forEach(u => {
             if (u.role === 'HospitalAdmin' && u.email.toLowerCase() !== 'admin@gvp.com' && u.subjectId !== 'HOSP-REG-101') {
                 if (u.status !== 'approved') {
                     u.status = 'pending_gov_approval';
                     u.govVerified = false;
+                }
+            }
+            if (u.role === 'Doctor') {
+                if (u.status !== 'approved') {
+                    u.status = 'pending_hospital_approval';
                 }
             }
         });
@@ -822,10 +827,16 @@ class UdvegadarshiniApp {
                         return;
                     }
 
-                    if (match.role === 'Doctor' && match.status === 'pending_hospital_approval') {
+                    if (match.role === 'Doctor' && (match.status === 'pending_hospital_approval' || match.status !== 'approved')) {
                         if (alertBox) {
                             alertBox.className = 'auth-alert-box';
-                            alertBox.textContent = `Login Pending ⏳: Your Doctor registration is waiting for approval from your Hospital Admin (${match.hospitalName || 'Hospital'}).`;
+                            alertBox.innerHTML = `
+                                <div style="padding: 0.2rem 0;">
+                                    <strong style="color: #ef4444;"><i class="fa-solid fa-lock"></i> Access Blocked: Hospital Admin Approval Required ⛔</strong>
+                                    <p style="margin: 0.4rem 0 0.5rem 0; font-size: 0.88rem;">Your Doctor registration for <strong>${match.hospitalName || 'Hospital'}</strong> is pending approval from your Hospital Admin.</p>
+                                    <span style="font-size: 0.78rem; color: #cbd5e1; display: block;">You CANNOT log in until your Hospital Admin approves your doctor account!</span>
+                                </div>
+                            `;
                             alertBox.style.display = 'block';
                         }
                         return;
