@@ -1582,13 +1582,17 @@ class UdvegadarshiniApp {
             govLicDisplay.textContent = this.currentUser.govLicenseNo || this.currentUser.subjectId || 'NABH-AP-2026-8841';
         }
 
-        // Render State Healthcare Authority Verification Portal (Visible to admin@gvp.com Master Admin)
+        // Render State Healthcare Authority Verification Portal & Approved Hospitals (Visible to admin@gvp.com Master Admin)
         const stateAuthBanner = document.getElementById('hospStateAuthorityBanner');
         const pendingHospitalsList = document.getElementById('pendingHospitalsList');
+        const approvedHospitalsSection = document.getElementById('hospMasterApprovedSection');
+        const approvedHospitalsList = document.getElementById('approvedHospitalsList');
 
-        if (stateAuthBanner && pendingHospitalsList) {
-            if (this.currentUser.email && this.currentUser.email.toLowerCase() === 'admin@gvp.com') {
-                const pendingHospitals = this.usersDB.filter(u => u.role === 'HospitalAdmin' && u.status === 'pending_gov_approval');
+        if (this.currentUser.email && this.currentUser.email.toLowerCase() === 'admin@gvp.com') {
+            const pendingHospitals = this.usersDB.filter(u => u.role === 'HospitalAdmin' && u.status === 'pending_gov_approval');
+            const approvedHospitals = this.usersDB.filter(u => u.role === 'HospitalAdmin' && u.status === 'approved');
+
+            if (stateAuthBanner && pendingHospitalsList) {
                 if (pendingHospitals.length > 0) {
                     stateAuthBanner.style.display = 'block';
                     pendingHospitalsList.innerHTML = pendingHospitals.map(hosp => `
@@ -1614,9 +1618,55 @@ class UdvegadarshiniApp {
                 } else {
                     stateAuthBanner.style.display = 'none';
                 }
-            } else {
-                stateAuthBanner.style.display = 'none';
             }
+
+            if (approvedHospitalsSection && approvedHospitalsList) {
+                approvedHospitalsSection.style.display = 'block';
+                approvedHospitalsList.innerHTML = approvedHospitals.map(hosp => {
+                    const hospDocs = this.usersDB.filter(u => u.role === 'Doctor' && (!u.hospitalName || u.hospitalName === hosp.hospitalName));
+                    const hospPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hosp.hospitalName));
+                    const allocatedBands = Math.max(15, hospPatients.length + 8);
+                    const activeBands = hospPatients.length > 0 ? hospPatients.length : 5;
+
+                    return `
+                        <div class="request-card" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(99, 102, 241, 0.3); padding: 1.1rem; border-radius: 10px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="background: rgba(99, 102, 241, 0.2); color: #818cf8; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fa-solid fa-hospital-user"></i></div>
+                                    <div>
+                                        <strong style="color: #f8fafc; font-size: 0.95rem; display: block;">${hosp.hospitalName}</strong>
+                                        <span style="font-size: 0.76rem; color: #a7f3d0;"><i class="fa-solid fa-shield-check"></i> License: ${hosp.govLicenseNo || 'NABH-AP-2026-8841'}</span>
+                                    </div>
+                                </div>
+                                <span class="badge-tag" style="background: rgba(16,185,129,0.15); color: #34d399; font-size: 0.75rem;">Verified ✓</span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem; background: rgba(30,41,59,0.6); padding: 0.7rem; border-radius: 6px;">
+                                <div>
+                                    <span style="font-size: 0.72rem; color: #94a3b8; display: block; text-transform: uppercase;">Allocated Bands</span>
+                                    <strong style="font-size: 1.05rem; color: #38bdf8;">${allocatedBands} Bands</strong>
+                                </div>
+                                <div>
+                                    <span style="font-size: 0.72rem; color: #94a3b8; display: block; text-transform: uppercase;">Active Hardware</span>
+                                    <strong style="font-size: 1.05rem; color: #34d399;">${activeBands} Active</strong>
+                                </div>
+                            </div>
+
+                            <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.9rem; display: flex; justify-content: space-between;">
+                                <span><i class="fa-solid fa-user-doctor"></i> Registered Doctors: <strong>${hospDocs.length}</strong></span>
+                                <span><i class="fa-solid fa-hospital-user"></i> Admin: <strong>${hosp.fullName || 'Hospital Admin'}</strong></span>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-primary" onclick="app.inspectHospitalBandInventory('${hosp.hospitalName.replace(/'/g, "\\'")}')" style="width: 100%; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; font-weight: 600; cursor: pointer; padding: 0.5rem; border-radius: 6px;">
+                                <i class="fa-solid fa-eye"></i> Inspect Band Inventory & Doctor Roster
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+        } else {
+            if (stateAuthBanner) stateAuthBanner.style.display = 'none';
+            if (approvedHospitalsSection) approvedHospitalsSection.style.display = 'none';
         }
 
         // Calculate Hospital Aggregate Analytics & Critical Alerts
@@ -1846,6 +1896,113 @@ class UdvegadarshiniApp {
                 this.renderHospitalAdminPortal();
             }
         }
+    }
+
+    inspectHospitalBandInventory(hospitalName) {
+        const modal = document.getElementById('masterHospitalInspectModal');
+        if (!modal) return;
+
+        const hosp = this.usersDB.find(u => u.role === 'HospitalAdmin' && u.hospitalName === hospitalName) || {
+            hospitalName: hospitalName,
+            govLicenseNo: 'NABH-AP-2026-8841'
+        };
+
+        const titleElem = document.getElementById('inspectHospName');
+        const licenseElem = document.getElementById('inspectHospLicense');
+        const totalBandsElem = document.getElementById('inspectTotalBandsCount');
+        const activeBandsElem = document.getElementById('inspectActiveBandsCount');
+        const docCountElem = document.getElementById('inspectDoctorCount');
+        const docListElem = document.getElementById('inspectDoctorList');
+        const mappingTableBody = document.getElementById('inspectBandMappingTableBody');
+
+        if (titleElem) titleElem.innerHTML = `<i class="fa-solid fa-hospital"></i> ${hospitalName}`;
+        if (licenseElem) licenseElem.innerHTML = `NABH License: <code>${hosp.govLicenseNo || 'NABH-AP-2026-8841'}</code> | Status: State Accredited ✓`;
+
+        const hospDocs = this.usersDB.filter(u => u.role === 'Doctor' && (!u.hospitalName || u.hospitalName === hospitalName));
+        const hospPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hospitalName));
+
+        const totalBands = Math.max(15, hospPatients.length + 8);
+        const activeBands = hospPatients.length > 0 ? hospPatients.length : 5;
+
+        if (totalBandsElem) totalBandsElem.textContent = `${totalBands} Bands`;
+        if (activeBandsElem) activeBandsElem.textContent = `${activeBands} Active`;
+        if (docCountElem) docCountElem.textContent = `${hospDocs.length} Doctors`;
+
+        // Render Doctor Roster & Band Allocations Cards
+        if (docListElem) {
+            if (hospDocs.length === 0) {
+                docListElem.innerHTML = `
+                    <div style="grid-column: 1 / -1; padding: 1rem; background: rgba(15,23,42,0.5); border-radius: 8px; color: #94a3b8; text-align: center;">
+                        No doctors registered under this hospital yet.
+                    </div>
+                `;
+            } else {
+                docListElem.innerHTML = hospDocs.map(d => {
+                    const docPatients = hospPatients.filter(p => p.doctorEmail === d.email || (p.doctorName && p.doctorName.includes(d.fullName)));
+                    const docBandsCount = Math.max(3, docPatients.length + 2);
+                    return `
+                        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(99,102,241,0.25); padding: 0.9rem; border-radius: 8px;">
+                            <strong style="color: #f8fafc; display: block;">${d.fullName}</strong>
+                            <span style="font-size: 0.78rem; color: #818cf8; display: block; margin-bottom: 0.4rem;">Dept: ${d.specialization || 'Neuro-Cardiology'}</span>
+                            <div style="font-size: 0.8rem; color: #cbd5e1; display: flex; justify-content: space-between; background: rgba(30,41,59,0.5); padding: 0.4rem 0.6rem; border-radius: 4px;">
+                                <span>Hardware Bands: <strong>${docBandsCount} Bands</strong></span>
+                                <span>Patients Assigned: <strong>${docPatients.length}</strong></span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Render Patient ID & Band ID Mapping Table (NO personal telemetry clutter)
+        if (mappingTableBody) {
+            if (hospPatients.length === 0) {
+                // Generate demo hardware band inventory mapping rows
+                mappingTableBody.innerHTML = `
+                    <tr>
+                        <td><strong>SUBJ-3221</strong></td>
+                        <td><code>EEG-BAND-9041</code></td>
+                        <td>Dr. Rajesh Sharma</td>
+                        <td><span class="status-badge status-badge-approved">Connected / Active 🟢</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>SUBJ-4812</strong></td>
+                        <td><code>EEG-BAND-9042</code></td>
+                        <td>Dr. Rajesh Sharma</td>
+                        <td><span class="status-badge status-badge-approved">Connected / Active 🟢</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>SUBJ-5509</strong></td>
+                        <td><code>EEG-BAND-9043</code></td>
+                        <td>Dr. Anitha Reddy</td>
+                        <td><span class="badge-tag" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">Standby / Paused 🟠</span></td>
+                    </tr>
+                `;
+            } else {
+                mappingTableBody.innerHTML = hospPatients.map((p, idx) => {
+                    const bandId = `EEG-BAND-${9040 + idx + 1}`;
+                    const docName = p.doctorName || 'Assigned Doctor';
+                    const statusStr = idx % 3 === 2 ? 'Standby / Paused 🟠' : 'Connected / Active 🟢';
+                    const statusClass = idx % 3 === 2 ? 'badge-tag' : 'status-badge status-badge-approved';
+                    const statusStyle = idx % 3 === 2 ? 'background: rgba(245, 158, 11, 0.15); color: #f59e0b;' : '';
+                    return `
+                        <tr>
+                            <td><strong>${p.subjectId}</strong></td>
+                            <td><code>${bandId}</code></td>
+                            <td>${docName}</td>
+                            <td><span class="${statusClass}" style="${statusStyle}">${statusStr}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    closeMasterInspectModal() {
+        const modal = document.getElementById('masterHospitalInspectModal');
+        if (modal) modal.style.display = 'none';
     }
 
     rejectDoctorAccount(email) {

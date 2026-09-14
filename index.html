@@ -1231,6 +1231,20 @@
                         </div>
                     </div>
 
+                    <!-- MASTER ADMIN APPROVED HOSPITALS & HARDWARE BAND INVENTORY SECTION -->
+                    <div class="card" id="hospMasterApprovedSection" style="display: none; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 1.5rem; padding: 1.2rem;">
+                        <div class="flex-between" style="flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+                            <div>
+                                <h3 style="margin: 0; color: #818cf8;"><i class="fa-solid fa-layer-group"></i> State Accredited Hospitals & Hardware Band Inventory</h3>
+                                <p style="margin: 0; font-size: 0.85rem; color: #94a3b8;">Overview of all verified hospitals, allocated EEG stress bands, active hardware, and doctor rosters.</p>
+                            </div>
+                            <span class="badge-tag" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4);"><i class="fa-solid fa-microchip"></i> Hardware Tracking Center</span>
+                        </div>
+                        <div id="approvedHospitalsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                            <!-- Dynamic Approved Hospital Band Cards -->
+                        </div>
+                    </div>
+
                     <!-- EMERGENCY HIGH STRESS CRITICAL ALERT TICKER BANNER -->
                     <div class="critical-alert-banner card" id="hospCriticalAlertBanner" style="display: none; background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(185, 28, 28, 0.3)); border: 1px solid #ef4444; margin-bottom: 1.5rem;">
                         <div class="flex-between" style="flex-wrap: wrap; gap: 10px; align-items: center;">
@@ -1556,6 +1570,59 @@
             
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="btnClosePatientTelemetryModalFooter">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MASTER ADMIN HOSPITAL HARDWARE BAND & DOCTOR INSPECTION MODAL -->
+    <div class="modal-overlay" id="masterHospitalInspectModal" style="display: none; align-items: center; justify-content: center; z-index: 10000; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);">
+        <div class="modal-card card" style="max-width: 850px; width: 92%; max-height: 90vh; overflow-y: auto; background: #1e293b; border: 1px solid rgba(16,185,129,0.3); padding: 1.8rem; border-radius: 14px;">
+            <div class="flex-between" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1.2rem;">
+                <div>
+                    <h3 id="inspectHospName" style="margin: 0; color: #a7f3d0;"><i class="fa-solid fa-hospital"></i> Hospital Band Inventory & Doctor Roster</h3>
+                    <p id="inspectHospLicense" style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: #94a3b8;">License: NABH-AP-2026-8841 | Status: State Accredited ✓</p>
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="app.closeMasterInspectModal()"><i class="fa-solid fa-xmark"></i> Close</button>
+            </div>
+
+            <!-- STATS HEADER -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="background: rgba(15,23,42,0.6); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                    <span style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase;">Total Hardware Bands Provided</span>
+                    <h3 id="inspectTotalBandsCount" style="margin: 0.2rem 0 0 0; color: #38bdf8;">25 Bands</h3>
+                </div>
+                <div style="background: rgba(15,23,42,0.6); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                    <span style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase;">Active Connected Bands</span>
+                    <h3 id="inspectActiveBandsCount" style="margin: 0.2rem 0 0 0; color: #34d399;">18 Active</h3>
+                </div>
+                <div style="background: rgba(15,23,42,0.6); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                    <span style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase;">Registered Doctors</span>
+                    <h3 id="inspectDoctorCount" style="margin: 0.2rem 0 0 0; color: #a7f3d0;">4 Doctors</h3>
+                </div>
+            </div>
+
+            <!-- DOCTOR ROSTER & BANDS ASSIGNED -->
+            <h4 style="color: #cbd5e1; margin-bottom: 0.6rem;"><i class="fa-solid fa-user-doctor"></i> Doctor Roster & Band Allocations</h4>
+            <div id="inspectDoctorList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <!-- Dynamic Doctor Roster Cards -->
+            </div>
+
+            <!-- PATIENT ID & BAND ID MAPPING TABLE -->
+            <h4 style="color: #cbd5e1; margin-bottom: 0.6rem;"><i class="fa-solid fa-microchip"></i> Patient ID & Hardware Band ID Inventory Mapping</h4>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Assigned Hardware Band ID</th>
+                            <th>Assigned Doctor</th>
+                            <th>Hardware Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inspectBandMappingTableBody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
