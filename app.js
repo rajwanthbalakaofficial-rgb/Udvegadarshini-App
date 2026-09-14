@@ -87,14 +87,14 @@ class UdvegadarshiniApp {
     }
 
     loadUsersDB() {
-        // Perform clean database wipe & reset to ONLY Master Admin
-        const dbResetDone = localStorage.getItem('udvega_db_reset_v6_clean');
+        // Perform clean database wipe & seed pre-approved demo accounts for ALL roles
+        const dbResetDone = localStorage.getItem('udvega_db_reset_v7_clean');
         if (!dbResetDone) {
             localStorage.removeItem('udvega_users_db');
             localStorage.removeItem('udvega_hospitals_db');
             localStorage.removeItem('udvega_doctor_requests');
             localStorage.removeItem('udvega_user');
-            localStorage.setItem('udvega_db_reset_v6_clean', 'true');
+            localStorage.setItem('udvega_db_reset_v7_clean', 'true');
         }
 
         try {
@@ -110,47 +110,83 @@ class UdvegadarshiniApp {
             this.usersDB = [];
         }
 
-        const masterAdmin = {
-            email: 'admin@gvp.com',
-            password: '1234',
-            fullName: 'State Master Healthcare Admin',
-            subjectId: 'MASTER-ADMIN-001',
-            role: 'HospitalAdmin',
-            hospitalName: 'State Healthcare Authority Headquarters',
-            govLicenseNo: 'STATE-AUTH-2026-HQ',
-            govVerified: true,
-            status: 'approved',
-            lang: 'teluglish'
-        };
-
-        // Guarantee ONLY Master Admin exists on clean startup (or update if exists)
-        const existingMaster = this.usersDB.find(u => u.email && u.email.toLowerCase() === masterAdmin.email.toLowerCase());
-        if (existingMaster) {
-            existingMaster.fullName = 'State Master Healthcare Admin';
-            existingMaster.subjectId = 'MASTER-ADMIN-001';
-            existingMaster.hospitalName = 'State Healthcare Authority Headquarters';
-            existingMaster.govLicenseNo = 'STATE-AUTH-2026-HQ';
-        } else {
-            this.usersDB.push(masterAdmin);
-        }
-
-        // Keep ONLY Master Admin on clean reset
-        if (!dbResetDone) {
-            this.usersDB = [masterAdmin];
-        }
-
-        // Ensure non-master Hospital Admin accounts & Doctor accounts require proper approvals
-        this.usersDB.forEach(u => {
-            if (u.role === 'HospitalAdmin' && u.email.toLowerCase() !== 'admin@gvp.com' && u.subjectId !== 'HOSP-REG-101') {
-                if (u.status !== 'approved') {
-                    u.status = 'pending_gov_approval';
-                    u.govVerified = false;
-                }
+        const defaultDemoUsers = [
+            {
+                email: 'admin@gvp.com',
+                password: '1234',
+                fullName: 'State Master Healthcare Admin',
+                subjectId: 'MASTER-ADMIN-001',
+                role: 'HospitalAdmin',
+                hospitalName: 'State Healthcare Authority Headquarters',
+                govLicenseNo: 'STATE-AUTH-2026-HQ',
+                govVerified: true,
+                status: 'approved',
+                lang: 'teluglish',
+                phone: '+91 98765 00001',
+                phoneVerified: true
+            },
+            {
+                email: 'yashoda@hospital.com',
+                password: '1234',
+                fullName: 'Yashoda Executive Admin',
+                subjectId: 'HOSP-YASHODA-001',
+                role: 'HospitalAdmin',
+                hospitalName: 'Yashoda Multi-Specialty Hospital',
+                govLicenseNo: 'NABH-AP-2026-8841',
+                govVerified: true,
+                status: 'approved',
+                lang: 'teluglish',
+                phone: '+91 98765 88410',
+                phoneVerified: true
+            },
+            {
+                email: 'doctor@gvp.com',
+                password: '1234',
+                fullName: 'Dr. Anitha Reddy',
+                subjectId: 'MCI-AP-2026-9812',
+                role: 'Doctor',
+                hospitalName: 'Yashoda Multi-Specialty Hospital',
+                specialization: 'Neuro-Cardiology',
+                experience: '12+ Years Clinical Practice',
+                qualification: 'MBBS, MD (Neuro-Cardiology)',
+                doctorApprovalStatus: 'approved',
+                status: 'approved',
+                lang: 'teluglish',
+                phone: '+91 98765 98120',
+                phoneVerified: true
+            },
+            {
+                email: 'patient@gmail.com',
+                password: '1234',
+                fullName: 'Santhosh Kumar',
+                subjectId: 'SUBJ-3221',
+                role: 'Subject',
+                hospitalName: 'Yashoda Multi-Specialty Hospital',
+                doctorEmail: 'doctor@gvp.com',
+                doctorName: 'Dr. Anitha Reddy (Neuro-Cardiology)',
+                doctorApprovalStatus: 'approved',
+                status: 'approved',
+                lang: 'teluglish',
+                phone: '+91 98765 32210',
+                phoneVerified: true
+            },
+            {
+                email: 'user@wellness.com',
+                password: '1234',
+                fullName: 'Sindhu Varma',
+                subjectId: 'USER-9921-APP',
+                role: 'Personal Wellness',
+                status: 'approved',
+                lang: 'teluglish',
+                phone: '+91 98765 99210',
+                phoneVerified: true
             }
-            if (u.role === 'Doctor') {
-                if (u.status !== 'approved') {
-                    u.status = 'pending_hospital_approval';
-                }
+        ];
+
+        defaultDemoUsers.forEach(demo => {
+            const existing = this.usersDB.find(u => u.email && u.email.toLowerCase() === demo.email.toLowerCase());
+            if (!existing) {
+                this.usersDB.push(demo);
             }
         });
 
@@ -2963,6 +2999,25 @@ class UdvegadarshiniApp {
             const modal = document.getElementById('phoneVerifyModal');
             if (modal) modal.style.display = 'none';
         }, 1000);
+    }
+
+    quickDemoLogin(roleType) {
+        let emailTarget = 'admin@gvp.com';
+        if (roleType === 'hospital') emailTarget = 'yashoda@hospital.com';
+        else if (roleType === 'doctor') emailTarget = 'doctor@gvp.com';
+        else if (roleType === 'patient') emailTarget = 'patient@gmail.com';
+        else if (roleType === 'wellness') emailTarget = 'user@wellness.com';
+
+        const match = this.usersDB.find(u => u.email && u.email.toLowerCase() === emailTarget);
+        if (match) {
+            const alertBox = document.getElementById('authAlertBox');
+            if (alertBox) {
+                alertBox.className = 'auth-alert-box success';
+                alertBox.textContent = `Quick Demo Login: Opening dashboard as ${match.fullName} (${match.role})...`;
+                alertBox.style.display = 'block';
+            }
+            setTimeout(() => this.saveUserProfile(match), 500);
+        }
     }
 }
 
