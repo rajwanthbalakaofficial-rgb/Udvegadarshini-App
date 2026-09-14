@@ -15,7 +15,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=3.0.0">
+    <link rel="stylesheet" href="styles.css?v=7.0.0">
 </head>
 <body class="dark-theme">
 
@@ -1198,6 +1198,57 @@
                     </div>
                 </div>
 
+                <!-- ================= MODE 0: MASTER ADMIN COMMAND CENTER (admin@gvp.com) ================= -->
+                <div id="masterAdminView" style="display: none;">
+                    
+                    <!-- MASTER ADMIN HEADER CARD -->
+                    <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(16, 185, 129, 0.15)); border: 1px solid rgba(99, 102, 241, 0.4);">
+                        <div class="flex-between" style="flex-wrap: wrap; gap: 10px; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <div style="background: rgba(99, 102, 241, 0.25); color: #818cf8; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                    <i class="fa-solid fa-crown"></i>
+                                </div>
+                                <div>
+                                    <h2 style="margin: 0; color: #a7f3d0;"><i class="fa-solid fa-shield-halved"></i> State Healthcare Master Command Center</h2>
+                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.88rem; color: #cbd5e1;">Logged in as: <strong style="color: #818cf8;">admin@gvp.com (Super Admin)</strong> | State Accreditation & Band Distribution Headquarters</p>
+                                </div>
+                            </div>
+                            <span class="status-badge status-badge-approved" style="font-size: 0.85rem; padding: 0.4rem 0.9rem; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">
+                                <i class="fa-solid fa-circle-check"></i> Master Control Active
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- SLIDE 1: STATE HEALTHCARE AUTHORITY PENDING HOSPITALS VERIFICATION BANNER -->
+                    <div class="card" id="hospStateAuthorityBanner" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 95, 70, 0.3)); border: 1px solid #10b981; margin-bottom: 1.5rem; padding: 1.2rem;">
+                        <div class="flex-between" style="flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid rgba(16,185,129,0.3); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+                            <div>
+                                <h3 style="margin: 0; color: #a7f3d0;"><i class="fa-solid fa-landmark-flag"></i> Slide 1: Newly Registered Hospitals Awaiting License Approval</h3>
+                                <p style="margin: 0; font-size: 0.85rem; color: #cbd5e1;">Review & grant State License Seals for newly registered hospital applications. Hospitals CANNOT log in until approved.</p>
+                            </div>
+                            <span class="badge-tag" style="background: #10b981; color: #fff; font-weight: bold;"><i class="fa-solid fa-shield-check"></i> State License Authority</span>
+                        </div>
+                        <div id="pendingHospitalsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                            <!-- Dynamic Pending Hospital Cards -->
+                        </div>
+                    </div>
+
+                    <!-- SLIDE 2: MASTER ADMIN APPROVED HOSPITALS & HARDWARE BAND INVENTORY SECTION -->
+                    <div class="card" id="hospMasterApprovedSection" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 1.5rem; padding: 1.2rem;">
+                        <div class="flex-between" style="flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+                            <div>
+                                <h3 style="margin: 0; color: #818cf8;"><i class="fa-solid fa-layer-group"></i> Slide 2: State Accredited Hospitals & Hardware Band Inventory</h3>
+                                <p style="margin: 0; font-size: 0.85rem; color: #94a3b8;">Overview of all verified hospitals, allocated EEG stress bands, active hardware, and doctor rosters.</p>
+                            </div>
+                            <span class="badge-tag" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4);"><i class="fa-solid fa-microchip"></i> Hardware Tracking Center</span>
+                        </div>
+                        <div id="approvedHospitalsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                            <!-- Dynamic Approved Hospital Band Cards -->
+                        </div>
+                    </div>
+
+                </div>
+
                 <!-- ================= MODE 1: HOSPITAL ADMIN DASHBOARD ================= -->
                 <div id="hospitalAdminView" style="display: none;">
                     
@@ -1214,34 +1265,6 @@
                                 </div>
                             </div>
                             <span class="status-badge status-badge-approved" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);"><i class="fa-solid fa-shield-halved"></i> Anti-Misuse Certified</span>
-                        </div>
-                    </div>
-
-                    <!-- STATE HEALTHCARE AUTHORITY PENDING HOSPITALS VERIFICATION BANNER (VISIBLE TO MASTER ADMIN ONLY) -->
-                    <div class="card" id="hospStateAuthorityBanner" style="display: none; background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 95, 70, 0.3)); border: 1px solid #10b981; margin-bottom: 1.5rem; padding: 1.2rem;">
-                        <div class="flex-between" style="flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid rgba(16,185,129,0.3); padding-bottom: 0.8rem; margin-bottom: 1rem;">
-                            <div>
-                                <h3 style="margin: 0; color: #a7f3d0;"><i class="fa-solid fa-landmark-flag"></i> State Healthcare Authority Verification Portal</h3>
-                                <p style="margin: 0; font-size: 0.85rem; color: #cbd5e1;">Review & approve new hospital license registrations submitted for NABH verification.</p>
-                            </div>
-                            <span class="badge-tag" style="background: #10b981; color: #fff; font-weight: bold;"><i class="fa-solid fa-shield-check"></i> Master Authority Active</span>
-                        </div>
-                        <div id="pendingHospitalsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
-                            <!-- Dynamic Pending Hospital Cards -->
-                        </div>
-                    </div>
-
-                    <!-- MASTER ADMIN APPROVED HOSPITALS & HARDWARE BAND INVENTORY SECTION -->
-                    <div class="card" id="hospMasterApprovedSection" style="display: none; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 1.5rem; padding: 1.2rem;">
-                        <div class="flex-between" style="flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.8rem; margin-bottom: 1rem;">
-                            <div>
-                                <h3 style="margin: 0; color: #818cf8;"><i class="fa-solid fa-layer-group"></i> State Accredited Hospitals & Hardware Band Inventory</h3>
-                                <p style="margin: 0; font-size: 0.85rem; color: #94a3b8;">Overview of all verified hospitals, allocated EEG stress bands, active hardware, and doctor rosters.</p>
-                            </div>
-                            <span class="badge-tag" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4);"><i class="fa-solid fa-microchip"></i> Hardware Tracking Center</span>
-                        </div>
-                        <div id="approvedHospitalsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
-                            <!-- Dynamic Approved Hospital Band Cards -->
                         </div>
                     </div>
 
@@ -1632,6 +1655,6 @@
     <script src="audio-frequency.js"></script>
     <script src="apta-ai.js"></script>
     <script src="games.js"></script>
-    <script src="app.js?v=3.0.0"></script>
+    <script src="app.js?v=7.0.0"></script>
 </body>
 </html>

@@ -333,6 +333,7 @@ class UdvegadarshiniApp {
         const allNavTabs = document.querySelectorAll('.main-nav .nav-tab');
         const modeToggleBox = document.querySelector('.mode-toggle-box');
         const connControls = document.querySelectorAll('#btnConnectSerial, #btnConnectBLE, #btnToggleSim, #connectionBadge');
+        const masterAdminView = document.getElementById('masterAdminView');
         const hospAdminView = document.getElementById('hospitalAdminView');
         const docPortalView = document.getElementById('doctorPortalView');
         const bannerBadge = document.getElementById('portalBannerBadge');
@@ -340,7 +341,7 @@ class UdvegadarshiniApp {
         const docSub = document.getElementById('docPortalSubtitle');
 
         if (this.currentUser.role === 'HospitalAdmin') {
-            // FORCE CLINICAL MODE & HIDE ALL CONSUMER TABS & CONTROLS FOR HOSPITAL ADMIN
+            // FORCE CLINICAL MODE & HIDE ALL CONSUMER TABS & CONTROLS FOR HOSPITAL ADMIN / MASTER ADMIN
             this.setMode('clinical');
             allNavTabs.forEach(tab => {
                 if (tab !== docTab) tab.style.display = 'none';
@@ -348,20 +349,41 @@ class UdvegadarshiniApp {
             if (modeToggleBox) modeToggleBox.style.display = 'none';
             connControls.forEach(ctrl => ctrl.style.display = 'none');
 
-            if (docTab) {
-                docTab.style.display = 'inline-flex';
-                docTab.innerHTML = `<i class="fa-solid fa-hospital"></i> Hospital Admin Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>`;
+            if (this.currentUser.email && this.currentUser.email.toLowerCase() === 'admin@gvp.com') {
+                // MASTER ADMIN SUPER USER LOGIN (admin@gvp.com)
+                if (docTab) {
+                    docTab.style.display = 'inline-flex';
+                    docTab.innerHTML = `<i class="fa-solid fa-crown"></i> Master Admin Portal`;
+                }
+
+                if (masterAdminView) masterAdminView.style.display = 'block';
+                if (hospAdminView) hospAdminView.style.display = 'none';
+                if (docPortalView) docPortalView.style.display = 'none';
+
+                if (bannerBadge) bannerBadge.innerHTML = `<i class="fa-solid fa-shield-halved"></i> State Healthcare Master Command`;
+                if (docTitle) docTitle.textContent = `Welcome, Master Admin (${this.currentUser.fullName})`;
+                if (docSub) docSub.textContent = `State Accreditation Authority & Hardware Band Distribution Headquarters`;
+
+                this.renderMasterAdminPortal();
+            } else {
+                // REGULAR HOSPITAL ADMIN LOGIN (e.g. Yashoda, Apollo)
+                if (docTab) {
+                    docTab.style.display = 'inline-flex';
+                    docTab.innerHTML = `<i class="fa-solid fa-hospital"></i> Hospital Admin Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>`;
+                }
+
+                if (masterAdminView) masterAdminView.style.display = 'none';
+                if (hospAdminView) hospAdminView.style.display = 'block';
+                if (docPortalView) docPortalView.style.display = 'none';
+
+                if (bannerBadge) bannerBadge.innerHTML = `<i class="fa-solid fa-hospital"></i> Hospital Executive Admin Portal`;
+                if (docTitle) docTitle.textContent = `Welcome, ${this.currentUser.fullName}`;
+                if (docSub) docSub.textContent = `${this.currentUser.hospitalName || 'Clinical Health Center'} | Doctor Verification & Hospital Staff Management`;
+
+                this.renderHospitalAdminPortal();
             }
 
-            if (hospAdminView) hospAdminView.style.display = 'block';
-            if (docPortalView) docPortalView.style.display = 'none';
-
-            if (bannerBadge) bannerBadge.innerHTML = `<i class="fa-solid fa-hospital"></i> Hospital Executive Admin Portal`;
-            if (docTitle) docTitle.textContent = `Welcome, ${this.currentUser.fullName}`;
-            if (docSub) docSub.textContent = `${this.currentUser.hospitalName || 'Clinical Health Center'} | Doctor Verification & Hospital Staff Management`;
-            this.renderHospitalAdminPortal();
-
-            // Auto-switch to Hospital Admin Portal tab
+            // Auto-switch to Hospital / Master Admin Portal tab
             if (docTab) docTab.click();
 
         } else if (this.currentUser.role === 'Doctor') {
@@ -1557,6 +1579,102 @@ class UdvegadarshiniApp {
         }
     }
 
+    renderMasterAdminPortal() {
+        const pendingHospitalsList = document.getElementById('pendingHospitalsList');
+        const approvedHospitalsList = document.getElementById('approvedHospitalsList');
+
+        const pendingHospitals = this.usersDB.filter(u => u.role === 'HospitalAdmin' && u.status === 'pending_gov_approval');
+        const approvedHospitals = this.usersDB.filter(u => u.role === 'HospitalAdmin' && u.status === 'approved');
+
+        // Slide 1: Pending Hospitals Awaiting License Approval
+        if (pendingHospitalsList) {
+            if (pendingHospitals.length > 0) {
+                pendingHospitalsList.innerHTML = pendingHospitals.map(hosp => `
+                    <div class="request-card" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(16,185,129,0.4); padding: 1.1rem; border-radius: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.6rem;">
+                            <div style="background: rgba(16,185,129,0.2); color: #34d399; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fa-solid fa-hospital"></i></div>
+                            <div>
+                                <strong style="color: #f8fafc; font-size: 1rem; display: block;">${hosp.hospitalName}</strong>
+                                <span style="font-size: 0.78rem; color: #94a3b8;">Contact Admin: ${hosp.fullName} (${hosp.email})</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 0.9rem; background: rgba(30,41,59,0.5); padding: 0.6rem; border-radius: 6px;">
+                            <div><i class="fa-solid fa-award" style="color: #10b981;"></i> License No: <code>${hosp.govLicenseNo || hosp.subjectId}</code></div>
+                            <div><i class="fa-solid fa-id-card" style="color: #818cf8;"></i> Reg ID: <code>${hosp.subjectId}</code></div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn btn-sm btn-success" onclick="app.approveHospitalAccount('${hosp.email}')" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669); border: none; color: #fff; font-weight: 600; cursor: pointer; padding: 0.55rem; border-radius: 6px; font-size: 0.88rem;">
+                                <i class="fa-solid fa-shield-check"></i> Grant State License Seal
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                pendingHospitalsList.innerHTML = `
+                    <div class="empty-table-msg card" style="grid-column: 1 / -1; text-align: center; padding: 1.5rem; background: rgba(15,23,42,0.5); border: 1px dashed rgba(16,185,129,0.3);">
+                        <i class="fa-solid fa-circle-check" style="font-size: 2rem; color: #10b981; margin-bottom: 0.5rem;"></i>
+                        <p style="margin: 0; color: #a7f3d0; font-weight: 500;">No pending hospital registrations!</p>
+                        <span style="font-size: 0.8rem; color: #94a3b8;">All submitted hospital registrations have been granted State Healthcare License Seals.</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Slide 2: State Accredited Hospitals & Hardware Band Inventory
+        if (approvedHospitalsList) {
+            if (approvedHospitals.length === 0) {
+                approvedHospitalsList.innerHTML = `
+                    <div class="empty-table-msg card" style="grid-column: 1 / -1; text-align: center; padding: 1.5rem; background: rgba(15,23,42,0.5); border: 1px dashed rgba(99,102,241,0.3);">
+                        <i class="fa-solid fa-building-circle-exclamation" style="font-size: 2rem; color: #818cf8; margin-bottom: 0.5rem;"></i>
+                        <p style="margin: 0; color: #cbd5e1;">No approved state hospitals registered yet.</p>
+                    </div>
+                `;
+            } else {
+                approvedHospitalsList.innerHTML = approvedHospitals.map(hosp => {
+                    const hospDocs = this.usersDB.filter(u => u.role === 'Doctor' && (!u.hospitalName || u.hospitalName === hosp.hospitalName));
+                    const hospPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hosp.hospitalName));
+                    const allocatedBands = Math.max(15, hospPatients.length + 8);
+                    const activeBands = hospPatients.length > 0 ? hospPatients.length : 5;
+
+                    return `
+                        <div class="request-card" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(99, 102, 241, 0.35); padding: 1.1rem; border-radius: 10px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="background: rgba(99, 102, 241, 0.2); color: #818cf8; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fa-solid fa-hospital-user"></i></div>
+                                    <div>
+                                        <strong style="color: #f8fafc; font-size: 0.98rem; display: block;">${hosp.hospitalName}</strong>
+                                        <span style="font-size: 0.76rem; color: #a7f3d0;"><i class="fa-solid fa-shield-check"></i> License: ${hosp.govLicenseNo || 'NABH-AP-2026-8841'}</span>
+                                    </div>
+                                </div>
+                                <span class="badge-tag" style="background: rgba(16,185,129,0.15); color: #34d399; font-size: 0.75rem;">Verified ✓</span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem; background: rgba(30,41,59,0.6); padding: 0.75rem; border-radius: 6px;">
+                                <div>
+                                    <span style="font-size: 0.72rem; color: #94a3b8; display: block; text-transform: uppercase;">Allocated Bands</span>
+                                    <strong style="font-size: 1.1rem; color: #38bdf8;">${allocatedBands} Bands</strong>
+                                </div>
+                                <div>
+                                    <span style="font-size: 0.72rem; color: #94a3b8; display: block; text-transform: uppercase;">Active Hardware</span>
+                                    <strong style="font-size: 1.1rem; color: #34d399;">${activeBands} Active</strong>
+                                </div>
+                            </div>
+
+                            <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.9rem; display: flex; justify-content: space-between;">
+                                <span><i class="fa-solid fa-user-doctor"></i> Registered Doctors: <strong>${hospDocs.length}</strong></span>
+                                <span><i class="fa-solid fa-hospital-user"></i> Admin: <strong>${hosp.fullName || 'Hospital Admin'}</strong></span>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-primary" onclick="app.inspectHospitalBandInventory('${hosp.hospitalName.replace(/'/g, "\\'")}')" style="width: 100%; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; font-weight: 600; cursor: pointer; padding: 0.55rem; border-radius: 6px; font-size: 0.88rem;">
+                                <i class="fa-solid fa-eye"></i> Inspect Band Inventory & Doctor Roster
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+    }
+
     renderHospitalAdminPortal() {
         const pendingContainer = document.getElementById('hospPendingDoctorsContainer');
         const doctorsTableBody = document.getElementById('hospDoctorsTableBody');
@@ -1580,93 +1698,6 @@ class UdvegadarshiniApp {
         const govLicDisplay = document.getElementById('hospGovLicenseDisplay');
         if (govLicDisplay) {
             govLicDisplay.textContent = this.currentUser.govLicenseNo || this.currentUser.subjectId || 'NABH-AP-2026-8841';
-        }
-
-        // Render State Healthcare Authority Verification Portal & Approved Hospitals (Visible to admin@gvp.com Master Admin)
-        const stateAuthBanner = document.getElementById('hospStateAuthorityBanner');
-        const pendingHospitalsList = document.getElementById('pendingHospitalsList');
-        const approvedHospitalsSection = document.getElementById('hospMasterApprovedSection');
-        const approvedHospitalsList = document.getElementById('approvedHospitalsList');
-
-        if (this.currentUser.email && this.currentUser.email.toLowerCase() === 'admin@gvp.com') {
-            const pendingHospitals = this.usersDB.filter(u => u.role === 'HospitalAdmin' && u.status === 'pending_gov_approval');
-            const approvedHospitals = this.usersDB.filter(u => u.role === 'HospitalAdmin' && u.status === 'approved');
-
-            if (stateAuthBanner && pendingHospitalsList) {
-                if (pendingHospitals.length > 0) {
-                    stateAuthBanner.style.display = 'block';
-                    pendingHospitalsList.innerHTML = pendingHospitals.map(hosp => `
-                        <div class="request-card" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(16,185,129,0.4); padding: 1rem; border-radius: 8px;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.6rem;">
-                                <div style="background: rgba(16,185,129,0.2); color: #34d399; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"><i class="fa-solid fa-hospital"></i></div>
-                                <div>
-                                    <strong style="color: #f8fafc; display: block;">${hosp.hospitalName}</strong>
-                                    <span style="font-size: 0.78rem; color: #94a3b8;">Contact Admin: ${hosp.fullName} (${hosp.email})</span>
-                                </div>
-                            </div>
-                            <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.8rem;">
-                                <div><i class="fa-solid fa-award"></i> License No: <code>${hosp.govLicenseNo || hosp.subjectId}</code></div>
-                                <div><i class="fa-solid fa-id-card"></i> Reg ID: <code>${hosp.subjectId}</code></div>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button type="button" class="btn btn-sm btn-success" onclick="app.approveHospitalAccount('${hosp.email}')" style="flex: 1; background: #10b981; border: none; color: #fff; font-weight: 600; cursor: pointer; padding: 0.4rem; border-radius: 6px;">
-                                    <i class="fa-solid fa-shield-check"></i> Grant State License Seal
-                                </button>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    stateAuthBanner.style.display = 'none';
-                }
-            }
-
-            if (approvedHospitalsSection && approvedHospitalsList) {
-                approvedHospitalsSection.style.display = 'block';
-                approvedHospitalsList.innerHTML = approvedHospitals.map(hosp => {
-                    const hospDocs = this.usersDB.filter(u => u.role === 'Doctor' && (!u.hospitalName || u.hospitalName === hosp.hospitalName));
-                    const hospPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hosp.hospitalName));
-                    const allocatedBands = Math.max(15, hospPatients.length + 8);
-                    const activeBands = hospPatients.length > 0 ? hospPatients.length : 5;
-
-                    return `
-                        <div class="request-card" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(99, 102, 241, 0.3); padding: 1.1rem; border-radius: 10px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="background: rgba(99, 102, 241, 0.2); color: #818cf8; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fa-solid fa-hospital-user"></i></div>
-                                    <div>
-                                        <strong style="color: #f8fafc; font-size: 0.95rem; display: block;">${hosp.hospitalName}</strong>
-                                        <span style="font-size: 0.76rem; color: #a7f3d0;"><i class="fa-solid fa-shield-check"></i> License: ${hosp.govLicenseNo || 'NABH-AP-2026-8841'}</span>
-                                    </div>
-                                </div>
-                                <span class="badge-tag" style="background: rgba(16,185,129,0.15); color: #34d399; font-size: 0.75rem;">Verified ✓</span>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem; background: rgba(30,41,59,0.6); padding: 0.7rem; border-radius: 6px;">
-                                <div>
-                                    <span style="font-size: 0.72rem; color: #94a3b8; display: block; text-transform: uppercase;">Allocated Bands</span>
-                                    <strong style="font-size: 1.05rem; color: #38bdf8;">${allocatedBands} Bands</strong>
-                                </div>
-                                <div>
-                                    <span style="font-size: 0.72rem; color: #94a3b8; display: block; text-transform: uppercase;">Active Hardware</span>
-                                    <strong style="font-size: 1.05rem; color: #34d399;">${activeBands} Active</strong>
-                                </div>
-                            </div>
-
-                            <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.9rem; display: flex; justify-content: space-between;">
-                                <span><i class="fa-solid fa-user-doctor"></i> Registered Doctors: <strong>${hospDocs.length}</strong></span>
-                                <span><i class="fa-solid fa-hospital-user"></i> Admin: <strong>${hosp.fullName || 'Hospital Admin'}</strong></span>
-                            </div>
-
-                            <button type="button" class="btn btn-sm btn-primary" onclick="app.inspectHospitalBandInventory('${hosp.hospitalName.replace(/'/g, "\\'")}')" style="width: 100%; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; font-weight: 600; cursor: pointer; padding: 0.5rem; border-radius: 6px;">
-                                <i class="fa-solid fa-eye"></i> Inspect Band Inventory & Doctor Roster
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-            }
-        } else {
-            if (stateAuthBanner) stateAuthBanner.style.display = 'none';
-            if (approvedHospitalsSection) approvedHospitalsSection.style.display = 'none';
         }
 
         // Calculate Hospital Aggregate Analytics & Critical Alerts
