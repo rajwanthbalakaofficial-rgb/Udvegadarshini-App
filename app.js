@@ -949,6 +949,8 @@ class UdvegadarshiniApp {
                 const subjectId = document.getElementById('addDocRegId').value.trim();
                 const password = document.getElementById('addDocPassword').value;
                 const specialization = document.getElementById('addDocSpecialization').value.trim();
+                const experience = document.getElementById('addDocExperience')?.value.trim() || '12+ Years Clinical Practice';
+                const qualification = document.getElementById('addDocQualification')?.value.trim() || 'MBBS, MD (Neuro-Cardiology)';
 
                 const existing = this.usersDB.find(u => u.email === email || u.subjectId === subjectId);
                 if (existing) {
@@ -970,6 +972,8 @@ class UdvegadarshiniApp {
                     lang: 'en',
                     hospitalName: hospitalName,
                     specialization: specialization || 'Neuro-Cardiology',
+                    experience: experience,
+                    qualification: qualification,
                     status: 'approved',
                     doctorApprovalStatus: 'approved'
                 };
@@ -1583,6 +1587,11 @@ class UdvegadarshiniApp {
         if (btnCloseModal) btnCloseModal.onclick = () => this.closePatientTelemetryModal();
         if (btnCloseFooter) btnCloseFooter.onclick = () => this.closePatientTelemetryModal();
 
+        const btnCloseDocProf = document.getElementById('btnCloseDocProfileModal');
+        const btnCloseDocProfBtn = document.getElementById('btnCloseDocProfileModalBtn');
+        if (btnCloseDocProf) btnCloseDocProf.onclick = () => this.closeDoctorProfileModal();
+        if (btnCloseDocProfBtn) btnCloseDocProfBtn.onclick = () => this.closeDoctorProfileModal();
+
         const searchInput = document.getElementById('docPatientSearch');
         if (searchInput) {
             searchInput.oninput = () => this.renderDoctorPortal();
@@ -1592,6 +1601,116 @@ class UdvegadarshiniApp {
         if (filterSelect) {
             filterSelect.onchange = () => this.renderDoctorPortal();
         }
+    }
+
+    openDoctorProfileModal(email) {
+        const doc = this.usersDB.find(u => u.role === 'Doctor' && u.email && u.email.toLowerCase() === email.toLowerCase()) || {
+            fullName: 'Dr. Rajesh Sharma',
+            email: email,
+            subjectId: 'DOC-201',
+            specialization: 'Neuro-Cardiology',
+            hospitalName: this.currentUser.hospitalName || 'GVP Multi-Specialty Hospital',
+            experience: '12+ Years Clinical Practice',
+            qualification: 'MBBS, MD (Neuro-Cardiology)',
+            status: 'approved'
+        };
+
+        const modal = document.getElementById('doctorProfileModal');
+        if (!modal) return;
+
+        const avatarElem = document.getElementById('docModalAvatar');
+        const nameElem = document.getElementById('docModalFullName');
+        const deptElem = document.getElementById('docModalDept');
+        const regElem = document.getElementById('docModalRegId');
+        const hospElem = document.getElementById('docModalHospital');
+        const emailElem = document.getElementById('docModalEmail');
+        const statusElem = document.getElementById('docModalStatus');
+        const expElem = document.getElementById('docModalExperience');
+        const qualElem = document.getElementById('docModalQualification');
+
+        if (avatarElem) avatarElem.textContent = (doc.fullName || 'D').charAt(0).toUpperCase();
+        if (nameElem) nameElem.textContent = doc.fullName;
+        if (deptElem) deptElem.innerHTML = `<i class="fa-solid fa-building-user"></i> Department of ${doc.specialization || 'Neuro-Cardiology'}`;
+        if (regElem) regElem.textContent = doc.subjectId || 'DOC-201';
+        if (hospElem) hospElem.textContent = doc.hospitalName || this.currentUser.hospitalName || 'Clinical Health Center';
+        if (emailElem) emailElem.textContent = doc.email;
+        if (statusElem) statusElem.textContent = (doc.status === 'approved' || !doc.status ? 'Approved ✓' : 'Pending Approval ⏳');
+        if (expElem) expElem.textContent = doc.experience || '12+ Years Clinical Practice';
+        if (qualElem) qualElem.textContent = doc.qualification || 'MBBS, MD (Neuro-Cardiology)';
+
+        // Find all patients under this doctor
+        const assignedPatients = this.usersDB.filter(u => u.role === 'Subject' && (
+            (u.doctorEmail && u.doctorEmail.toLowerCase() === doc.email.toLowerCase()) || 
+            (u.doctorName && u.doctorName.includes(doc.fullName))
+        ));
+
+        const reqPatients = this.doctorRequests.filter(r => 
+            (r.doctorEmail && r.doctorEmail.toLowerCase() === doc.email.toLowerCase()) || 
+            (r.doctorName && r.doctorName.includes(doc.fullName))
+        );
+
+        const patientMap = new Map();
+        assignedPatients.forEach(p => {
+            patientMap.set(p.subjectId, {
+                subjectId: p.subjectId,
+                fullName: p.fullName,
+                email: p.email,
+                status: p.doctorApprovalStatus || 'approved'
+            });
+        });
+
+        reqPatients.forEach(p => {
+            if (!patientMap.has(p.patientSubjectId)) {
+                patientMap.set(p.patientSubjectId, {
+                    subjectId: p.patientSubjectId,
+                    fullName: p.patientFullName,
+                    email: p.patientEmail,
+                    status: p.status
+                });
+            }
+        });
+
+        const combinedList = Array.from(patientMap.values());
+
+        const patientCountElem = document.getElementById('docModalPatientCount');
+        if (patientCountElem) patientCountElem.textContent = combinedList.length;
+
+        const listBody = document.getElementById('docModalPatientListBody');
+        if (listBody) {
+            if (combinedList.length === 0) {
+                listBody.innerHTML = `
+                    <tr><td colspan="4" class="empty-table-msg" style="text-align: center; padding: 1.2rem; color: #94a3b8;">No patients currently assigned under ${doc.fullName}.</td></tr>
+                `;
+            } else {
+                listBody.innerHTML = combinedList.map(p => `
+                    <tr style="cursor: pointer; transition: background 0.2s;" onclick="app.closeDoctorProfileModal(); app.viewPatientTelemetry('${p.subjectId}')" title="Click to view full patient info & stress telemetry">
+                        <td><strong style="color: #38bdf8;"><i class="fa-solid fa-id-card"></i> ${p.subjectId}</strong></td>
+                        <td><strong style="color: #f8fafc;">${p.fullName}</strong></td>
+                        <td style="color: #cbd5e1; font-size: 0.82rem;">${p.email}</td>
+                        <td>
+                            <button class="btn btn-sm btn-accent" style="font-size: 0.75rem; padding: 0.25rem 0.65rem; background: linear-gradient(135deg, #06b6d4, #0891b2);" onclick="event.stopPropagation(); app.closeDoctorProfileModal(); app.viewPatientTelemetry('${p.subjectId}')">
+                                <i class="fa-solid fa-file-medical"></i> View Patient Info
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        const btnFilter = document.getElementById('btnDocModalFilterPatients');
+        if (btnFilter) {
+            btnFilter.onclick = () => {
+                this.closeDoctorProfileModal();
+                this.filterPatientsByDoctor(doc.email, doc.fullName);
+            };
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    closeDoctorProfileModal() {
+        const modal = document.getElementById('doctorProfileModal');
+        if (modal) modal.style.display = 'none';
     }
 
     renderMasterAdminPortal() {

@@ -15,7 +15,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=8.0.0">
+    <link rel="stylesheet" href="styles.css?v=9.0.0">
 </head>
 <body class="dark-theme">
 
@@ -239,6 +239,18 @@
                     <input type="text" id="addDocSpecialization" placeholder="e.g. Neuro-Cardiology / Psychiatry" required value="Neuro-Cardiology">
                 </div>
 
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-briefcase"></i> Clinical Experience</label>
+                        <input type="text" id="addDocExperience" placeholder="e.g. 12+ Years Experience" value="12+ Years Experience">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-graduation-cap"></i> Medical Qualification / Degrees</label>
+                        <input type="text" id="addDocQualification" placeholder="e.g. MBBS, MD (Neuro-Cardiology)" value="MBBS, MD (Neuro-Cardiology)">
+                    </div>
+                </div>
+
                 <div class="patient-unblocked-note" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: #6ee7b7; margin-bottom: 1rem;">
                     <i class="fa-solid fa-circle-check"></i> Doctors registered directly by Hospital Admin are <strong>Auto-Approved</strong> immediately and can log in right away.
                 </div>
@@ -300,12 +312,14 @@
                 <button type="button" class="btn-icon" id="btnCloseDocProfileModal" style="background: rgba(255,255,255,0.08); border-radius: 50%; width: 34px; height: 34px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <div class="inner-card" style="margin-bottom: 1rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(99, 102, 241, 0.2);">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; font-size: 0.85rem;">
+            <div class="inner-card" style="margin-bottom: 1rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(99, 102, 241, 0.25); padding: 1rem; border-radius: 10px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; font-size: 0.86rem;">
                     <div><span style="color: #94a3b8;">License / Reg ID:</span> <strong id="docModalRegId" style="color: #fff;">DOC-201</strong></div>
                     <div><span style="color: #94a3b8;">Hospital:</span> <strong id="docModalHospital" style="color: #fff;">GVP Hospital</strong></div>
                     <div><span style="color: #94a3b8;">Official Email:</span> <strong id="docModalEmail" style="color: #818cf8;">dr.rajesh@hospital.com</strong></div>
                     <div><span style="color: #94a3b8;">Verification Status:</span> <span class="status-badge status-badge-approved" id="docModalStatus">Approved ✓</span></div>
+                    <div><span style="color: #94a3b8;"><i class="fa-solid fa-briefcase"></i> Experience:</span> <strong id="docModalExperience" style="color: #a7f3d0;">12+ Years Clinical Practice</strong></div>
+                    <div><span style="color: #94a3b8;"><i class="fa-solid fa-graduation-cap"></i> Qualifications:</span> <strong id="docModalQualification" style="color: #38bdf8;">MBBS, MD (Neuro-Cardiology)</strong></div>
                 </div>
             </div>
 
@@ -1655,6 +1669,6 @@
     <script src="audio-frequency.js"></script>
     <script src="apta-ai.js"></script>
     <script src="games.js"></script>
-    <script src="app.js?v=8.0.0"></script>
+    <script src="app.js?v=9.0.0"></script>
 </body>
 </html>
