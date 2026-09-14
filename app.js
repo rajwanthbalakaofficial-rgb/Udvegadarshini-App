@@ -1581,6 +1581,80 @@ class UdvegadarshiniApp {
         window.print();
     }
 
+    exportHospitalRosterPDF() {
+        const hospitalName = this.currentUser.hospitalName || 'GVP Multi-Specialty Hospital';
+        const govLicenseNo = this.currentUser.govLicenseNo || 'NABH-AP-2026-8841';
+        const adminName = this.currentUser.fullName || 'Hospital Admin';
+        const now = new Date();
+
+        const hospDocs = this.usersDB.filter(u => u.role === 'Doctor' && (!u.hospitalName || u.hospitalName === hospitalName));
+        const hospPatients = this.usersDB.filter(u => u.role === 'Subject' && (!u.hospitalName || u.hospitalName === hospitalName));
+        const criticalPatients = hospPatients.filter(p => {
+            const req = this.doctorRequests.find(r => r.patientEmail === p.email || r.patientSubjectId === p.subjectId);
+            return (req && req.latestStressScore > 70) || (p.latestStressScore > 70);
+        });
+
+        let totalStress = 0;
+        hospPatients.forEach(p => {
+            const req = this.doctorRequests.find(r => r.patientEmail === p.email || r.patientSubjectId === p.subjectId);
+            totalStress += req ? (req.latestStressScore || 38) : 38;
+        });
+        const avgStress = hospPatients.length > 0 ? Math.round(totalStress / hospPatients.length) : 38;
+
+        const hospNameElem = document.getElementById('pdfHospName');
+        const hospDateElem = document.getElementById('pdfHospDate');
+        const hospLicElem = document.getElementById('pdfHospLicense');
+        const hospAdminElem = document.getElementById('pdfHospAdminName');
+        const docCountElem = document.getElementById('pdfHospDocCount');
+        const patientCountElem = document.getElementById('pdfHospPatientCount');
+        const avgStressElem = document.getElementById('pdfHospAvgStress');
+        const criticalCountElem = document.getElementById('pdfHospCriticalCount');
+
+        if (hospNameElem) hospNameElem.textContent = hospitalName;
+        if (hospDateElem) hospDateElem.textContent = now.toLocaleString();
+        if (hospLicElem) hospLicElem.textContent = govLicenseNo;
+        if (hospAdminElem) hospAdminElem.textContent = adminName;
+        if (docCountElem) docCountElem.textContent = hospDocs.length;
+        if (patientCountElem) patientCountElem.textContent = hospPatients.length;
+        if (avgStressElem) avgStressElem.textContent = `${avgStress}%`;
+        if (criticalCountElem) criticalCountElem.textContent = criticalPatients.length;
+
+        const docTableBody = document.getElementById('pdfHospDoctorsTableBody');
+        if (docTableBody) {
+            docTableBody.innerHTML = hospDocs.map(d => `
+                <tr>
+                    <td><strong>${d.subjectId}</strong></td>
+                    <td>${d.fullName}</td>
+                    <td>${d.email}</td>
+                    <td>${d.specialization || 'Neuro-Cardiology'}</td>
+                    <td>${d.status === 'approved' || !d.status ? 'Approved ✓' : 'Pending ⏳'}</td>
+                </tr>
+            `).join('');
+        }
+
+        const patientTableBody = document.getElementById('pdfHospPatientsTableBody');
+        if (patientTableBody) {
+            patientTableBody.innerHTML = hospPatients.map(p => `
+                <tr>
+                    <td><strong>${p.subjectId}</strong></td>
+                    <td>${p.fullName}</td>
+                    <td>${p.email}</td>
+                    <td>${p.doctorName || 'Unassigned'}</td>
+                    <td>${p.doctorApprovalStatus === 'approved' ? 'Doctor Linked ✓' : 'Pending Approval ⏳'}</td>
+                </tr>
+            `).join('');
+        }
+
+        const hospTemplate = document.getElementById('pdfHospitalRosterTemplate');
+        if (hospTemplate) hospTemplate.style.display = 'block';
+
+        window.print();
+
+        setTimeout(() => {
+            if (hospTemplate) hospTemplate.style.display = 'none';
+        }, 1000);
+    }
+
     initDoctorPortalEvents() {
         const btnCloseModal = document.getElementById('btnClosePatientTelemetryModal');
         const btnCloseFooter = document.getElementById('btnClosePatientTelemetryModalFooter');
@@ -1854,6 +1928,11 @@ class UdvegadarshiniApp {
                 criticalBanner.style.display = 'none';
             }
         }
+
+        const btnExportBanner = document.getElementById('btnExportHospitalReport');
+        const btnExportHeader = document.getElementById('btnExportHospitalReportHeader');
+        if (btnExportBanner) btnExportBanner.onclick = () => this.exportHospitalRosterPDF();
+        if (btnExportHeader) btnExportHeader.onclick = () => this.exportHospitalRosterPDF();
 
         // Executive Analytics Stats
         const avgStressElem = document.getElementById('hospAnalyticsAvgStress');

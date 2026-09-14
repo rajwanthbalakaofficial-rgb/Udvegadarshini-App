@@ -2503,3 +2503,32 @@ body {
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
+/* Printable PDF Styling for Reports & Roster */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .pdf-printable-template, .pdf-printable-template * {
+        visibility: visible !important;
+    }
+    .pdf-printable-template {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        display: block !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        padding: 2rem !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .pdf-printable-template h2, .pdf-printable-template h3, .pdf-printable-template h4 {
+        color: #0f172a !important;
+    }
+    .pdf-printable-template td, .pdf-printable-template th {
+        color: #0f172a !important;
+        border-color: #cbd5e1 !important;
+    }
+}
+
