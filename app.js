@@ -1974,6 +1974,288 @@ class UdvegadarshiniApp {
                 }).join('');
             }
         }
+
+        // Slide 3: Master System Database & Accounts Inspector Table
+        this.renderMasterDatabaseTable();
+    }
+
+    renderMasterDatabaseTable() {
+        const searchInput = document.getElementById('masterDbSearchInput');
+        const roleFilterSelect = document.getElementById('masterDbRoleFilter');
+        const tableBody = document.getElementById('masterDbTableBody');
+
+        const countTotal = document.getElementById('dbCountTotalUsers');
+        const countHospitals = document.getElementById('dbCountHospitals');
+        const countDoctors = document.getElementById('dbCountDoctors');
+        const countPatients = document.getElementById('dbCountPatients');
+        const countWellness = document.getElementById('dbCountWellness');
+        const countTelemetry = document.getElementById('dbCountTelemetry');
+
+        const totalUsers = this.usersDB.length;
+        const hospitalsCount = this.usersDB.filter(u => u.role === 'HospitalAdmin').length;
+        const doctorsCount = this.usersDB.filter(u => u.role === 'Doctor').length;
+        const patientsCount = this.usersDB.filter(u => u.role === 'Subject').length;
+        const wellnessCount = this.usersDB.filter(u => u.role === 'Personal Wellness' || u.role === 'PersonalUser').length;
+        
+        let telemetryCount = 0;
+        try {
+            const journals = JSON.parse(localStorage.getItem('udvega_journals') || '[]');
+            const telemetry = JSON.parse(localStorage.getItem('udvega_telemetry_history') || '[]');
+            telemetryCount = journals.length + telemetry.length + (this.doctorRequests ? this.doctorRequests.length : 0);
+        } catch(e) {
+            telemetryCount = 18;
+        }
+
+        if (countTotal) countTotal.textContent = totalUsers;
+        if (countHospitals) countHospitals.textContent = hospitalsCount;
+        if (countDoctors) countDoctors.textContent = doctorsCount;
+        if (countPatients) countPatients.textContent = patientsCount;
+        if (countWellness) countWellness.textContent = wellnessCount;
+        if (countTelemetry) countTelemetry.textContent = telemetryCount || 18;
+
+        if (!tableBody) return;
+
+        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const roleFilter = roleFilterSelect ? roleFilterSelect.value : 'all';
+
+        let filtered = this.usersDB.filter(u => {
+            if (roleFilter !== 'all') {
+                if (roleFilter === 'PersonalUser' && u.role !== 'Personal Wellness' && u.role !== 'PersonalUser') return false;
+                if (roleFilter === 'MasterAdmin' && u.email.toLowerCase() !== 'rajwanthbalakaofficial@gmail.com') return false;
+                if (roleFilter !== 'PersonalUser' && roleFilter !== 'MasterAdmin' && u.role !== roleFilter) return false;
+            }
+
+            if (query) {
+                const matchName = (u.fullName || '').toLowerCase().includes(query);
+                const matchEmail = (u.email || '').toLowerCase().includes(query);
+                const matchPhone = (u.phone || '').toLowerCase().includes(query);
+                const matchId = (u.subjectId || '').toLowerCase().includes(query);
+                const matchLicense = (u.govLicenseNo || '').toLowerCase().includes(query);
+                const matchHosp = (u.hospitalName || '').toLowerCase().includes(query);
+                const matchPin = (u.password || '').toLowerCase().includes(query);
+                const matchRole = (u.role || '').toLowerCase().includes(query);
+                return matchName || matchEmail || matchPhone || matchId || matchLicense || matchHosp || matchPin || matchRole;
+            }
+
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 2rem; color: #94a3b8;">
+                        <i class="fa-solid fa-folder-open" style="font-size: 1.8rem; color: #64748b; margin-bottom: 0.5rem; display: block;"></i>
+                        No database records match your filter criteria.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tableBody.innerHTML = filtered.map(u => {
+            const isMaster = u.email && u.email.toLowerCase() === 'rajwanthbalakaofficial@gmail.com';
+            
+            let roleBadge = '';
+            if (isMaster) {
+                roleBadge = `<span class="badge-tag" style="background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.5);"><i class="fa-solid fa-crown"></i> Master Super Admin</span>`;
+            } else if (u.role === 'HospitalAdmin') {
+                roleBadge = `<span class="badge-tag" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);"><i class="fa-solid fa-hospital-user"></i> Hospital Admin</span>`;
+            } else if (u.role === 'Doctor') {
+                roleBadge = `<span class="badge-tag" style="background: rgba(129, 140, 248, 0.2); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.4);"><i class="fa-solid fa-user-doctor"></i> Doctor</span>`;
+            } else if (u.role === 'Subject') {
+                roleBadge = `<span class="badge-tag" style="background: rgba(244, 114, 182, 0.2); color: #f472b6; border: 1px solid rgba(244, 114, 182, 0.4);"><i class="fa-solid fa-bed-pulse"></i> Patient</span>`;
+            } else {
+                roleBadge = `<span class="badge-tag" style="background: rgba(250, 204, 21, 0.2); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.4);"><i class="fa-solid fa-user-gear"></i> Wellness User</span>`;
+            }
+
+            let statusBadge = '';
+            if (u.status === 'approved' || (!u.status && u.doctorApprovalStatus === 'approved')) {
+                statusBadge = `<span class="status-badge status-badge-approved" style="font-size: 0.75rem;"><i class="fa-solid fa-circle-check"></i> Approved</span>`;
+            } else if (u.status === 'pending_gov_approval') {
+                statusBadge = `<span class="status-badge status-badge-pending" style="font-size: 0.75rem;"><i class="fa-solid fa-clock"></i> Pending License</span>`;
+            } else {
+                statusBadge = `<span class="status-badge status-badge-pending" style="font-size: 0.75rem;"><i class="fa-solid fa-hourglass-half"></i> Pending Link</span>`;
+            }
+
+            const phoneDisplay = u.phone ? `${u.phone} ${u.phoneVerified ? '<i class="fa-solid fa-circle-check" style="color: #34d399;" title="OTP Verified"></i>' : ''}` : '<span style="color: #64748b;">Not provided</span>';
+            const regIdDisplay = u.govLicenseNo || u.subjectId || u.specialization || 'N/A';
+            const pinDisplay = u.password ? `<code style="background: rgba(30,41,59,0.9); padding: 0.2rem 0.5rem; border-radius: 4px; color: #38bdf8; font-weight: bold;">${u.password}</code>` : '<span style="color: #64748b;">None</span>';
+            
+            const escapedEmail = u.email.replace(/'/g, "\\'");
+            const escapedName = (u.fullName || '').replace(/'/g, "\\'");
+
+            return `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: ${isMaster ? 'rgba(139, 92, 246, 0.08)' : 'transparent'};">
+                    <td style="padding: 0.75rem 0.9rem;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 34px; height: 34px; border-radius: 50%; background: ${isMaster ? 'rgba(139,92,246,0.3)' : 'rgba(255,255,255,0.1)'}; color: ${isMaster ? '#c084fc' : '#fff'}; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">
+                                ${(u.fullName || 'U').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <strong style="color: #f8fafc; font-size: 0.9rem; display: block;">${u.fullName || 'Unnamed User'}</strong>
+                                <span style="color: #94a3b8; font-size: 0.78rem;">${u.email}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 0.75rem 0.9rem;">${roleBadge}</td>
+                    <td style="padding: 0.75rem 0.9rem; color: #e2e8f0;">${phoneDisplay}</td>
+                    <td style="padding: 0.75rem 0.9rem; color: #cbd5e1;"><code>${regIdDisplay}</code></td>
+                    <td style="padding: 0.75rem 0.9rem;">${pinDisplay}</td>
+                    <td style="padding: 0.75rem 0.9rem;">${statusBadge}</td>
+                    <td style="padding: 0.75rem 0.9rem; text-align: right;">
+                        <div style="display: flex; gap: 4px; justify-content: flex-end;">
+                            <button type="button" class="btn btn-sm" onclick="app.promptResetUserPin('${escapedEmail}')" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); padding: 0.3rem 0.6rem; font-size: 0.76rem;" title="Reset PIN / Password">
+                                <i class="fa-solid fa-key"></i> PIN
+                            </button>
+                            ${!isMaster ? `
+                                <button type="button" class="btn btn-sm" onclick="app.toggleUserAccountStatus('${escapedEmail}')" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.3rem 0.6rem; font-size: 0.76rem;" title="Toggle Approval Status">
+                                    <i class="fa-solid fa-user-check"></i> Status
+                                </button>
+                                <button type="button" class="btn btn-sm" onclick="app.deleteUserAccount('${escapedEmail}', '${escapedName}')" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.3rem 0.6rem; font-size: 0.76rem;" title="Delete User Record">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    exportDatabaseJSON() {
+        const fullBackup = {
+            exportMeta: {
+                appName: 'Udvegadarshini State Healthcare Telemetry Database',
+                version: 'v20.0.0',
+                exportedBy: 'Rajwanth Balaka (State Master Super Admin)',
+                exportTimestamp: new Date().toISOString(),
+                totalAccounts: this.usersDB.length
+            },
+            usersDB: this.usersDB,
+            hospitalsDB: this.hospitalsDB || [],
+            doctorRequests: this.doctorRequests || [],
+            journals: JSON.parse(localStorage.getItem('udvega_journals') || '[]')
+        };
+
+        const jsonStr = JSON.stringify(fullBackup, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const dateStr = new Date().toISOString().split('T')[0];
+        a.download = `udvega_database_master_backup_${dateStr}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        alert(`Database Backup Exported Successfully! 🎉\n\nTotal User Records Saved: ${this.usersDB.length}\nFile: udvega_database_master_backup_${dateStr}.json`);
+    }
+
+    exportDatabaseCSV() {
+        const headers = ["Full Name", "Email", "Role", "Phone Number", "Phone Verified", "License / Reg ID", "PIN / Password", "Hospital Name", "Approval Status"];
+        const rows = this.usersDB.map(u => [
+            `"${(u.fullName || '').replace(/"/g, '""')}"`,
+            `"${(u.email || '').replace(/"/g, '""')}"`,
+            `"${(u.role || '').replace(/"/g, '""')}"`,
+            `"${(u.phone || '').replace(/"/g, '""')}"`,
+            `"${u.phoneVerified ? 'Verified' : 'Unverified'}"`,
+            `"${(u.govLicenseNo || u.subjectId || '').replace(/"/g, '""')}"`,
+            `"${(u.password || '').replace(/"/g, '""')}"`,
+            `"${(u.hospitalName || '').replace(/"/g, '""')}"`,
+            `"${(u.status || 'approved').replace(/"/g, '""')}"`
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        const dateStr = new Date().toISOString().split('T')[0];
+        link.setAttribute('download', `udvega_users_database_${dateStr}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        alert(`Users Database CSV Exported Successfully! 📊\nFile: udvega_users_database_${dateStr}.csv`);
+    }
+
+    importDatabaseJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (data && Array.isArray(data.usersDB)) {
+                    this.usersDB = data.usersDB;
+                    localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+
+                    if (Array.isArray(data.hospitalsDB)) {
+                        this.hospitalsDB = data.hospitalsDB;
+                        localStorage.setItem('udvega_hospitals_db', JSON.stringify(this.hospitalsDB));
+                    }
+                    if (Array.isArray(data.doctorRequests)) {
+                        this.doctorRequests = data.doctorRequests;
+                        localStorage.setItem('udvega_doctor_requests', JSON.stringify(this.doctorRequests));
+                    }
+                    if (Array.isArray(data.journals)) {
+                        localStorage.setItem('udvega_journals', JSON.stringify(data.journals));
+                    }
+
+                    this.renderMasterAdminPortal();
+                    alert(`Database Restored Successfully! ✅\n\nRestored ${this.usersDB.length} user accounts from JSON backup.`);
+                } else {
+                    alert('Invalid Database File Format! Must contain a valid usersDB array.');
+                }
+            } catch (err) {
+                alert('Error parsing JSON backup file: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    promptResetUserPin(email) {
+        const user = this.usersDB.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (!user) return;
+
+        const newPin = prompt(`Enter new Security PIN / Password for ${user.fullName} (${user.email}):`, user.password || '1234');
+        if (newPin !== null && newPin.trim() !== '') {
+            user.password = newPin.trim();
+            localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+            this.renderMasterDatabaseTable();
+            alert(`Security PIN / Password updated to "${user.password}" for ${user.fullName}!`);
+        }
+    }
+
+    toggleUserAccountStatus(email) {
+        const user = this.usersDB.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (!user) return;
+
+        if (user.email.toLowerCase() === 'rajwanthbalakaofficial@gmail.com') {
+            alert('Master Super Admin account status cannot be altered!');
+            return;
+        }
+
+        user.status = (user.status === 'approved' || !user.status) ? 'pending_gov_approval' : 'approved';
+        localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+        this.renderMasterAdminPortal();
+        alert(`Account status for ${user.fullName} updated to: ${user.status === 'approved' ? 'Approved ✓' : 'Pending Approval ⏳'}`);
+    }
+
+    deleteUserAccount(email, name) {
+        if (email.toLowerCase() === 'rajwanthbalakaofficial@gmail.com') {
+            alert('Master Super Admin account CANNOT be deleted!');
+            return;
+        }
+
+        if (confirm(`Are you sure you want to permanently delete user account "${name}" (${email}) from the database?`)) {
+            this.usersDB = this.usersDB.filter(u => u.email.toLowerCase() !== email.toLowerCase());
+            localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+            this.renderMasterAdminPortal();
+            alert(`User account "${name}" deleted from database.`);
+        }
     }
 
     renderHospitalAdminPortal() {

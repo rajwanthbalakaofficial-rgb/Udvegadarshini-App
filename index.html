@@ -1371,6 +1371,99 @@
                         </div>
                     </div>
 
+                    <!-- SLIDE 3: MASTER SYSTEM DATABASE, ACCOUNT INSPECTION & BACKUP CENTER -->
+                    <div class="card" id="masterDatabaseSection" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(139, 92, 246, 0.4); margin-bottom: 1.5rem; padding: 1.3rem;">
+                        <div class="flex-between" style="flex-wrap: wrap; gap: 12px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.9rem; margin-bottom: 1.2rem;">
+                            <div>
+                                <h3 style="margin: 0; color: #c084fc; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-database"></i> Slide 3: Master System Database & Accounts Inspector
+                                </h3>
+                                <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: #94a3b8;">
+                                    Real-time view of all system accounts, hospital credentials, doctor licenses, telemetry logs, and backup/restore controls.
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn btn-sm" id="btnExportDBJSON" onclick="app.exportDatabaseJSON()" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; border: none; font-weight: 600; padding: 0.5rem 0.9rem; border-radius: 6px; cursor: pointer;">
+                                    <i class="fa-solid fa-download"></i> Export DB (JSON)
+                                </button>
+                                <button class="btn btn-sm" id="btnExportDBCSV" onclick="app.exportDatabaseCSV()" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; font-weight: 600; padding: 0.5rem 0.9rem; border-radius: 6px; cursor: pointer;">
+                                    <i class="fa-solid fa-file-csv"></i> Export Users (CSV)
+                                </button>
+                                <label class="btn btn-sm" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; border: none; font-weight: 600; padding: 0.5rem 0.9rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0;">
+                                    <i class="fa-solid fa-upload"></i> Restore DB (JSON)
+                                    <input type="file" id="inputRestoreDB" accept=".json" onchange="app.importDatabaseJSON(event)" style="display: none;">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- LIVE DATABASE METRICS COUNTERS -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; margin-bottom: 1.2rem;">
+                            <div style="background: rgba(30, 41, 59, 0.6); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                                <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; display: block; font-weight: 600;">Total System Users</span>
+                                <strong id="dbCountTotalUsers" style="font-size: 1.4rem; color: #a7f3d0;">0</strong>
+                            </div>
+                            <div style="background: rgba(30, 41, 59, 0.6); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                                <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; display: block; font-weight: 600;">Hospitals</span>
+                                <strong id="dbCountHospitals" style="font-size: 1.4rem; color: #38bdf8;">0</strong>
+                            </div>
+                            <div style="background: rgba(30, 41, 59, 0.6); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                                <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; display: block; font-weight: 600;">Doctors</span>
+                                <strong id="dbCountDoctors" style="font-size: 1.4rem; color: #818cf8;">0</strong>
+                            </div>
+                            <div style="background: rgba(30, 41, 59, 0.6); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                                <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; display: block; font-weight: 600;">Clinical Patients</span>
+                                <strong id="dbCountPatients" style="font-size: 1.4rem; color: #f472b6;">0</strong>
+                            </div>
+                            <div style="background: rgba(30, 41, 59, 0.6); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                                <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; display: block; font-weight: 600;">Wellness Users</span>
+                                <strong id="dbCountWellness" style="font-size: 1.4rem; color: #facc15;">0</strong>
+                            </div>
+                            <div style="background: rgba(30, 41, 59, 0.6); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                                <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; display: block; font-weight: 600;">EEG Telemetry Logs</span>
+                                <strong id="dbCountTelemetry" style="font-size: 1.4rem; color: #34d399;">0</strong>
+                            </div>
+                        </div>
+
+                        <!-- FILTER & SEARCH BAR -->
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.2rem; align-items: center;">
+                            <div style="flex: 1; min-width: 220px; position: relative;">
+                                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                                <input type="text" id="masterDbSearchInput" oninput="app.renderMasterDatabaseTable()" placeholder="Search by name, email, phone, ID, license, PIN..." style="width: 100%; padding: 0.55rem 0.8rem 0.55rem 2.2rem; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #fff; font-size: 0.88rem;">
+                            </div>
+                            <select id="masterDbRoleFilter" onchange="app.renderMasterDatabaseTable()" style="padding: 0.55rem 0.9rem; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #fff; font-size: 0.88rem; cursor: pointer;">
+                                <option value="all">All Roles (Full Database)</option>
+                                <option value="MasterAdmin">Master Super Admin</option>
+                                <option value="HospitalAdmin">Hospital Admins</option>
+                                <option value="Doctor">Doctors</option>
+                                <option value="Subject">Clinical Patients</option>
+                                <option value="PersonalUser">Personal Wellness Users</option>
+                            </select>
+                            <button type="button" onclick="app.renderMasterAdminPortal()" class="btn btn-sm btn-secondary" style="padding: 0.55rem 0.9rem; font-size: 0.88rem;">
+                                <i class="fa-solid fa-rotate"></i> Refresh Table
+                            </button>
+                        </div>
+
+                        <!-- ACCOUNTS TABLE -->
+                        <div style="overflow-x: auto; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+                                <thead>
+                                    <tr style="background: rgba(30, 41, 59, 0.8); color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                        <th style="padding: 0.75rem 0.9rem;">User & Email</th>
+                                        <th style="padding: 0.75rem 0.9rem;">Role</th>
+                                        <th style="padding: 0.75rem 0.9rem;">Phone Number</th>
+                                        <th style="padding: 0.75rem 0.9rem;">License / Reg ID</th>
+                                        <th style="padding: 0.75rem 0.9rem;">PIN / Password</th>
+                                        <th style="padding: 0.75rem 0.9rem;">Status</th>
+                                        <th style="padding: 0.75rem 0.9rem; text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="masterDbTableBody">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- ================= MODE 1: HOSPITAL ADMIN DASHBOARD ================= -->
