@@ -415,6 +415,7 @@ class UdvegadarshiniApp {
                 docTab.innerHTML = `<i class="fa-solid fa-user-doctor"></i> Doctor Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>`;
             }
 
+            if (masterAdminView) masterAdminView.style.display = 'none';
             if (hospAdminView) hospAdminView.style.display = 'none';
             if (docPortalView) docPortalView.style.display = 'block';
 
@@ -438,6 +439,7 @@ class UdvegadarshiniApp {
                 docTab.innerHTML = `<i class="fa-solid fa-hospital-user"></i> Hospital & Doctor Portal <span class="badge-unread" id="pendingReqBadge" style="display:none;">0</span>`;
             }
 
+            if (masterAdminView) masterAdminView.style.display = 'none';
             if (hospAdminView) hospAdminView.style.display = 'none';
             if (docPortalView) docPortalView.style.display = 'block';
             this.renderDoctorPortal();
