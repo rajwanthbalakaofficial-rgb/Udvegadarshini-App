@@ -88,13 +88,13 @@ class UdvegadarshiniApp {
 
     loadUsersDB() {
         // Perform clean database wipe & seed pre-approved demo accounts for ALL roles
-        const dbResetDone = localStorage.getItem('udvega_db_reset_v8_clean');
+        const dbResetDone = localStorage.getItem('udvega_db_reset_v9_master_lock');
         if (!dbResetDone) {
             localStorage.removeItem('udvega_users_db');
             localStorage.removeItem('udvega_hospitals_db');
             localStorage.removeItem('udvega_doctor_requests');
             localStorage.removeItem('udvega_user');
-            localStorage.setItem('udvega_db_reset_v8_clean', 'true');
+            localStorage.setItem('udvega_db_reset_v9_master_lock', 'true');
         }
 
         try {
@@ -184,8 +184,10 @@ class UdvegadarshiniApp {
         ];
 
         defaultDemoUsers.forEach(demo => {
-            const existing = this.usersDB.find(u => u.email && u.email.toLowerCase() === demo.email.toLowerCase());
-            if (!existing) {
+            const idx = this.usersDB.findIndex(u => u.email && u.email.toLowerCase() === demo.email.toLowerCase());
+            if (idx >= 0) {
+                this.usersDB[idx] = { ...this.usersDB[idx], ...demo };
+            } else {
                 this.usersDB.push(demo);
             }
         });
@@ -930,13 +932,13 @@ class UdvegadarshiniApp {
             loginForm.onsubmit = (e) => {
                 e.preventDefault();
                 const loginInput = document.getElementById('loginEmail').value.trim().toLowerCase();
-                const password = document.getElementById('loginPassword').value;
+                const password = document.getElementById('loginPassword').value.trim();
 
                 const match = this.usersDB.find(u => 
                     ((u.email && u.email.toLowerCase() === loginInput) || 
                      (u.subjectId && u.subjectId.toLowerCase() === loginInput) ||
                      (u.fullName && u.fullName.toLowerCase() === loginInput)) &&
-                    u.password === password
+                    String(u.password).trim() === String(password).trim()
                 );
 
                 if (match) {
