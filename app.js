@@ -87,13 +87,13 @@ class UdvegadarshiniApp {
 
     loadUsersDB() {
         // Perform clean database wipe & reset to ONLY Master Admin
-        const dbResetDone = localStorage.getItem('udvega_db_reset_v5_clean');
+        const dbResetDone = localStorage.getItem('udvega_db_reset_v6_clean');
         if (!dbResetDone) {
             localStorage.removeItem('udvega_users_db');
             localStorage.removeItem('udvega_hospitals_db');
             localStorage.removeItem('udvega_doctor_requests');
             localStorage.removeItem('udvega_user');
-            localStorage.setItem('udvega_db_reset_v5_clean', 'true');
+            localStorage.setItem('udvega_db_reset_v6_clean', 'true');
         }
 
         try {
