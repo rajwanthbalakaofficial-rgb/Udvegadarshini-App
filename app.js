@@ -805,12 +805,12 @@ class UdvegadarshiniApp {
                 if (alertBox) {
                     alertBox.className = 'auth-alert-box success';
                     if (role === 'Doctor') {
-                        alertBox.textContent = `Doctor Account Registered! ⏳ Pending approval from Hospital Admin (${hospitalName}). You can log in once approved.`;
+                        alertBox.textContent = `Doctor Account Registered! ⏳ Pending approval from Hospital Admin (${hospitalName}). Switch to Log In tab.`;
                     } else if (role === 'HospitalAdmin') {
                         alertBox.innerHTML = `
                             <div style="padding: 0.2rem 0;">
-                                <strong style="color: #34d399;"><i class="fa-solid fa-shield-check"></i> Government License Verified ✓</strong>
-                                <p style="margin: 0.3rem 0 0; font-size: 0.88rem;">Hospital <strong>${hospitalName}</strong> verified with National Health Authority Registry (License: <code>${govLicenseNo}</code>). Dashboard Activated!</p>
+                                <strong style="color: #34d399;"><i class="fa-solid fa-circle-check"></i> Hospital Registered Successfully! ✓</strong>
+                                <p style="margin: 0.3rem 0 0; font-size: 0.88rem;">Government License Verified for <strong>${hospitalName}</strong>. Please switch to <strong>Log In</strong> tab to log in with your PIN.</p>
                             </div>
                         `;
                     } else {
@@ -819,7 +819,15 @@ class UdvegadarshiniApp {
                     alertBox.style.display = 'block';
                 }
 
-                if (role !== 'Doctor') {
+                if (role === 'HospitalAdmin' || role === 'Doctor') {
+                    // DO NOT AUTO-LOGIN ON SIGN UP! Switch to Log In tab after 1.5s and pre-fill email
+                    setTimeout(() => {
+                        const tabLogin = document.getElementById('tabModeLogin');
+                        const loginEmailInput = document.getElementById('loginEmail');
+                        if (tabLogin) tabLogin.click();
+                        if (loginEmailInput) loginEmailInput.value = email;
+                    }, 1500);
+                } else {
                     setTimeout(() => this.saveUserProfile(newUser), 1000);
                 }
             };
