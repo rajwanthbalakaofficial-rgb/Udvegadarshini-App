@@ -15,7 +15,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=13.0.0">
+    <link rel="stylesheet" href="styles.css?v=14.0.0">
 </head>
 <body class="dark-theme">
 
@@ -76,9 +76,29 @@
                     <input type="text" id="signupFullName" placeholder="e.g. Santhosh / Sindhu / Bharat / Nani" required>
                 </div>
 
+                <div class="form-row">
+                    <div class="form-group">
+                        <label id="signupEmailLabel"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                        <input type="text" id="signupEmail" placeholder="e.g. user@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-cake-candles"></i> Age (Years)</label>
+                        <input type="number" id="signupAge" placeholder="e.g. 28" min="1" max="120" value="28" required>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label id="signupEmailLabel"><i class="fa-solid fa-envelope"></i> Email Address / Username</label>
-                    <input type="text" id="signupEmail" placeholder="e.g. user@example.com" required>
+                    <label><i class="fa-solid fa-mobile-screen-button"></i> Mobile Phone Number</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="tel" id="signupPhone" placeholder="+91 98765 43210" value="+91 98765 43210" style="flex: 1;" required>
+                        <button type="button" class="btn btn-sm btn-secondary" id="btnVerifySignupPhone">
+                            <i class="fa-solid fa-shield-check"></i> Verify OTP
+                        </button>
+                    </div>
+                    <span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-top: 0.2rem;" id="signupPhoneStatusText">
+                        Status: Unverified (Click to verify via OTP)
+                    </span>
                 </div>
 
                 <div class="form-group">
@@ -370,15 +390,21 @@
                 <button class="btn-mode-toggle" id="btnModeClinical"><i class="fa-solid fa-flask"></i> Clinical</button>
             </div>
 
-            <!-- Language Selector Dropdown -->
-            <div class="lang-selector-box">
-                <i class="fa-solid fa-globe"></i>
-                <select id="languageSelect">
-                    <option value="teluglish">Teluglish</option>
-                    <option value="en">English</option>
-                    <option value="telugu">తెలుగు</option>
-                    <option value="hindi">हिन्दी</option>
-                </select>
+            <!-- Theme Switcher & Language Selector Dropdown -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="btn-icon-theme" id="btnThemeToggle" title="Toggle Light / Dark Mode">
+                    <i class="fa-solid fa-sun" id="themeToggleIcon"></i>
+                </button>
+                
+                <div class="lang-selector-box">
+                    <i class="fa-solid fa-globe"></i>
+                    <select id="languageSelect">
+                        <option value="teluglish">Teluglish</option>
+                        <option value="en">English</option>
+                        <option value="telugu">తెలుగు</option>
+                        <option value="hindi">हिन्दी</option>
+                    </select>
+                </div>
             </div>
 
             <!-- User Profile Badge -->
@@ -391,6 +417,7 @@
                         <i class="fa-solid fa-user-doctor"></i> <span id="userDocLinkText">Doctor Link: Pending</span>
                     </div>
                 </div>
+                <button class="btn-icon" id="btnOpenProfile" title="My Profile & Settings"><i class="fa-solid fa-id-badge"></i></button>
                 <button class="btn-icon" id="btnLogout" title="Switch User / Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
 
@@ -1807,11 +1834,109 @@
         </div>
     </div>
 
+    <!-- ================= USER PROFILE & EDIT MODAL ================= -->
+    <div class="login-modal-overlay" id="userProfileModal" style="display: none;">
+        <div class="login-card card" style="max-width: 580px; width: 92%;">
+            <div class="card-header flex-between" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem; margin-bottom: 1.2rem;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="background: linear-gradient(135deg, #6366f1, #06b6d4); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.4rem;" id="modalProfileAvatar">
+                        S
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.2rem;" id="modalProfileTitle">User Profile & Account Info</h3>
+                        <span style="font-size: 0.82rem; color: #94a3b8;" id="modalProfileSubtitle">View & update your credentials across Udvegadarshini</span>
+                    </div>
+                </div>
+                <button class="btn-icon" id="btnCloseProfileModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="auth-alert-box" id="profileAlertBox" style="display: none; margin-bottom: 1rem;"></div>
+
+            <form id="profileEditForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-user"></i> Full Name</label>
+                        <input type="text" id="profileEditName" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-cake-candles"></i> Age (Years)</label>
+                        <input type="number" id="profileEditAge" min="1" max="120" placeholder="e.g. 28" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-mobile-screen-button"></i> Mobile Phone Number</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="tel" id="profileEditPhone" placeholder="+91 98765 43210" style="flex: 1;" required>
+                        <span id="profilePhoneStatusBadge">
+                            <button type="button" class="btn btn-sm btn-secondary" id="btnProfileVerifyPhone">
+                                <i class="fa-solid fa-shield-check"></i> Verify OTP
+                            </button>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="profileEditEmail" required>
+                </div>
+
+                <div class="form-group">
+                    <label id="profileLicenseLabel"><i class="fa-solid fa-id-card"></i> Identification ID / License Number</label>
+                    <input type="text" id="profileEditLicense" required>
+                    <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; display: block;" id="profileLicenseHint">
+                        Doctor License / Hospital License / Patient Subject ID / App User ID
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-hospital"></i> Associated Hospital / Organization</label>
+                    <input type="text" id="profileEditHospital" readonly style="opacity: 0.75; cursor: not-allowed;">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" id="btnCancelProfileModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Profile Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= PHONE OTP VERIFICATION MODAL ================= -->
+    <div class="login-modal-overlay" id="phoneVerifyModal" style="display: none;">
+        <div class="login-card card" style="max-width: 420px; width: 90%; text-align: center;">
+            <div style="background: rgba(6, 182, 212, 0.15); color: #06b6d4; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem auto;">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 style="margin: 0 0 0.4rem 0;">Phone Verification (OTP)</h3>
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.2rem;" id="otpModalSub">
+                Enter the 4-digit verification code sent to your mobile number.
+            </p>
+
+            <div style="background: rgba(99, 102, 241, 0.15); border: 1px dashed rgba(99, 102, 241, 0.4); padding: 0.6rem; border-radius: 8px; margin-bottom: 1.2rem; font-size: 0.85rem; color: #a5b4fc;">
+                <i class="fa-solid fa-key"></i> Simulation Demo OTP: <strong style="color: #38bdf8; font-size: 1.2rem; letter-spacing: 2px;" id="demoOtpDisplay">5892</strong>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <input type="text" id="inputOtpCode" maxlength="4" placeholder="Enter 4-Digit OTP" style="text-align: center; font-size: 1.4rem; letter-spacing: 8px; font-weight: 700;">
+            </div>
+
+            <div class="auth-alert-box" id="otpAlertBox" style="display: none; margin-bottom: 1rem;"></div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn btn-secondary" style="flex: 1;" id="btnCancelOtpModal">Cancel</button>
+                <button type="button" class="btn btn-primary" style="flex: 1;" id="btnSubmitOtpVerification">
+                    <i class="fa-solid fa-check"></i> Verify & Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- JS Files -->
     <script src="i18n.js"></script>
     <script src="audio-frequency.js"></script>
     <script src="apta-ai.js"></script>
     <script src="games.js"></script>
-    <script src="app.js?v=13.0.0"></script>
+    <script src="app.js?v=14.0.0"></script>
 </body>
 </html>

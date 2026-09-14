@@ -2532,3 +2532,101 @@ body {
     }
 }
 
+/* ================= THEME TOGGLE & LIGHT MODE UI STYLES ================= */
+.btn-icon-theme {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
+    color: #f59e0b;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all var(--transition-fast);
+}
+
+.btn-icon-theme:hover {
+    background: rgba(245, 158, 11, 0.2);
+    transform: scale(1.05);
+}
+
+body.light-theme {
+    --bg-dark: #f8fafc;
+    --bg-card: rgba(255, 255, 255, 0.95);
+    --bg-card-hover: rgba(241, 245, 249, 1);
+    --border-color: rgba(148, 163, 184, 0.3);
+    --border-glow: rgba(99, 102, 241, 0.4);
+
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.04) 0%, transparent 60%);
+    color: var(--text-primary);
+}
+
+body.light-theme .btn-icon-theme {
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+body.light-theme .card,
+body.light-theme .login-card,
+body.light-theme .splash-content {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border-color: rgba(203, 213, 225, 0.8) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+body.light-theme input,
+body.light-theme select,
+body.light-theme textarea {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+body.light-theme input::placeholder {
+    color: #94a3b8;
+}
+
+body.light-theme .main-nav {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(203, 213, 225, 0.8) !important;
+}
+
+body.light-theme .nav-tab {
+    color: #475569 !important;
+}
+
+body.light-theme .nav-tab.active {
+    color: #6366f1 !important;
+    background: rgba(99, 102, 241, 0.12) !important;
+    border-bottom: 3px solid #6366f1;
+}
+
+body.light-theme .user-profile-badge {
+    background: rgba(241, 245, 249, 0.95) !important;
+    border-color: rgba(203, 213, 225, 0.8) !important;
+}
+
+body.light-theme .data-table th,
+body.light-theme .doc-patients-table th {
+    background: rgba(241, 245, 249, 0.9) !important;
+    color: #334155 !important;
+}
+
+body.light-theme .data-table td,
+body.light-theme .doc-patients-table td {
+    border-bottom-color: rgba(226, 232, 240, 0.8) !important;
+    color: #0f172a !important;
+}
+

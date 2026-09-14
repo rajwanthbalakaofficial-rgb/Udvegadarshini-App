@@ -57,6 +57,7 @@ class UdvegadarshiniApp {
         try { if (typeof stressGames !== 'undefined') stressGames.init(); } catch(e) { console.error("Games error:", e); }
         try { this.bindSoundTherapyPresets(); } catch(e) { console.error("Presets error:", e); }
         try { this.initDoctorPortalEvents(); } catch(e) { console.error("Doctor portal error:", e); }
+        try { this.initProfileAndPhoneEvents(); } catch(e) { console.error("Profile events error:", e); }
     }
 
     loadHospitalsDB() {
@@ -457,13 +458,29 @@ class UdvegadarshiniApp {
     }
 
     saveUserProfile(userObj) {
+        let appUserId = userObj.govLicenseNo || userObj.licenseNo || userObj.subjectId;
+        if (!appUserId || appUserId === 'SUBJ-GUEST') {
+            if (userObj.role === 'Personal Wellness') {
+                appUserId = 'USER-' + Math.floor(1000 + Math.random() * 9000) + '-APP';
+            } else if (userObj.role === 'Doctor') {
+                appUserId = 'MCI-AP-2026-' + Math.floor(1000 + Math.random() * 9000);
+            } else if (userObj.role === 'HospitalAdmin') {
+                appUserId = 'NABH-AP-8841-HOSP';
+            } else {
+                appUserId = userObj.subjectId || 'SUBJ-' + Math.floor(1000 + Math.random() * 9000);
+            }
+        }
+
         this.currentUser = {
-            subjectId: userObj.subjectId,
+            subjectId: userObj.subjectId || appUserId,
             fullName: userObj.fullName,
+            age: userObj.age || 28,
+            phone: userObj.phone || '+91 98765 43210',
+            phoneVerified: userObj.phoneVerified || false,
             email: userObj.email || '',
             role: userObj.role,
             hospitalName: userObj.hospitalName || 'GVP Multi-Specialty Hospital',
-            govLicenseNo: userObj.govLicenseNo || userObj.subjectId || 'NABH-AP-2026-8841',
+            govLicenseNo: appUserId,
             govVerified: true,
             doctorEmail: userObj.doctorEmail || '',
             doctorName: userObj.doctorName || '',
@@ -2677,6 +2694,275 @@ class UdvegadarshiniApp {
 
             modal.style.display = 'flex';
         }
+    }
+
+    /* ================= THEME TOGGLE & PROFILE EDIT ENGINE ================= */
+    initTheme() {
+        const savedTheme = localStorage.getItem('udvega_theme') || 'dark';
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            const icon = document.getElementById('themeToggleIcon');
+            if (icon) icon.className = 'fa-solid fa-moon';
+        } else {
+            document.body.classList.remove('light-theme');
+            const icon = document.getElementById('themeToggleIcon');
+            if (icon) icon.className = 'fa-solid fa-sun';
+        }
+
+        const btnTheme = document.getElementById('btnThemeToggle');
+        if (btnTheme) {
+            btnTheme.onclick = () => this.toggleTheme();
+        }
+    }
+
+    toggleTheme() {
+        const isLight = document.body.classList.toggle('light-theme');
+        const theme = isLight ? 'light' : 'dark';
+        localStorage.setItem('udvega_theme', theme);
+        const icon = document.getElementById('themeToggleIcon');
+        if (icon) {
+            icon.className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        }
+    }
+
+    initProfileAndPhoneEvents() {
+        this.initTheme();
+
+        const btnOpenProf = document.getElementById('btnOpenProfile');
+        const btnCloseProf = document.getElementById('btnCloseProfileModal');
+        const btnCancelProf = document.getElementById('btnCancelProfileModal');
+        const userProfModal = document.getElementById('userProfileModal');
+        const profileForm = document.getElementById('profileEditForm');
+
+        if (btnOpenProf) {
+            btnOpenProf.onclick = () => this.openProfileModal();
+        }
+        if (btnCloseProf && userProfModal) {
+            btnCloseProf.onclick = () => { userProfModal.style.display = 'none'; };
+        }
+        if (btnCancelProf && userProfModal) {
+            btnCancelProf.onclick = () => { userProfModal.style.display = 'none'; };
+        }
+
+        if (profileForm) {
+            profileForm.onsubmit = (e) => {
+                e.preventDefault();
+                this.saveProfileChanges();
+            };
+        }
+
+        const btnVerifySignup = document.getElementById('btnVerifySignupPhone');
+        const btnVerifyProfile = document.getElementById('btnProfileVerifyPhone');
+        const btnCancelOtp = document.getElementById('btnCancelOtpModal');
+        const btnSubmitOtp = document.getElementById('btnSubmitOtpVerification');
+        const otpModal = document.getElementById('phoneVerifyModal');
+
+        if (btnVerifySignup) {
+            btnVerifySignup.onclick = () => this.triggerPhoneVerification('signup');
+        }
+        if (btnVerifyProfile) {
+            btnVerifyProfile.onclick = () => this.triggerPhoneVerification('profile');
+        }
+        if (btnCancelOtp && otpModal) {
+            btnCancelOtp.onclick = () => { otpModal.style.display = 'none'; };
+        }
+        if (btnSubmitOtp) {
+            btnSubmitOtp.onclick = () => this.verifyPhoneOTP();
+        }
+    }
+
+    openProfileModal() {
+        const modal = document.getElementById('userProfileModal');
+        const alertBox = document.getElementById('profileAlertBox');
+        if (!modal) return;
+        if (alertBox) alertBox.style.display = 'none';
+
+        const nameInput = document.getElementById('profileEditName');
+        const ageInput = document.getElementById('profileEditAge');
+        const phoneInput = document.getElementById('profileEditPhone');
+        const emailInput = document.getElementById('profileEditEmail');
+        const licInput = document.getElementById('profileEditLicense');
+        const hospInput = document.getElementById('profileEditHospital');
+        const avatarDiv = document.getElementById('modalProfileAvatar');
+        const titleElem = document.getElementById('modalProfileTitle');
+        const subElem = document.getElementById('modalProfileSubtitle');
+        const licLabel = document.getElementById('profileLicenseLabel');
+        const licHint = document.getElementById('profileLicenseHint');
+
+        const user = this.currentUser || {};
+
+        if (avatarDiv) avatarDiv.textContent = (user.fullName || 'G').charAt(0).toUpperCase();
+        if (titleElem) titleElem.textContent = `${user.fullName || 'Guest User'} - Profile & Account Info`;
+        if (subElem) subElem.textContent = `Role: ${user.role || 'Subject'} | Status: Active User Account`;
+
+        if (nameInput) nameInput.value = user.fullName || '';
+        if (ageInput) ageInput.value = user.age || 28;
+        if (phoneInput) phoneInput.value = user.phone || '+91 98765 43210';
+        if (emailInput) emailInput.value = user.email || '';
+        if (hospInput) hospInput.value = user.hospitalName || 'GVP Multi-Specialty Hospital';
+
+        let currentLic = user.govLicenseNo || user.subjectId;
+        if (!currentLic || currentLic === 'SUBJ-GUEST') {
+            if (user.role === 'Doctor') currentLic = 'MCI-AP-2026-9812';
+            else if (user.role === 'HospitalAdmin') currentLic = 'NABH-AP-8841-HOSP';
+            else if (user.role === 'Personal Wellness') currentLic = 'USER-' + Math.floor(1000 + Math.random()*9000) + '-APP';
+            else currentLic = user.subjectId || 'SUBJ-3221';
+        }
+
+        if (licInput) licInput.value = currentLic;
+
+        if (licLabel && licHint) {
+            if (user.role === 'Doctor') {
+                licLabel.innerHTML = `<i class="fa-solid fa-user-doctor"></i> Doctor Medical License Reg No.`;
+                licHint.textContent = `Official Medical Council Registration License (e.g. MCI-AP-2026-9812)`;
+            } else if (user.role === 'HospitalAdmin') {
+                licLabel.innerHTML = `<i class="fa-solid fa-hospital"></i> Hospital License / NABH Registration No.`;
+                licHint.textContent = `Government Hospital Accreditation License (e.g. NABH-AP-8841-HOSP)`;
+            } else if (user.role === 'Personal Wellness') {
+                licLabel.innerHTML = `<i class="fa-solid fa-id-card-clip"></i> Personal Usage App User ID`;
+                licHint.textContent = `Auto-generated Personal Usage App User ID for local telemetry tracking`;
+            } else {
+                licLabel.innerHTML = `<i class="fa-solid fa-hospital-user"></i> Patient Subject ID`;
+                licHint.textContent = `Unique Subject ID assigned for doctor clinical consultation & EEG tracking`;
+            }
+        }
+
+        this.renderPhoneStatusBadge('profilePhoneStatusBadge', user.phoneVerified);
+
+        modal.style.display = 'flex';
+    }
+
+    renderPhoneStatusBadge(containerId, isVerified) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (isVerified) {
+            container.innerHTML = `
+                <span class="badge-tag" style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px;">
+                    <i class="fa-solid fa-circle-check"></i> Verified ✓
+                </span>
+            `;
+        } else {
+            container.innerHTML = `
+                <button type="button" class="btn btn-sm btn-secondary" id="btnProfileVerifyPhone">
+                    <i class="fa-solid fa-shield-check"></i> Verify OTP
+                </button>
+            `;
+            const btn = document.getElementById('btnProfileVerifyPhone');
+            if (btn) btn.onclick = () => this.triggerPhoneVerification('profile');
+        }
+    }
+
+    saveProfileChanges() {
+        const nameInput = document.getElementById('profileEditName');
+        const ageInput = document.getElementById('profileEditAge');
+        const phoneInput = document.getElementById('profileEditPhone');
+        const emailInput = document.getElementById('profileEditEmail');
+        const licInput = document.getElementById('profileEditLicense');
+        const alertBox = document.getElementById('profileAlertBox');
+
+        const newName = nameInput ? nameInput.value.trim() : '';
+        const newAge = ageInput ? parseInt(ageInput.value, 10) : 28;
+        const newPhone = phoneInput ? phoneInput.value.trim() : '';
+        const newEmail = emailInput ? emailInput.value.trim().toLowerCase() : '';
+        const newLic = licInput ? licInput.value.trim() : '';
+
+        if (!newName || !newEmail || !newLic) {
+            if (alertBox) {
+                alertBox.className = 'auth-alert-box';
+                alertBox.textContent = 'Please fill in all required fields (Name, Email, License/ID)!';
+                alertBox.style.display = 'block';
+            }
+            return;
+        }
+
+        this.currentUser.fullName = newName;
+        this.currentUser.age = newAge;
+        this.currentUser.phone = newPhone;
+        this.currentUser.email = newEmail;
+        this.currentUser.subjectId = newLic;
+        this.currentUser.govLicenseNo = newLic;
+
+        localStorage.setItem('udvega_user', JSON.stringify(this.currentUser));
+
+        const userInDB = this.usersDB.find(u => u.email === newEmail || u.subjectId === this.currentUser.subjectId);
+        if (userInDB) {
+            userInDB.fullName = newName;
+            userInDB.age = newAge;
+            userInDB.phone = newPhone;
+            userInDB.email = newEmail;
+            userInDB.subjectId = newLic;
+            userInDB.govLicenseNo = newLic;
+            userInDB.phoneVerified = this.currentUser.phoneVerified;
+            localStorage.setItem('udvega_users_db', JSON.stringify(this.usersDB));
+        }
+
+        this.updateUserProfileUI();
+
+        if (alertBox) {
+            alertBox.className = 'auth-alert-box success';
+            alertBox.textContent = 'Profile changes saved successfully! Updating UI...';
+            alertBox.style.display = 'block';
+        }
+
+        setTimeout(() => {
+            const modal = document.getElementById('userProfileModal');
+            if (modal) modal.style.display = 'none';
+        }, 1000);
+    }
+
+    triggerPhoneVerification(context) {
+        this.activeOtpContext = context;
+        this.currentDemoOtp = Math.floor(1000 + Math.random() * 9000).toString();
+
+        const demoOtpDisplay = document.getElementById('demoOtpDisplay');
+        const inputOtpCode = document.getElementById('inputOtpCode');
+        const otpAlertBox = document.getElementById('otpAlertBox');
+        const modal = document.getElementById('phoneVerifyModal');
+
+        if (demoOtpDisplay) demoOtpDisplay.textContent = this.currentDemoOtp;
+        if (inputOtpCode) inputOtpCode.value = '';
+        if (otpAlertBox) otpAlertBox.style.display = 'none';
+
+        if (modal) modal.style.display = 'flex';
+    }
+
+    verifyPhoneOTP() {
+        const inputOtpCode = document.getElementById('inputOtpCode');
+        const otpAlertBox = document.getElementById('otpAlertBox');
+        const val = inputOtpCode ? inputOtpCode.value.trim() : '';
+
+        if (val !== this.currentDemoOtp) {
+            if (otpAlertBox) {
+                otpAlertBox.className = 'auth-alert-box';
+                otpAlertBox.textContent = 'Invalid OTP code! Please enter the 4-digit code shown above.';
+                otpAlertBox.style.display = 'block';
+            }
+            return;
+        }
+
+        if (otpAlertBox) {
+            otpAlertBox.className = 'auth-alert-box success';
+            otpAlertBox.textContent = 'Mobile Phone Verified Successfully! ✓';
+            otpAlertBox.style.display = 'block';
+        }
+
+        if (this.activeOtpContext === 'profile') {
+            if (this.currentUser) this.currentUser.phoneVerified = true;
+            this.renderPhoneStatusBadge('profilePhoneStatusBadge', true);
+            localStorage.setItem('udvega_user', JSON.stringify(this.currentUser));
+        } else if (this.activeOtpContext === 'signup') {
+            this.tempPhoneVerified = true;
+            const statusTxt = document.getElementById('signupPhoneStatusText');
+            if (statusTxt) {
+                statusTxt.innerHTML = `<span style="color:#34d399; font-weight:600;"><i class="fa-solid fa-circle-check"></i> Mobile Phone Verified ✓</span>`;
+            }
+        }
+
+        setTimeout(() => {
+            const modal = document.getElementById('phoneVerifyModal');
+            if (modal) modal.style.display = 'none';
+        }, 1000);
     }
 }
 
