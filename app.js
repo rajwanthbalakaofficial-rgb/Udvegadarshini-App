@@ -3030,7 +3030,8 @@ class UdvegadarshiniApp {
     }
 
     quickDemoLogin(roleType) {
-        let emailTarget = 'rajwanthbalakaofficial@gmail.com';
+        if (roleType === 'master') return;
+        let emailTarget = '';
         if (roleType === 'hospital') emailTarget = 'yashoda@hospital.com';
         else if (roleType === 'doctor') emailTarget = 'doctor@gvp.com';
         else if (roleType === 'patient') emailTarget = 'patient@gmail.com';
