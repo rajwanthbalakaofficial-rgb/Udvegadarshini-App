@@ -86,13 +86,22 @@ class UdvegadarshiniApp {
     }
 
     loadUsersDB() {
+        // Perform clean database wipe & reset to ONLY Master Admin
+        const dbResetDone = localStorage.getItem('udvega_db_reset_v5_clean');
+        if (!dbResetDone) {
+            localStorage.removeItem('udvega_users_db');
+            localStorage.removeItem('udvega_hospitals_db');
+            localStorage.removeItem('udvega_doctor_requests');
+            localStorage.removeItem('udvega_user');
+            localStorage.setItem('udvega_db_reset_v5_clean', 'true');
+        }
+
         try {
             const db = localStorage.getItem('udvega_users_db');
             if (db) {
                 this.usersDB = JSON.parse(db);
             }
         } catch (e) {
-            console.error("Corrupted users database reset:", e);
             this.usersDB = [];
         }
 
@@ -100,65 +109,27 @@ class UdvegadarshiniApp {
             this.usersDB = [];
         }
 
-        // Guarantee default seed users (Hospital Admin, Doctors & Patients) are always present
-        const defaultAdmin = {
+        const masterAdmin = {
             email: 'admin@gvp.com',
             password: '1234',
-            fullName: 'GVP Hospital Admin',
+            fullName: 'GVP Master Healthcare Admin',
             subjectId: 'HOSP-REG-101',
             role: 'HospitalAdmin',
             hospitalName: 'GVP Multi-Specialty Hospital',
+            govLicenseNo: 'NABH-AP-2026-8841',
+            govVerified: true,
             status: 'approved',
             lang: 'teluglish'
         };
 
-        const defaultDoc1 = {
-            email: 'dr.rajesh@hospital.com',
-            password: '1234',
-            fullName: 'Dr. Rajesh Sharma',
-            subjectId: 'DOC-701',
-            role: 'Doctor',
-            hospitalName: 'GVP Multi-Specialty Hospital',
-            status: 'approved',
-            lang: 'teluglish'
-        };
-
-        const defaultDoc2 = {
-            email: 'dr.anitha@apollo.com',
-            password: '1234',
-            fullName: 'Dr. Anitha Reddy',
-            subjectId: 'DOC-802',
-            role: 'Doctor',
-            hospitalName: 'Apollo Hospitals',
-            status: 'approved',
-            lang: 'en'
-        };
-
-        const defaultPatient = {
-            email: 'patient@example.com',
-            password: '1234',
-            fullName: 'Santhosh Kumar',
-            subjectId: 'SUBJ-3221',
-            role: 'Subject',
-            hospitalName: 'GVP Multi-Specialty Hospital',
-            doctorEmail: 'dr.rajesh@hospital.com',
-            doctorName: 'Dr. Rajesh Sharma (Cardiology)',
-            doctorApprovalStatus: 'pending',
-            status: 'approved',
-            lang: 'teluglish'
-        };
-
-        if (!this.usersDB.some(u => (u.email && u.email.toLowerCase() === defaultAdmin.email.toLowerCase()) || (u.subjectId && u.subjectId.toLowerCase() === defaultAdmin.subjectId.toLowerCase()))) {
-            this.usersDB.push(defaultAdmin);
+        // Guarantee ONLY Master Admin exists on clean startup (or add if missing)
+        if (!this.usersDB.some(u => u.email && u.email.toLowerCase() === masterAdmin.email.toLowerCase())) {
+            this.usersDB.push(masterAdmin);
         }
-        if (!this.usersDB.some(u => u.email && u.email.toLowerCase() === defaultDoc1.email.toLowerCase())) {
-            this.usersDB.push(defaultDoc1);
-        }
-        if (!this.usersDB.some(u => u.email && u.email.toLowerCase() === defaultDoc2.email.toLowerCase())) {
-            this.usersDB.push(defaultDoc2);
-        }
-        if (!this.usersDB.some(u => u.email && u.email.toLowerCase() === defaultPatient.email.toLowerCase())) {
-            this.usersDB.push(defaultPatient);
+
+        // Keep ONLY Master Admin on clean reset
+        if (!dbResetDone) {
+            this.usersDB = [masterAdmin];
         }
 
         // Ensure non-master Hospital Admin accounts require Master Admin approval (admin@gvp.com)
