@@ -1331,6 +1331,10 @@ class UdvegadarshiniApp {
             return;
         }
         try {
+            const isLight = document.body.classList.contains('light-theme');
+            const gridColor = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.05)';
+            const tickColor = isLight ? '#334155' : '#64748b';
+
             const ctx = canvas.getContext('2d');
             this.chart = new Chart(ctx, {
                 type: 'line',
@@ -1346,8 +1350,8 @@ class UdvegadarshiniApp {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b' } },
-                        y: { min: 0, max: 100, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b' } }
+                        x: { grid: { color: gridColor }, ticks: { color: tickColor } },
+                        y: { min: 0, max: 100, grid: { color: gridColor }, ticks: { color: tickColor } }
                     },
                     plugins: { legend: { display: false } }
                 }
@@ -3045,7 +3049,8 @@ class UdvegadarshiniApp {
     /* ================= THEME TOGGLE & PROFILE EDIT ENGINE ================= */
     initTheme() {
         const savedTheme = localStorage.getItem('udvega_theme') || 'dark';
-        if (savedTheme === 'light') {
+        const isLight = savedTheme === 'light';
+        if (isLight) {
             document.body.classList.add('light-theme');
             const icon = document.getElementById('themeToggleIcon');
             if (icon) icon.className = 'fa-solid fa-moon';
@@ -3059,6 +3064,8 @@ class UdvegadarshiniApp {
         if (btnTheme) {
             btnTheme.onclick = () => this.toggleTheme();
         }
+
+        this.updateChartTheme(isLight);
     }
 
     toggleTheme() {
@@ -3068,6 +3075,24 @@ class UdvegadarshiniApp {
         const icon = document.getElementById('themeToggleIcon');
         if (icon) {
             icon.className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        }
+        this.updateChartTheme(isLight);
+    }
+
+    updateChartTheme(isLight) {
+        if (this.chart && this.chart.options && this.chart.options.scales) {
+            const gridColor = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.05)';
+            const tickColor = isLight ? '#334155' : '#64748b';
+
+            if (this.chart.options.scales.x) {
+                if (this.chart.options.scales.x.grid) this.chart.options.scales.x.grid.color = gridColor;
+                if (this.chart.options.scales.x.ticks) this.chart.options.scales.x.ticks.color = tickColor;
+            }
+            if (this.chart.options.scales.y) {
+                if (this.chart.options.scales.y.grid) this.chart.options.scales.y.grid.color = gridColor;
+                if (this.chart.options.scales.y.ticks) this.chart.options.scales.y.ticks.color = tickColor;
+            }
+            this.chart.update('none');
         }
     }
 
