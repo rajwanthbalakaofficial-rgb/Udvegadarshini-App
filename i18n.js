@@ -207,6 +207,10 @@ class LanguageManager {
 
         const simBtnText = document.getElementById('simBtnText');
         if (simBtnText && !window.app?.isSimulating) simBtnText.textContent = this.t('startSim');
+
+        if (window.aptaAI && typeof window.aptaAI.onLanguageChange === 'function') {
+            window.aptaAI.onLanguageChange(this.currentLang);
+        }
     }
 }
 
