@@ -2553,77 +2553,77 @@ body {
     transform: scale(1.05);
 }
 
-/* ================= COMPLETE HIGH-CONTRAST LIGHT THEME ENGINE ================= */
+/* ================= COMPLETE SOFT LIGHT-BLUE THEME ENGINE (v23.0.0) ================= */
 body.light-theme {
-    --bg-dark: #f1f5f9;
-    --bg-card: #ffffff;
-    --bg-card-hover: #f8fafc;
-    --border-color: #cbd5e1;
-    --border-glow: rgba(99, 102, 241, 0.4);
+    --bg-dark: #e0f2fe;
+    --bg-card: #f0f9ff;
+    --bg-card-hover: #e0f2fe;
+    --border-color: #93c5fd;
+    --border-glow: rgba(14, 165, 233, 0.4);
 
     --text-primary: #0f172a;
     --text-secondary: #1e293b;
     --text-muted: #334155;
 
-    background-color: #f1f5f9 !important;
+    background-color: #e0f2fe !important;
     background-image: 
-        radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
-        radial-gradient(circle at 90% 90%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
-        radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.03) 0%, transparent 60%) !important;
+        radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 60%) !important;
     color: #0f172a !important;
 }
 
 body.light-theme .btn-icon-theme {
-    color: #4338ca !important;
-    background: rgba(99, 102, 241, 0.15) !important;
-    border-color: rgba(99, 102, 241, 0.4) !important;
+    color: #0284c7 !important;
+    background: #e0f2fe !important;
+    border-color: #38bdf8 !important;
 }
 
 /* App Header & Navigation Bar */
 body.light-theme .app-header {
-    background: #ffffff !important;
-    border-bottom: 1px solid #cbd5e1 !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+    background: #f0f9ff !important;
+    border-bottom: 1px solid #93c5fd !important;
+    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.08) !important;
 }
 
 body.light-theme .logo-text h1 {
-    background: linear-gradient(135deg, #0f172a 30%, #4338ca 100%) !important;
+    background: linear-gradient(135deg, #0f172a 30%, #0284c7 100%) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
 }
 
 body.light-theme .hindi-subtitle {
-    color: #0284c7 !important;
-    -webkit-text-fill-color: #0284c7 !important;
+    color: #0369a1 !important;
+    -webkit-text-fill-color: #0369a1 !important;
     text-shadow: none !important;
 }
 
 body.light-theme .tagline {
-    color: #334155 !important;
+    color: #1e293b !important;
     font-weight: 600 !important;
 }
 
 body.light-theme .mode-toggle-box {
-    background: #f1f5f9 !important;
-    border-color: #cbd5e1 !important;
+    background: #e0f2fe !important;
+    border-color: #93c5fd !important;
 }
 
 body.light-theme .btn-mode-tab, 
 body.light-theme .btn-mode-toggle {
-    color: #334155 !important;
+    color: #1e293b !important;
     font-weight: 700 !important;
 }
 
 body.light-theme .btn-mode-tab.active,
 body.light-theme .btn-mode-toggle.active {
-    background: #4f46e5 !important;
+    background: #0284c7 !important;
     color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3) !important;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35) !important;
 }
 
 body.light-theme .user-profile-badge {
-    background: #f1f5f9 !important;
-    border-color: #cbd5e1 !important;
+    background: #e0f2fe !important;
+    border-color: #93c5fd !important;
     color: #0f172a !important;
 }
 
@@ -2633,38 +2633,38 @@ body.light-theme .user-profile-badge strong {
 }
 
 body.light-theme .lang-selector-box {
-    background: #f1f5f9 !important;
-    border-color: #cbd5e1 !important;
+    background: #e0f2fe !important;
+    border-color: #93c5fd !important;
     color: #0f172a !important;
 }
 
 body.light-theme .lang-selector-box select {
-    background: #f1f5f9 !important;
+    background: #e0f2fe !important;
     color: #0f172a !important;
     font-weight: 600 !important;
 }
 
 /* Main Navigation Bar */
 body.light-theme .main-nav {
-    background: #ffffff !important;
-    border-color: #cbd5e1 !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04) !important;
+    background: #f0f9ff !important;
+    border-color: #93c5fd !important;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.05) !important;
 }
 
 body.light-theme .nav-tab {
-    color: #334155 !important;
+    color: #1e293b !important;
     font-weight: 700 !important;
 }
 
 body.light-theme .nav-tab:hover {
-    color: #4338ca !important;
-    background: #f1f5f9 !important;
+    color: #0284c7 !important;
+    background: #e0f2fe !important;
 }
 
 body.light-theme .nav-tab.active {
-    color: #4338ca !important;
-    background: rgba(99, 102, 241, 0.15) !important;
-    border-bottom: 3px solid #4338ca !important;
+    color: #0284c7 !important;
+    background: rgba(2, 132, 199, 0.12) !important;
+    border-bottom: 3px solid #0284c7 !important;
     font-weight: 800 !important;
 }
 
@@ -2678,15 +2678,22 @@ body.light-theme .splash-content,
 body.light-theme .modal-content,
 body.light-theme .apta-sidebar,
 body.light-theme .apta-chat-container {
-    background: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05) !important;
+    background: #f0f9ff !important;
+    border: 1px solid #93c5fd !important;
+    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.08) !important;
     color: #0f172a !important;
 }
 
-/* Gauge Circle Background & Text */
+/* Gauge Circle Track & Ring in Light Mode - Explicitly Dark & Bold */
 body.light-theme .gauge-bg {
-    stroke: #e2e8f0 !important;
+    stroke: #64748b !important;
+    stroke-width: 8 !important;
+    opacity: 0.7 !important;
+}
+
+body.light-theme .gauge-container {
+    background: radial-gradient(circle, #e0f2fe 0%, #f0f9ff 100%) !important;
+    border-radius: 50% !important;
 }
 
 body.light-theme .stress-score-num {
@@ -2694,41 +2701,41 @@ body.light-theme .stress-score-num {
 }
 
 body.light-theme .stress-state-title {
-    color: #0284c7 !important;
-    font-weight: 700 !important;
+    color: #0369a1 !important;
+    font-weight: 800 !important;
 }
 
 body.light-theme .stress-state-desc {
-    color: #334155 !important;
-    font-weight: 600 !important;
-}
-
-body.light-theme .scale-label {
     color: #1e293b !important;
     font-weight: 700 !important;
 }
 
+body.light-theme .scale-label {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+}
+
 body.light-theme .badge-model {
-    background: rgba(6, 182, 212, 0.15) !important;
-    color: #0284c7 !important;
-    border: 1px solid rgba(6, 182, 212, 0.4) !important;
-    font-weight: 700 !important;
+    background: #bae6fd !important;
+    color: #0369a1 !important;
+    border: 1px solid #38bdf8 !important;
+    font-weight: 800 !important;
 }
 
 /* Band Powers Column */
 body.light-theme .sub-info {
-    color: #334155 !important;
-    font-weight: 600 !important;
+    color: #1e293b !important;
+    font-weight: 700 !important;
 }
 
 body.light-theme .band-name {
     color: #0f172a !important;
-    font-weight: 700 !important;
+    font-weight: 800 !important;
 }
 
 body.light-theme .band-freq {
-    color: #334155 !important;
-    font-weight: 600 !important;
+    color: #1e293b !important;
+    font-weight: 700 !important;
 }
 
 body.light-theme .band-val {
@@ -2737,63 +2744,64 @@ body.light-theme .band-val {
 }
 
 body.light-theme .bar-track {
-    background: #e2e8f0 !important;
+    background: #cbd5e1 !important;
 }
 
 body.light-theme .ratio-highlight-box {
-    background: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
+    background: #dbeafe !important;
+    border: 2px solid #818cf8 !important;
     color: #0f172a !important;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1) !important;
 }
 
 body.light-theme .ratio-title {
-    color: #4338ca !important;
-    font-weight: 700 !important;
+    color: #3730a3 !important;
+    font-weight: 800 !important;
 }
 
 body.light-theme .ratio-value {
-    color: #4338ca !important;
+    color: #3730a3 !important;
     font-weight: 900 !important;
 }
 
 body.light-theme .ratio-status {
-    color: #334155 !important;
-    font-weight: 600 !important;
+    color: #1e293b !important;
+    font-weight: 700 !important;
 }
 
 /* Chart Legend Pills */
 body.light-theme .pill {
-    background: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #1e293b !important;
-    font-weight: 600 !important;
+    background: #e0f2fe !important;
+    border: 1px solid #93c5fd !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
 }
 
 /* Hjorth Metric Cards Grid */
 body.light-theme .metric-card {
-    background: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
+    background: #f0f9ff !important;
+    border: 1px solid #93c5fd !important;
 }
 
 body.light-theme .metric-icon {
-    background: rgba(99, 102, 241, 0.15) !important;
-    color: #4338ca !important;
+    background: #dbeafe !important;
+    color: #1d4ed8 !important;
 }
 
 body.light-theme .metric-label {
-    color: #334155 !important;
-    font-weight: 700 !important;
+    color: #1e293b !important;
+    font-weight: 800 !important;
 }
 
 body.light-theme .metric-val {
     color: #0f172a !important;
-    font-weight: 800 !important;
+    font-weight: 900 !important;
 }
 
 /* ĀPTA AI Chat Interface in Light Mode */
 body.light-theme .chat-header {
-    background: #f1f5f9 !important;
-    border-bottom: 1px solid #cbd5e1 !important;
+    background: #dbeafe !important;
+    border-bottom: 1px solid #93c5fd !important;
     color: #0f172a !important;
 }
 
@@ -2803,79 +2811,81 @@ body.light-theme .chat-header-title {
 }
 
 body.light-theme .chat-messages-box {
-    background: #ffffff !important;
+    background: #f0f9ff !important;
 }
 
 body.light-theme .chat-bubble.bubble-apta {
-    background: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
     color: #0f172a !important;
+    box-shadow: 0 2px 10px rgba(59, 130, 246, 0.08) !important;
 }
 
 body.light-theme .bubble-apta .speaker-name {
-    color: #4338ca !important;
+    color: #1d4ed8 !important;
     font-weight: 800 !important;
 }
 
 body.light-theme .bubble-apta .bubble-time {
-    color: #475569 !important;
+    color: #334155 !important;
     font-weight: 600 !important;
 }
 
 body.light-theme .bubble-apta .bubble-text {
     color: #0f172a !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
 }
 
 body.light-theme .chat-bubble.bubble-user {
-    background: linear-gradient(135deg, #4f46e5, #0284c7) !important;
+    background: linear-gradient(135deg, #2563eb, #0284c7) !important;
     color: #ffffff !important;
 }
 
 body.light-theme .btn-mood {
-    background: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #1e293b !important;
-    font-weight: 600 !important;
+    background: #e0f2fe !important;
+    border: 1px solid #93c5fd !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
 }
 
 body.light-theme .btn-mood:hover {
-    background: rgba(99, 102, 241, 0.15) !important;
-    color: #4338ca !important;
-    border-color: #818cf8 !important;
+    background: #bae6fd !important;
+    color: #0369a1 !important;
+    border-color: #38bdf8 !important;
 }
 
 body.light-theme .chat-input-area {
-    background: #ffffff !important;
-    border-top: 1px solid #cbd5e1 !important;
+    background: #f0f9ff !important;
+    border-top: 1px solid #93c5fd !important;
 }
 
 body.light-theme #chatInputField {
-    background: #f1f5f9 !important;
+    background: #ffffff !important;
     color: #0f172a !important;
-    border: 1px solid #cbd5e1 !important;
-}
-
-body.light-theme #chatInputField::placeholder {
-    color: #64748b !important;
-}
-
-body.light-theme .apta-role {
-    color: #334155 !important;
+    border: 2px solid #93c5fd !important;
     font-weight: 600 !important;
 }
 
+body.light-theme #chatInputField::placeholder {
+    color: #475569 !important;
+}
+
+body.light-theme .apta-role {
+    color: #1e293b !important;
+    font-weight: 700 !important;
+}
+
 body.light-theme .apta-live-status {
-    background: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
+    background: #e0f2fe !important;
+    border: 1px solid #93c5fd !important;
 }
 
 body.light-theme .synced-stress-box span {
-    color: #334155 !important;
+    color: #1e293b !important;
 }
 
 body.light-theme .synced-stress-box strong {
-    color: #0284c7 !important;
+    color: #0369a1 !important;
 }
 
 /* Modals & Overlays */
@@ -2886,9 +2896,9 @@ body.light-theme .login-modal-overlay {
 }
 
 body.light-theme code {
-    background: #e0e7ff !important;
-    color: #3730a3 !important;
-    border: 1px solid #c7d2fe !important;
-    font-weight: 700 !important;
+    background: #dbeafe !important;
+    color: #1e40af !important;
+    border: 1px solid #93c5fd !important;
+    font-weight: 800 !important;
 }
 
