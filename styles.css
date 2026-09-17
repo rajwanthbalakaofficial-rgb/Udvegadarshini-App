@@ -2905,3 +2905,88 @@ body.light-theme code {
     font-weight: 800 !important;
 }
 
+/* History & Reports Tab - High Contrast Light Mode Overrides */
+body.light-theme .card-header h3,
+body.light-theme h1,
+body.light-theme h2,
+body.light-theme h3,
+body.light-theme h4 {
+    color: #0f172a !important;
+}
+
+body.light-theme .history-table-card {
+    background: #f0f9ff !important;
+    border: 1px solid #93c5fd !important;
+}
+
+body.light-theme .sum-box {
+    background: #e0f2fe !important;
+    border: 1px solid #93c5fd !important;
+    color: #0f172a !important;
+}
+
+body.light-theme .sum-box span {
+    color: #1e293b !important;
+    font-weight: 800 !important;
+    font-size: 0.82rem !important;
+    text-transform: uppercase !important;
+}
+
+body.light-theme .sum-box strong {
+    color: #0284c7 !important;
+    font-weight: 900 !important;
+    font-size: 1.6rem !important;
+}
+
+body.light-theme .history-table th,
+body.light-theme table th,
+body.light-theme .data-table th,
+body.light-theme .doc-patients-table th {
+    background: #dbeafe !important;
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    border-bottom: 2px solid #93c5fd !important;
+}
+
+body.light-theme .history-table td,
+body.light-theme table td,
+body.light-theme .data-table td,
+body.light-theme .doc-patients-table td {
+    background: #f0f9ff !important;
+    color: #0f172a !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    font-weight: 600 !important;
+}
+
+body.light-theme .history-table tr:nth-child(even) td {
+    background: #e0f2fe !important;
+}
+
+body.light-theme .empty-table-msg {
+    color: #334155 !important;
+    font-weight: 700 !important;
+}
+
+body.light-theme .pdf-printable-template {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #93c5fd !important;
+}
+
+body.light-theme .stat-card,
+body.light-theme .stat-info {
+    background: #e0f2fe !important;
+    border: 1px solid #93c5fd !important;
+}
+
+body.light-theme .stat-label {
+    color: #1e293b !important;
+    font-weight: 800 !important;
+}
+
+body.light-theme .stat-val {
+    color: #0284c7 !important;
+    font-weight: 900 !important;
+}
+
+
