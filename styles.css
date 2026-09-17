@@ -1342,11 +1342,49 @@ body {
     height: 140px; 
     border-radius: 16px; 
     overflow: hidden; 
-    background: #000; 
-    border: 1px solid var(--border-color); 
+    background: linear-gradient(135deg, #090d16 0%, #0f172a 100%); 
+    border: 1px solid rgba(56, 189, 248, 0.35); 
+    position: relative;
+    box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.7);
 }
 
-#audioVisualizerCanvas { width: 100%; height: 100%; }
+.visualizer-idle-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    color: #cbd5e1;
+    font-size: 0.88rem;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    background: radial-gradient(circle, rgba(15, 23, 42, 0.85) 0%, rgba(9, 13, 22, 0.95) 100%);
+    padding: 1rem;
+    text-align: center;
+}
+
+.visualizer-idle-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.glow-pulse-icon {
+    font-size: 2rem;
+    color: #38bdf8;
+    animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { transform: scale(1); opacity: 0.7; filter: drop-shadow(0 0 5px #06b6d4); }
+    50% { transform: scale(1.18); opacity: 1; filter: drop-shadow(0 0 16px #38bdf8); }
+}
+
+#audioVisualizerCanvas { width: 100%; height: 100%; display: block; }
 
 .now-playing-info h2 { font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; margin: 0.3rem 0; color: var(--accent-secondary); }
 .playing-label { font-size: 0.75rem; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
@@ -3001,6 +3039,82 @@ body.light-theme .stat-val {
     color: #0284c7 !important;
     font-weight: 900 !important;
 }
+
+/* Sound Therapy Tab Light Theme Overrides */
+body.light-theme .player-hero,
+body.light-theme .sound-player-card {
+    background: #f0f9ff !important;
+    border: 1px solid #93c5fd !important;
+}
+
+body.light-theme .playing-label {
+    color: #334155 !important;
+    font-weight: 800 !important;
+}
+
+body.light-theme #nowPlayingTitle {
+    color: #0369a1 !important;
+    font-weight: 800 !important;
+}
+
+body.light-theme #nowPlayingDesc {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+}
+
+body.light-theme .volume-slider-box {
+    color: #0f172a !important;
+}
+
+body.light-theme .preset-card {
+    background: #f0f9ff !important;
+    border: 1px solid #93c5fd !important;
+}
+
+body.light-theme .preset-card:hover {
+    background: #e0f2fe !important;
+    border-color: #38bdf8 !important;
+}
+
+body.light-theme .preset-card.active {
+    background: #e0f2fe !important;
+    border: 2px solid #0284c7 !important;
+    box-shadow: 0 4px 15px rgba(2, 132, 199, 0.15) !important;
+}
+
+body.light-theme .preset-info h4 {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+}
+
+body.light-theme .preset-info p {
+    color: #334155 !important;
+    font-weight: 600 !important;
+}
+
+body.light-theme .badge-tag {
+    background: #dbeafe !important;
+    color: #0369a1 !important;
+    font-weight: 800 !important;
+}
+
+body.light-theme .breathing-card {
+    background: #f0f9ff !important;
+    border: 1px solid #93c5fd !important;
+}
+
+body.light-theme .step-item {
+    background: #e0f2fe !important;
+    color: #0f172a !important;
+    border: 1px solid #93c5fd !important;
+    font-weight: 700 !important;
+}
+
+body.light-theme .breath-state-text {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+}
+
 
 
 

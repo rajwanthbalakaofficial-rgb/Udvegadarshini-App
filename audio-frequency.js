@@ -56,6 +56,18 @@ class SoundTherapyEngine {
             this.currentSecondarySource = null;
         }
         this.isPlaying = false;
+        this.updateOverlay();
+    }
+
+    updateOverlay() {
+        const overlay = document.getElementById('visualizerIdleOverlay');
+        if (overlay) {
+            if (this.isPlaying) {
+                overlay.classList.add('hidden');
+            } else {
+                overlay.classList.remove('hidden');
+            }
+        }
     }
 
     playSolfeggio(freq) {
@@ -166,6 +178,7 @@ class SoundTherapyEngine {
     }
 
     startVisualizer() {
+        this.updateOverlay();
         if (!this.canvasCtx || !this.analyser) return;
 
         const bufferLength = this.analyser.frequencyBinCount;
