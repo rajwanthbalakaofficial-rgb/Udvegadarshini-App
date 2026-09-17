@@ -111,6 +111,18 @@ class AptaAIChatbot {
         if (moodSadBtn) moodSadBtn.innerHTML = activeLabels.sad;
         if (moodFocusBtn) moodFocusBtn.innerHTML = activeLabels.focus;
         if (moodGoodBtn) moodGoodBtn.innerHTML = activeLabels.good;
+
+        // Update Chat Input Placeholder
+        const chatInput = document.getElementById('chatInputField');
+        const placeholders = {
+            teluglish: "Macha, edhavadhu cheppali anipisthe ikkada type cheyyi raa...",
+            en: "Type your thoughts or ask Āpta AI anything...",
+            telugu: "మీ మనసులోని మాటలను ఇక్కడ టైప్ చేయండి...",
+            hindi: "अपने विचार यहाँ लिखें या आप्त AI से बात करें..."
+        };
+        if (chatInput) {
+            chatInput.placeholder = placeholders[lang] || placeholders['teluglish'];
+        }
     }
 
     updateStressSync(stressVal) {

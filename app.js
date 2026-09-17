@@ -51,9 +51,9 @@ class UdvegadarshiniApp {
         try { this.initChart(); } catch(e) { console.error("Chart init error:", e); }
         try { this.loadSavedUserProfile(); } catch(e) { console.error("Profile load error:", e); }
         try { this.loadSavedJournals(); } catch(e) { console.error("Journals load error:", e); }
+        try { if (typeof aptaAI !== 'undefined') aptaAI.init(); } catch(e) { console.error("AptaAI error:", e); }
         try { if (typeof i18n !== 'undefined') i18n.applyTranslations(); } catch(e) { console.error("i18n error:", e); }
         try { if (typeof soundEngine !== 'undefined') soundEngine.bindCanvas('audioVisualizerCanvas'); } catch(e) { console.error("SoundEngine error:", e); }
-        try { if (typeof aptaAI !== 'undefined') aptaAI.init(); } catch(e) { console.error("AptaAI error:", e); }
         try { if (typeof stressGames !== 'undefined') stressGames.init(); } catch(e) { console.error("Games error:", e); }
         try { this.bindSoundTherapyPresets(); } catch(e) { console.error("Presets error:", e); }
         try { this.initDoctorPortalEvents(); } catch(e) { console.error("Doctor portal error:", e); }
