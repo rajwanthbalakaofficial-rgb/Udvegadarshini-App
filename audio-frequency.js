@@ -64,8 +64,10 @@ class SoundTherapyEngine {
         if (overlay) {
             if (this.isPlaying) {
                 overlay.classList.add('hidden');
+                overlay.style.display = 'none';
             } else {
                 overlay.classList.remove('hidden');
+                overlay.style.display = 'flex';
             }
         }
     }
@@ -195,12 +197,13 @@ class SoundTherapyEngine {
             this.resizeCanvas();
         }
 
-        if (!this.canvasCtx || !this.analyser) return;
+        if (!this.canvasCtx) return;
         if (this.animFrame) cancelAnimationFrame(this.animFrame);
 
-        const bufferLength = this.analyser.frequencyBinCount;
+        const bufferLength = this.analyser ? this.analyser.frequencyBinCount : 32;
         const dataArray = new Uint8Array(bufferLength);
 
+        let step = 0;
         const draw = () => {
             if (!this.isPlaying) {
                 this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -209,7 +212,9 @@ class SoundTherapyEngine {
             }
 
             this.animFrame = requestAnimationFrame(draw);
-            this.analyser.getByteFrequencyData(dataArray);
+            if (this.analyser) {
+                this.analyser.getByteFrequencyData(dataArray);
+            }
 
             if (this.canvas.width === 0 || this.canvas.height === 0) {
                 this.resizeCanvas();
@@ -217,17 +222,23 @@ class SoundTherapyEngine {
 
             const w = this.canvas.width || 600;
             const h = this.canvas.height || 140;
+            step += 0.08;
 
-            this.canvasCtx.fillStyle = 'rgba(9, 13, 22, 0.35)';
+            this.canvasCtx.fillStyle = 'rgba(9, 13, 22, 0.4)';
             this.canvasCtx.fillRect(0, 0, w, h);
 
-            const barWidth = (w / bufferLength) * 2.2;
+            const numBars = 32;
+            const barWidth = w / numBars;
             let barHeight;
             let x = 0;
 
-            for (let i = 0; i < bufferLength; i++) {
-                barHeight = (dataArray[i] / 255) * (h - 15);
-                if (barHeight < 6) barHeight = 6; // Minimum height for smooth constant visual response
+            for (let i = 0; i < numBars; i++) {
+                const fftVal = dataArray[i % bufferLength] || 0;
+                const waveComponent = Math.abs(Math.sin(step + i * 0.3)) * 45 + Math.abs(Math.cos(step * 0.7 + i * 0.5)) * 25;
+                const audioComponent = (fftVal / 255) * (h * 0.5);
+                
+                barHeight = waveComponent + audioComponent + 12;
+                if (barHeight > h - 10) barHeight = h - 10;
 
                 const gradient = this.canvasCtx.createLinearGradient(0, h, 0, 0);
                 gradient.addColorStop(0, '#06b6d4');
@@ -235,11 +246,11 @@ class SoundTherapyEngine {
                 gradient.addColorStop(1, '#a855f7');
 
                 this.canvasCtx.fillStyle = gradient;
-                this.canvasCtx.fillRect(x, h - barHeight, Math.max(barWidth - 3, 3), barHeight);
+                this.canvasCtx.fillRect(x, h - barHeight, Math.max(barWidth - 4, 3), barHeight);
 
-                // Top glowing pill indicator
+                // Top glowing pill indicator cap
                 this.canvasCtx.fillStyle = '#38bdf8';
-                this.canvasCtx.fillRect(x, h - barHeight - 2, Math.max(barWidth - 3, 3), 2);
+                this.canvasCtx.fillRect(x, h - barHeight - 3, Math.max(barWidth - 4, 3), 3);
 
                 x += barWidth;
             }

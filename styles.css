@@ -1369,8 +1369,9 @@ body {
 }
 
 .visualizer-idle-overlay.hidden {
-    opacity: 0;
-    visibility: hidden;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
 }
 
 .glow-pulse-icon {
