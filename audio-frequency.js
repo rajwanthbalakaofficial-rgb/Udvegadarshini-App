@@ -64,10 +64,14 @@ class SoundTherapyEngine {
         if (overlay) {
             if (this.isPlaying) {
                 overlay.classList.add('hidden');
-                overlay.style.display = 'none';
+                overlay.style.setProperty('display', 'none', 'important');
+                overlay.style.opacity = '0';
+                overlay.style.visibility = 'hidden';
             } else {
                 overlay.classList.remove('hidden');
-                overlay.style.display = 'flex';
+                overlay.style.setProperty('display', 'flex', 'important');
+                overlay.style.opacity = '1';
+                overlay.style.visibility = 'visible';
             }
         }
     }
