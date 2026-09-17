@@ -2919,26 +2919,37 @@ body.light-theme .history-table-card {
     border: 1px solid #93c5fd !important;
 }
 
-body.light-theme .sum-box {
+body.light-theme .sum-box,
+body.light-theme .history-summary-boxes .sum-box {
     background: #e0f2fe !important;
     border: 1px solid #93c5fd !important;
     color: #0f172a !important;
+    box-shadow: 0 2px 10px rgba(14, 165, 233, 0.08) !important;
 }
 
-body.light-theme .sum-box span {
+body.light-theme .sum-box span,
+body.light-theme .history-summary-boxes .sum-box span {
     color: #1e293b !important;
     font-weight: 800 !important;
     font-size: 0.82rem !important;
     text-transform: uppercase !important;
+    opacity: 1 !important;
 }
 
-body.light-theme .sum-box strong {
+body.light-theme .sum-box strong,
+body.light-theme .history-summary-boxes .sum-box strong {
     color: #0284c7 !important;
     font-weight: 900 !important;
     font-size: 1.6rem !important;
 }
 
+body.light-theme .history-table,
+body.light-theme .history-table thead,
+body.light-theme .history-table thead tr,
 body.light-theme .history-table th,
+body.light-theme table.history-table th,
+body.light-theme table.history-table thead th,
+body.light-theme .table-responsive table th,
 body.light-theme table th,
 body.light-theme .data-table th,
 body.light-theme .doc-patients-table th {
@@ -2962,9 +2973,11 @@ body.light-theme .history-table tr:nth-child(even) td {
     background: #e0f2fe !important;
 }
 
-body.light-theme .empty-table-msg {
-    color: #334155 !important;
+body.light-theme .empty-table-msg,
+body.light-theme td.empty-table-msg {
+    color: #1e293b !important;
     font-weight: 700 !important;
+    background: #f0f9ff !important;
 }
 
 body.light-theme .pdf-printable-template {
@@ -2988,5 +3001,6 @@ body.light-theme .stat-val {
     color: #0284c7 !important;
     font-weight: 900 !important;
 }
+
 
 
