@@ -1192,6 +1192,14 @@ class UdvegadarshiniApp {
                     const badge = document.getElementById('aptaUnread');
                     if (badge) badge.style.display = 'none';
                 }
+
+                if (targetId === 'tab-frequency') {
+                    setTimeout(() => {
+                        if (typeof soundEngine !== 'undefined') {
+                            soundEngine.bindCanvas('audioVisualizerCanvas');
+                        }
+                    }, 50);
+                }
             });
         });
 

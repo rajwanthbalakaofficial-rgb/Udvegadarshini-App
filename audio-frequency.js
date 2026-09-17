@@ -170,16 +170,33 @@ class SoundTherapyEngine {
 
     bindCanvas(canvasId) {
         this.canvas = document.getElementById(canvasId);
-        if (this.canvas) {
+        if (this.canvas && this.canvas.parentElement) {
             this.canvasCtx = this.canvas.getContext('2d');
-            this.canvas.width = this.canvas.parentElement.clientWidth;
-            this.canvas.height = this.canvas.parentElement.clientHeight;
+            this.resizeCanvas();
+        }
+    }
+
+    resizeCanvas() {
+        if (!this.canvas || !this.canvas.parentElement) return;
+        const parent = this.canvas.parentElement;
+        const width = parent.clientWidth || parent.offsetWidth || 600;
+        const height = parent.clientHeight || parent.offsetHeight || 140;
+        if (width > 0 && height > 0) {
+            this.canvas.width = width;
+            this.canvas.height = height;
         }
     }
 
     startVisualizer() {
         this.updateOverlay();
+        if (!this.canvas) {
+            this.bindCanvas('audioVisualizerCanvas');
+        } else {
+            this.resizeCanvas();
+        }
+
         if (!this.canvasCtx || !this.analyser) return;
+        if (this.animFrame) cancelAnimationFrame(this.animFrame);
 
         const bufferLength = this.analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
@@ -187,28 +204,42 @@ class SoundTherapyEngine {
         const draw = () => {
             if (!this.isPlaying) {
                 this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.updateOverlay();
                 return;
             }
 
             this.animFrame = requestAnimationFrame(draw);
             this.analyser.getByteFrequencyData(dataArray);
 
-            this.canvasCtx.fillStyle = 'rgba(9, 13, 22, 0.3)';
-            this.canvasCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            if (this.canvas.width === 0 || this.canvas.height === 0) {
+                this.resizeCanvas();
+            }
 
-            const barWidth = (this.canvas.width / bufferLength) * 2.5;
+            const w = this.canvas.width || 600;
+            const h = this.canvas.height || 140;
+
+            this.canvasCtx.fillStyle = 'rgba(9, 13, 22, 0.35)';
+            this.canvasCtx.fillRect(0, 0, w, h);
+
+            const barWidth = (w / bufferLength) * 2.2;
             let barHeight;
             let x = 0;
 
             for (let i = 0; i < bufferLength; i++) {
-                barHeight = (dataArray[i] / 255) * this.canvas.height;
+                barHeight = (dataArray[i] / 255) * (h - 15);
+                if (barHeight < 6) barHeight = 6; // Minimum height for smooth constant visual response
 
-                const gradient = this.canvasCtx.createLinearGradient(0, this.canvas.height, 0, 0);
+                const gradient = this.canvasCtx.createLinearGradient(0, h, 0, 0);
                 gradient.addColorStop(0, '#06b6d4');
-                gradient.addColorStop(1, '#6366f1');
+                gradient.addColorStop(0.5, '#3b82f6');
+                gradient.addColorStop(1, '#a855f7');
 
                 this.canvasCtx.fillStyle = gradient;
-                this.canvasCtx.fillRect(x, this.canvas.height - barHeight, barWidth - 2, barHeight);
+                this.canvasCtx.fillRect(x, h - barHeight, Math.max(barWidth - 3, 3), barHeight);
+
+                // Top glowing pill indicator
+                this.canvasCtx.fillStyle = '#38bdf8';
+                this.canvasCtx.fillRect(x, h - barHeight - 2, Math.max(barWidth - 3, 3), 2);
 
                 x += barWidth;
             }
