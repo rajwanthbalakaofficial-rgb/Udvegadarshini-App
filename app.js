@@ -1473,6 +1473,17 @@ class UdvegadarshiniApp {
     parseESP32SerialLine(line) {
         if (!line) return;
 
+        if (line.includes('LEAD-OFF')) {
+            this.processMetricsUpdate({
+                stressScore: 0,
+                isLeadOff: true,
+                delta: 0, theta: 0, alpha: 0, beta: 0, gamma: 0,
+                betaAlphaRatio: 0, hjorthAct: 0, hjorthMob: 0, hjorthComp: 0,
+                entropy: 0, katzFD: 1.0
+            });
+            return;
+        }
+
         const deltaMatch = line.match(/Δ:\s*([\d.]+)/);
         const thetaMatch = line.match(/Θ:\s*([\d.]+)/);
         const alphaMatch = line.match(/α:\s*([\d.]+)/);
@@ -1492,6 +1503,7 @@ class UdvegadarshiniApp {
 
         this.processMetricsUpdate({
             stressScore: stressScore,
+            isLeadOff: stressScore === 0,
             delta: delta, theta: theta, alpha: alpha, beta: beta, gamma: gamma,
             betaAlphaRatio: ratio,
             hjorthAct: 0.0604, hjorthMob: 0.0990, hjorthComp: 2.9688,
@@ -1501,6 +1513,27 @@ class UdvegadarshiniApp {
 
     processMetricsUpdate(data) {
         const score = Math.round(data.stressScore);
+
+        if (data.isLeadOff || score === 0) {
+            document.getElementById('stressScoreVal').innerHTML = `--<span>%</span>`;
+            document.getElementById('stressStateTitle').textContent = 'Off-Body (Lead Disconnected)';
+            document.getElementById('stressStateDesc').textContent = 'Place gel pads on forehead to start live reading';
+            const gaugeFill = document.getElementById('gaugeFill');
+            if (gaugeFill) {
+                gaugeFill.style.strokeDashoffset = 534;
+                gaugeFill.style.stroke = '#64748b';
+            }
+            document.getElementById('stressStateTitle').style.color = '#64748b';
+
+            document.getElementById('valDelta').textContent = '0.0000';
+            document.getElementById('valTheta').textContent = '0.0000';
+            document.getElementById('valAlpha').textContent = '0.0000';
+            document.getElementById('valBeta').textContent = '0.0000';
+            document.getElementById('valGamma').textContent = '0.0000';
+            document.getElementById('valBetaAlphaRatio').textContent = '0.000';
+            return;
+        }
+
         let stateKey = 'normal';
         let stateTitle = i18n.t('stateNormal');
         let stateDesc = 'Balanced Alpha & Beta waves';

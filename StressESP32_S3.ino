@@ -4,6 +4,7 @@
    Sampling Rate: 250 Hz (4000 µs period)
    ADC Input: GPIO 4 (Analog ADC1_CH3 on ESP32-S3)
    Serial Baud Rate: 115200 (USB CDC Native Serial)
+   Includes: Smart Lead-Off / Off-Body Skin Disconnection Detection
    ========================================================================== */
 
 #include <Arduino.h>
@@ -88,6 +89,7 @@ void setup() {
   Serial.println(" Board: ESP32-S3 | ADC Pin: GPIO 4");
   Serial.println(" BLE Device Name: Udvegadarshini-ESP32-S3");
   Serial.println(" Baud Rate: 115200 | Sampling Rate: 250 Hz");
+  Serial.println(" Feature: Smart Lead-Off Disconnection Detection");
   Serial.println("==================================================");
 }
 
@@ -153,6 +155,18 @@ float applyNotchFilter(float sample) {
    Feature Extraction (Band Powers, Hjorth Params, Ratio) & 1D-CNN Stress Output
    ========================================================================== */
 void extractFeaturesAndPredict() {
+  // 0. Smart Lead-Off / Disconnection Detection (Rail Saturation or Flatline)
+  int currentAdc = analogRead(EEG_PIN);
+  if (currentAdc >= 4050 || currentAdc <= 40) {
+    String offBodyStr = "LEAD-OFF: Disconnected from Body | Stress Score: 0.0 %";
+    Serial.println(offBodyStr);
+    if (deviceConnected && pCharacteristic) {
+      pCharacteristic->setValue(offBodyStr.c_str());
+      pCharacteristic->notify();
+    }
+    return;
+  }
+
   float sumDelta = 0, sumTheta = 0, sumAlpha = 0, sumBeta = 0, sumGamma = 0;
   float mean = 0, variance = 0;
 
@@ -176,6 +190,17 @@ void extractFeaturesAndPredict() {
   }
 
   variance /= WINDOW_SIZE;
+
+  // If variance is abnormally high without skin impedance damping (floating antenna noise)
+  if (variance < 0.00001 || variance > 2.5) {
+    String offBodyStr = "LEAD-OFF: Disconnected from Body | Stress Score: 0.0 %";
+    Serial.println(offBodyStr);
+    if (deviceConnected && pCharacteristic) {
+      pCharacteristic->setValue(offBodyStr.c_str());
+      pCharacteristic->notify();
+    }
+    return;
+  }
 
   // Normalize Band Powers
   float delta_power = (sumDelta / WINDOW_SIZE) * 0.01;
