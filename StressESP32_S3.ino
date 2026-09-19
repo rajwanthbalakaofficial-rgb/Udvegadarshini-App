@@ -170,11 +170,17 @@ void extractFeaturesAndPredict() {
   float sumDelta = 0, sumTheta = 0, sumAlpha = 0, sumBeta = 0, sumGamma = 0;
   float mean = 0, variance = 0;
 
-  // Calculate Signal Mean
+  float minVal = 999.0, maxVal = -999.0;
+
+  // Calculate Signal Mean & Peak-to-Peak
   for (int i = 0; i < WINDOW_SIZE; i++) {
     mean += eegBuffer[i];
+    if (eegBuffer[i] < minVal) minVal = eegBuffer[i];
+    if (eegBuffer[i] > maxVal) maxVal = eegBuffer[i];
   }
   mean /= WINDOW_SIZE;
+
+  float peakToPeak = maxVal - minVal;
 
   // Calculate Band Powers & Variance
   for (int i = 0; i < WINDOW_SIZE; i++) {
@@ -191,8 +197,9 @@ void extractFeaturesAndPredict() {
 
   variance /= WINDOW_SIZE;
 
-  // If variance is abnormally high without skin impedance damping (floating antenna noise)
-  if (variance < 0.00001 || variance > 2.5) {
+  // Smart Lead-Off: Floating antenna EM noise check (lack of skin impedance damping)
+  // Human skin dampens voltage to 0.04V - 0.40V. Thin air floating spikes > 0.45V or flatlines < 0.03V
+  if (variance < 0.0001 || variance > 0.25 || peakToPeak > 0.45 || peakToPeak < 0.03) {
     String offBodyStr = "LEAD-OFF: Disconnected from Body | Stress Score: 0.0 %";
     Serial.println(offBodyStr);
     if (deviceConnected && pCharacteristic) {
