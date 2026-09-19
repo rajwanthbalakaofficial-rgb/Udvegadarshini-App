@@ -58,6 +58,27 @@ class UdvegadarshiniApp {
         try { this.bindSoundTherapyPresets(); } catch(e) { console.error("Presets error:", e); }
         try { this.initDoctorPortalEvents(); } catch(e) { console.error("Doctor portal error:", e); }
         try { this.initProfileAndPhoneEvents(); } catch(e) { console.error("Profile events error:", e); }
+        try { this.resetToDisconnectedState(); } catch(e) { console.error("Reset state error:", e); }
+    }
+
+    resetToDisconnectedState() {
+        document.getElementById('stressScoreVal').innerHTML = `--<span>%</span>`;
+        document.getElementById('stressStateTitle').textContent = 'Hardware Disconnected';
+        document.getElementById('stressStateDesc').textContent = 'Connect ESP32-S3 via Web Serial (USB) or Web BLE';
+        const gaugeFill = document.getElementById('gaugeFill');
+        if (gaugeFill) {
+            gaugeFill.style.strokeDashoffset = 534;
+            gaugeFill.style.stroke = '#64748b';
+        }
+        const stateTitle = document.getElementById('stressStateTitle');
+        if (stateTitle) stateTitle.style.color = '#64748b';
+
+        if (document.getElementById('valDelta')) document.getElementById('valDelta').textContent = '0.0000';
+        if (document.getElementById('valTheta')) document.getElementById('valTheta').textContent = '0.0000';
+        if (document.getElementById('valAlpha')) document.getElementById('valAlpha').textContent = '0.0000';
+        if (document.getElementById('valBeta')) document.getElementById('valBeta').textContent = '0.0000';
+        if (document.getElementById('valGamma')) document.getElementById('valGamma').textContent = '0.0000';
+        if (document.getElementById('valBetaAlphaRatio')) document.getElementById('valBetaAlphaRatio').textContent = '0.000';
     }
 
     loadHospitalsDB() {
