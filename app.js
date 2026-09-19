@@ -1439,15 +1439,46 @@ class UdvegadarshiniApp {
 
     async connectWebBLE() {
         if (!('bluetooth' in navigator)) {
-            alert('Web Bluetooth API is not supported in this browser.');
+            alert('Web Bluetooth API is not supported in this browser. Please use Chrome, Edge, or WebBLE browser on mobile.');
             return;
         }
 
         try {
-            const device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true });
-            this.updateConnectionBadge(true, `BLE Connected: ${device.name || 'ESP32-EEG'}`);
+            const device = await navigator.bluetooth.requestDevice({
+                filters: [{ name: 'Udvegadarshini-ESP32-S3' }],
+                optionalServices: ['4fa10001-e8a2-4569-84c4-2378c5160310']
+            }).catch(async () => {
+                return await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: ['4fa10001-e8a2-4569-84c4-2378c5160310']
+                });
+            });
+
+            this.updateConnectionBadge(true, `Connecting GATT...`);
+
+            const server = await device.gatt.connect();
+            const service = await server.getPrimaryService('4fa10001-e8a2-4569-84c4-2378c5160310');
+            const characteristic = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e');
+
+            await characteristic.startNotifications();
+            characteristic.addEventListener('characteristicvaluechanged', (event) => {
+                const decoder = new TextDecoder('utf-8');
+                const line = decoder.decode(event.target.value);
+                this.parseESP32SerialLine(line.trim());
+            });
+
+            this.isConnected = true;
+            this.updateConnectionBadge(true, `BLE Connected: ${device.name || 'ESP32-S3'}`);
+
+            device.addEventListener('gattserverdisconnected', () => {
+                this.isConnected = false;
+                this.updateConnectionBadge(false, 'BLE Disconnected');
+                this.resetToDisconnectedState();
+            });
+
         } catch (err) {
             console.error('BLE connection error:', err);
+            this.updateConnectionBadge(false, 'BLE Connection Failed');
         }
     }
 
