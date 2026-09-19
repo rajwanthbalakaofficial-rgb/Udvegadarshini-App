@@ -1226,7 +1226,8 @@ class UdvegadarshiniApp {
 
         document.getElementById('btnConnectSerial').onclick = () => this.connectWebSerial();
         document.getElementById('btnConnectBLE').onclick = () => this.connectWebBLE();
-        document.getElementById('btnToggleSim').onclick = () => this.toggleSimulator();
+        const btnSim = document.getElementById('btnToggleSim');
+        if (btnSim) btnSim.onclick = () => this.toggleSimulator();
 
         document.getElementById('btnAlertOpenApta').onclick = () => {
             document.querySelector('[data-tab="tab-apta"]').click();
@@ -1451,44 +1452,13 @@ class UdvegadarshiniApp {
     }
 
     toggleSimulator() {
-        const btnText = document.getElementById('simBtnText');
-
-        if (this.isSimulating) {
+        if (this.simInterval) {
             clearInterval(this.simInterval);
-            this.isSimulating = false;
-            btnText.textContent = i18n.t('startSim');
-            this.updateConnectionBadge(false, 'Device Disconnected');
-        } else {
-            this.isSimulating = true;
-            btnText.textContent = i18n.t('stopSim');
-            this.updateConnectionBadge(true, 'Hardware Simulator Running');
-
-            let simStep = 0;
-            this.simInterval = setInterval(() => {
-                simStep++;
-                const baseVal = 30 + Math.sin(simStep * 0.15) * 20 + (Math.random() * 10 - 5);
-                const stressVal = Math.min(95, Math.max(8, baseVal));
-
-                const delta = 0.015 + Math.random() * 0.005;
-                const theta = 0.010 + Math.random() * 0.004;
-                const alpha = (100 - stressVal) * 0.0001 + 0.001;
-                const beta = stressVal * 0.00008 + 0.0002;
-                const gamma = 0.0001 + Math.random() * 0.0001;
-
-                const ratio = beta / (alpha || 0.0001);
-
-                this.processMetricsUpdate({
-                    stressScore: stressVal,
-                    delta: delta, theta: theta, alpha: alpha, beta: beta, gamma: gamma,
-                    betaAlphaRatio: ratio,
-                    hjorthAct: 0.06 + Math.random() * 0.01,
-                    hjorthMob: 0.09 + Math.random() * 0.01,
-                    hjorthComp: 2.9 + Math.random() * 0.1,
-                    entropy: -6.5 + Math.random() * 0.2,
-                    katzFD: 1.0
-                });
-            }, 1000);
+            this.simInterval = null;
         }
+        this.isSimulating = false;
+        this.resetToDisconnectedState();
+        this.updateConnectionBadge(false, 'Hardware Disconnected');
     }
 
     parseESP32SerialLine(line) {
