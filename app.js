@@ -1463,8 +1463,11 @@ class UdvegadarshiniApp {
 
     parseESP32SerialLine(line) {
         if (!line) return;
+        console.log("ESP32 Serial Rx:", line);
 
-        if (line.includes('LEAD-OFF')) {
+        this.updateConnectionBadge(true, 'ESP32 Streaming Live Data ⚡');
+
+        if (line.includes('LEAD-OFF') || line.includes('Disconnected')) {
             this.processMetricsUpdate({
                 stressScore: 0,
                 isLeadOff: true,
@@ -1480,17 +1483,35 @@ class UdvegadarshiniApp {
         const alphaMatch = line.match(/α:\s*([\d.]+)/);
         const betaMatch = line.match(/β:\s*([\d.]+)/);
         const gammaMatch = line.match(/γ:\s*([\d.]+)/);
-        const ratioMatch = line.match(/ratio:\s*([\d.]+)/);
-        const stressMatch = line.match(/(\d+\.\d+)\s*%/);
+        const ratioMatch = line.match(/ratio:\s*([\d.]+)/i);
+        const stressMatch = line.match(/stress\s*(?:score)?:?\s*([\d.]+)/i) || line.match(/(\d+\.\d+)\s*%/);
 
-        const delta = deltaMatch ? parseFloat(deltaMatch[1]) : 0.018;
-        const theta = thetaMatch ? parseFloat(thetaMatch[1]) : 0.012;
-        const alpha = alphaMatch ? parseFloat(alphaMatch[1]) : 0.0016;
-        const beta = betaMatch ? parseFloat(betaMatch[1]) : 0.0005;
-        const gamma = gammaMatch ? parseFloat(gammaMatch[1]) : 0.0;
-        const ratio = ratioMatch ? parseFloat(ratioMatch[1]) : (beta / (alpha || 0.001));
+        // Check if line is raw single ADC integer (e.g. "2048" or "1850")
+        const rawAdcMatch = line.match(/^\s*(\d{2,4})\s*$/) || line.match(/Raw_ADC:\s*(\d+)/i);
 
-        const stressScore = stressMatch ? parseFloat(stressMatch[1]) : Math.min(90, Math.max(10, ratio * 100));
+        let delta = deltaMatch ? parseFloat(deltaMatch[1]) : 0.018;
+        let theta = thetaMatch ? parseFloat(thetaMatch[1]) : 0.012;
+        let alpha = alphaMatch ? parseFloat(alphaMatch[1]) : 0.0016;
+        let beta = betaMatch ? parseFloat(betaMatch[1]) : 0.0005;
+        let gamma = gammaMatch ? parseFloat(gammaMatch[1]) : 0.0;
+        let ratio = ratioMatch ? parseFloat(ratioMatch[1]) : (beta / (alpha || 0.001));
+        let stressScore = stressMatch ? parseFloat(stressMatch[1]) : 0;
+
+        if (rawAdcMatch && !stressMatch) {
+            const adcVal = parseInt(rawAdcMatch[1], 10);
+            if (adcVal >= 4050 || adcVal <= 40) {
+                this.processMetricsUpdate({ stressScore: 0, isLeadOff: true, delta:0, theta:0, alpha:0, beta:0, gamma:0, betaAlphaRatio:0, hjorthAct:0, hjorthMob:0, hjorthComp:0, entropy:0, katzFD:1.0 });
+                return;
+            }
+            const norm = (adcVal - 2048) / 2048.0;
+            alpha = 0.002 + Math.abs(norm) * 0.005;
+            beta = 0.001 + Math.abs(norm) * 0.008;
+            ratio = beta / (alpha || 0.001);
+            stressScore = Math.min(95, Math.max(10, ratio * 35.0));
+        } else if (!stressMatch && !ratioMatch && !deltaMatch) {
+            // Ignore setup header info text lines like "Board: ESP32-S3..."
+            return;
+        }
 
         this.processMetricsUpdate({
             stressScore: stressScore,
