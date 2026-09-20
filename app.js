@@ -1443,29 +1443,76 @@ class UdvegadarshiniApp {
             return;
         }
 
+        const SERVICE_UUIDS = [
+            '4fafc201-1fb5-459e-8fcc-c5c9c331914b',
+            '4fa10001-e8a2-4569-84c4-2378c5160310'
+        ];
+        const CHAR_UUIDS = [
+            'beb5483e-36e1-4688-b7f5-ea07361b26a8',
+            '6e400003-b5a3-f393-e0a9-e50e24dcca9e'
+        ];
+
         try {
             const device = await navigator.bluetooth.requestDevice({
-                filters: [{ name: 'Udvegadarshini-ESP32-S3' }],
-                optionalServices: ['4fa10001-e8a2-4569-84c4-2378c5160310']
+                filters: [
+                    { name: 'Udvegadarshini-ESP32-S3' },
+                    { namePrefix: 'Udvegadarshini' },
+                    { namePrefix: 'ESP32' }
+                ],
+                optionalServices: SERVICE_UUIDS
             }).catch(async () => {
                 return await navigator.bluetooth.requestDevice({
                     acceptAllDevices: true,
-                    optionalServices: ['4fa10001-e8a2-4569-84c4-2378c5160310']
+                    optionalServices: SERVICE_UUIDS
                 });
             });
 
             this.updateConnectionBadge(true, `Connecting GATT...`);
 
             const server = await device.gatt.connect();
-            const service = await server.getPrimaryService('4fa10001-e8a2-4569-84c4-2378c5160310');
-            const characteristic = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e');
+            
+            let service = null;
+            for (const uuid of SERVICE_UUIDS) {
+                try {
+                    service = await server.getPrimaryService(uuid);
+                    if (service) break;
+                } catch(e) {}
+            }
 
-            await characteristic.startNotifications();
-            characteristic.addEventListener('characteristicvaluechanged', (event) => {
-                const decoder = new TextDecoder('utf-8');
-                const line = decoder.decode(event.target.value);
-                this.parseESP32SerialLine(line.trim());
-            });
+            if (!service) {
+                try {
+                    const services = await server.getPrimaryServices();
+                    if (services.length > 0) service = services[0];
+                } catch(e) {}
+            }
+
+            if (!service) {
+                throw new Error("No matching BLE Primary Service found");
+            }
+
+            let characteristic = null;
+            for (const charUuid of CHAR_UUIDS) {
+                try {
+                    characteristic = await service.getCharacteristic(charUuid);
+                    if (characteristic) break;
+                } catch(e) {}
+            }
+
+            if (!characteristic) {
+                try {
+                    const chars = await service.getCharacteristics();
+                    if (chars.length > 0) characteristic = chars[0];
+                } catch(e) {}
+            }
+
+            if (characteristic) {
+                await characteristic.startNotifications();
+                characteristic.addEventListener('characteristicvaluechanged', (event) => {
+                    const decoder = new TextDecoder('utf-8');
+                    const line = decoder.decode(event.target.value);
+                    this.parseESP32SerialLine(line.trim());
+                });
+            }
 
             this.isConnected = true;
             this.updateConnectionBadge(true, `BLE Connected: ${device.name || 'ESP32-S3'}`);
