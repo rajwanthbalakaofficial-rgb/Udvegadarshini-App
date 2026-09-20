@@ -18,7 +18,7 @@
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
 // Pin & Sampling Configuration for ESP32-S3
-const int EEG_PIN = 4;             // GPIO 4 (ADC1 CH3 on ESP32-S3) - Connect to BioAmp EXG OUT
+const int EEG_PIN = 5;             // GPIO 5 (ADC1 CH4 on ESP32-S3) - Connect to BioAmp EXG OUT
 const int SAMPLING_FREQ = 250;     // 250 Hz Sampling frequency
 const int SAMPLE_PERIOD_US = 4000; // 1,000,000 / 250 = 4000 µs
 const int WINDOW_SIZE = 500;       // 2-second buffer window (250 * 2 = 500 samples)
@@ -87,7 +87,7 @@ void setup() {
 
   Serial.println("==================================================");
   Serial.println(" Udvegadarshini ESP32-S3 BioAmp EXG Neural System");
-  Serial.println(" Board: ESP32-S3 | ADC Pin: GPIO 4");
+  Serial.println(" Board: ESP32-S3 | ADC Pin: GPIO 5");
   Serial.println(" BLE Device Name: Udvegadarshini-ESP32-S3");
   Serial.println(" Baud Rate: 115200 | Sampling Rate: 250 Hz");
   Serial.println(" Feature: Smart Lead-Off Disconnection Detection");
