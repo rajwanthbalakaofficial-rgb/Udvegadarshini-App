@@ -56,9 +56,10 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
 
-  // Configure Analog ADC Pin
+  // Configure Analog ADC Pin (Full 0V - 3.3V Range)
   pinMode(EEG_PIN, INPUT);
-  analogReadResolution(12); // 12-bit ADC (0 - 4095)
+  analogReadResolution(12);        // 12-bit ADC (0 - 4095)
+  analogSetAttenuation(ADC_11db);  // 11dB Attenuation (0V - 3.3V Full Scale Input Range)
 
   // Initialize BLE for ESP32-S3 Wireless Telemetry
   BLEDevice::init("Udvegadarshini-ESP32-S3");
@@ -155,9 +156,9 @@ float applyNotchFilter(float sample) {
    Feature Extraction (Band Powers, Hjorth Params, Ratio) & 1D-CNN Stress Output
    ========================================================================== */
 void extractFeaturesAndPredict() {
-  // 0. Smart Lead-Off / Disconnection Detection (Rail Saturation or Flatline)
+  // 0. Smart Lead-Off / Disconnection Detection (True Rail Saturation 0 or 4095)
   int currentAdc = analogRead(EEG_PIN);
-  if (currentAdc >= 4050 || currentAdc <= 40) {
+  if (currentAdc >= 4090 || currentAdc <= 5) {
     String offBodyStr = "LEAD-OFF: Disconnected from Body | Stress Score: 0.0 %";
     Serial.println(offBodyStr);
     if (deviceConnected && pCharacteristic) {
