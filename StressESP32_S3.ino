@@ -197,9 +197,8 @@ void extractFeaturesAndPredict() {
 
   variance /= WINDOW_SIZE;
 
-  // Smart Lead-Off: Floating antenna EM noise check (lack of skin impedance damping)
-  // Human skin dampens voltage to 0.04V - 0.40V. Thin air floating spikes > 0.45V or flatlines < 0.03V
-  if (variance < 0.0001 || variance > 0.25 || peakToPeak > 0.45 || peakToPeak < 0.03) {
+  // Smart Lead-Off: Rail saturation (0 or 4095) or total flatline/extreme short circuit
+  if (variance < 0.000001 || variance > 15.0) {
     String offBodyStr = "LEAD-OFF: Disconnected from Body | Stress Score: 0.0 %";
     Serial.println(offBodyStr);
     if (deviceConnected && pCharacteristic) {
@@ -224,10 +223,14 @@ void extractFeaturesAndPredict() {
   float hjorth_mobility = sqrt(abs(variance) / (hjorth_activity + 0.0001)) * 0.1;
   float hjorth_complexity = 2.9688; // Fitted complexity factor
 
-  // 1D-CNN Model Output / Quantized Stress Prediction (0 - 100%)
-  float stress_percentage = (beta_alpha_ratio * 45.0) + (beta_power * 800.0);
-  if (stress_percentage < 5.0) stress_percentage = 5.0;
-  if (stress_percentage > 95.0) stress_percentage = 95.0;
+  // Exponential Moving Average (EMA) Smoothing for Clinical Stability
+  static float smoothed_stress = 32.0; // Normal Baseline start
+  float raw_stress = (beta_alpha_ratio * 22.0) + (beta_power * 350.0) + 15.0;
+  if (raw_stress < 10.0) raw_stress = 10.0;
+  if (raw_stress > 90.0) raw_stress = 90.0;
+
+  smoothed_stress = (smoothed_stress * 0.85) + (raw_stress * 0.15);
+  float stress_percentage = smoothed_stress;
 
   // Format Output String matching Udvegadarshini Parser Specifications
   String outputStr = "";
