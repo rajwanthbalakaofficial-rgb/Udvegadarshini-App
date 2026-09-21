@@ -1302,6 +1302,105 @@ body {
     background: rgba(11, 16, 30, 0.75); 
 }
 
+/* Quick Prompts Suggestions Bar */
+.chat-quick-suggestions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.4rem;
+    background: rgba(15, 23, 42, 0.9);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.chat-quick-suggestions::-webkit-scrollbar {
+    height: 4px;
+}
+.chat-quick-suggestions::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 4px;
+}
+
+.chip-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 0.2rem;
+}
+
+.chip-btn {
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    color: #a5b4fc;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.chip-btn:hover {
+    background: rgba(99, 102, 241, 0.3);
+    border-color: #818cf8;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+/* Āpta AI Action Buttons inside Chat Bubbles */
+.apta-action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.apta-action-buttons .btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* Typing Indicator Animation */
+.typing-indicator-bubble {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.2rem;
+    max-width: 220px;
+}
+
+.typing-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.typing-dots span {
+    width: 6px;
+    height: 6px;
+    background-color: #818cf8;
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dots span:nth-child(1) { animation-delay: 0s; }
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+    0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
 .chat-input-area input { 
     flex: 1; 
     background: rgba(255, 255, 255, 0.05); 

@@ -15,7 +15,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=44.0.0">
+    <link rel="stylesheet" href="styles.css?v=45.0.0">
 </head>
 <body class="dark-theme">
 
@@ -849,6 +849,17 @@
                                 Mana ESP32 device nundi real-time EEG data ni nenu monitor chesthunna. Stress level ekkuvaithe direct ga nene neetho matladatha! Cheppu raa, eeroju mood ela undhi?
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Quick Action Prompts Bar -->
+                    <div class="chat-quick-suggestions" id="aptaQuickSuggestions">
+                        <span class="chip-label">Quick Prompts:</span>
+                        <button class="chip-btn" onclick="aptaAI.handleQuickPrompt('remedies')"><i class="fa-solid fa-pills"></i> 💊 Remedies</button>
+                        <button class="chip-btn" onclick="aptaAI.handleQuickPrompt('sound')"><i class="fa-solid fa-music"></i> 🎵 432Hz Sound</button>
+                        <button class="chip-btn" onclick="aptaAI.handleQuickPrompt('breathing')"><i class="fa-solid fa-lungs"></i> 🫁 Breathing</button>
+                        <button class="chip-btn" onclick="aptaAI.handleQuickPrompt('games')"><i class="fa-solid fa-gamepad"></i> 🎮 Stress Games</button>
+                        <button class="chip-btn" onclick="aptaAI.handleQuickPrompt('focus')"><i class="fa-solid fa-bullseye"></i> 🎯 Focus Tips</button>
+                        <button class="chip-btn" onclick="aptaAI.handleQuickPrompt('joke')"><i class="fa-solid fa-face-laugh-squint"></i> 😂 Tell Joke</button>
                     </div>
 
                     <!-- Chat Input Box -->
@@ -2042,10 +2053,10 @@
     </div>
 
     <!-- JS Files -->
-    <script src="i18n.js?v=44.0.0"></script>
-    <script src="audio-frequency.js?v=44.0.0"></script>
-    <script src="apta-ai.js?v=44.0.0"></script>
-    <script src="games.js?v=44.0.0"></script>
-    <script src="app.js?v=44.0.0"></script>
+    <script src="i18n.js?v=45.0.0"></script>
+    <script src="audio-frequency.js?v=45.0.0"></script>
+    <script src="apta-ai.js?v=45.0.0"></script>
+    <script src="games.js?v=45.0.0"></script>
+    <script src="app.js?v=45.0.0"></script>
 </body>
 </html>
