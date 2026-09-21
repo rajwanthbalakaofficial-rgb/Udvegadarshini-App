@@ -198,8 +198,9 @@ void extractFeaturesAndPredict() {
 
   variance /= WINDOW_SIZE;
 
-  // Smart Lead-Off: Rail saturation (0 or 4095) or total flatline/extreme short circuit
-  if (variance < 0.000001 || variance > 15.0) {
+  // Smart Lead-Off: Detect off-skin flatline or floating EM antenna noise
+  // Skin contact AC signal peakToPeak is 0.03V - 0.38V. Thin air floating spikes > 0.40V or flatlines < 0.025V
+  if (variance < 0.000025 || variance > 0.12 || peakToPeak < 0.025 || peakToPeak > 0.40) {
     String offBodyStr = "LEAD-OFF: Disconnected from Body | Stress Score: 0.0 %";
     Serial.println(offBodyStr);
     if (deviceConnected && pCharacteristic) {
