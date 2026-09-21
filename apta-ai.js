@@ -132,6 +132,12 @@ class AptaAIChatbot {
             syncEl.textContent = `${Math.round(stressVal)}%`;
         }
 
+        if (stressVal <= 0) {
+            const alertBanner = document.getElementById('highStressAlert');
+            if (alertBanner) alertBanner.style.display = 'none';
+            return;
+        }
+
         // Auto-Trigger Āpta AI if stress > 70% and at least 30s passed since last alert
         const now = Date.now();
         if (stressVal > 70 && (now - this.lastTriggeredTime > 30000)) {

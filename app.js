@@ -1615,6 +1615,18 @@ class UdvegadarshiniApp {
             }
             document.getElementById('stressStateTitle').style.color = '#64748b';
 
+            // Hide High Stress Alert Banner on Disconnect
+            const highAlert = document.getElementById('highStressAlert');
+            if (highAlert) highAlert.style.display = 'none';
+
+            // Clear scale category highlights & zero out power bars
+            document.querySelectorAll('.scale-item').forEach(item => item.classList.remove('active'));
+            if (document.getElementById('barDelta')) document.getElementById('barDelta').style.width = '0%';
+            if (document.getElementById('barTheta')) document.getElementById('barTheta').style.width = '0%';
+            if (document.getElementById('barAlpha')) document.getElementById('barAlpha').style.width = '0%';
+            if (document.getElementById('barBeta')) document.getElementById('barBeta').style.width = '0%';
+            if (document.getElementById('barGamma')) document.getElementById('barGamma').style.width = '0%';
+
             document.getElementById('valDelta').textContent = '0.0000';
             document.getElementById('valTheta').textContent = '0.0000';
             document.getElementById('valAlpha').textContent = '0.0000';
