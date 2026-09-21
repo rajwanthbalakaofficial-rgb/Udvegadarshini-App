@@ -59,6 +59,23 @@ class UdvegadarshiniApp {
         try { this.initDoctorPortalEvents(); } catch(e) { console.error("Doctor portal error:", e); }
         try { this.initProfileAndPhoneEvents(); } catch(e) { console.error("Profile events error:", e); }
         try { this.resetToDisconnectedState(); } catch(e) { console.error("Reset state error:", e); }
+        try { this.initWatchdog(); } catch(e) { console.error("Watchdog init error:", e); }
+    }
+
+    initWatchdog() {
+        this.lastRxTime = 0;
+        setInterval(() => {
+            if (this.isConnected && this.lastRxTime > 0 && (Date.now() - this.lastRxTime > 2200)) {
+                console.warn("Watchdog: Data stream stalled or band removed. Auto-resetting to Disconnected.");
+                this.processMetricsUpdate({
+                    stressScore: 0,
+                    isLeadOff: true,
+                    delta: 0, theta: 0, alpha: 0, beta: 0, gamma: 0,
+                    betaAlphaRatio: 0, hjorthAct: 0, hjorthMob: 0, hjorthComp: 0,
+                    entropy: 0, katzFD: 1.0
+                });
+            }
+        }, 1000);
     }
 
     resetToDisconnectedState() {
@@ -1544,6 +1561,7 @@ class UdvegadarshiniApp {
         console.log("ESP32 Serial Rx:", line);
 
         this.updateConnectionBadge(true, 'ESP32 Streaming Live Data ⚡');
+        this.lastRxTime = Date.now();
 
         if (line.includes('LEAD-OFF') || line.includes('Disconnected')) {
             this.processMetricsUpdate({
