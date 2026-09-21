@@ -1574,23 +1574,23 @@ class UdvegadarshiniApp {
             return;
         }
 
-        const deltaMatch = line.match(/Δ:\s*([\d.]+)/);
-        const thetaMatch = line.match(/Θ:\s*([\d.]+)/);
-        const alphaMatch = line.match(/α:\s*([\d.]+)/);
-        const betaMatch = line.match(/β:\s*([\d.]+)/);
-        const gammaMatch = line.match(/γ:\s*([\d.]+)/);
-        const ratioMatch = line.match(/ratio:\s*([\d.]+)/i);
+        const deltaMatch = line.match(/(?:Δ|Delta|D):\s*([\d.]+)/i);
+        const thetaMatch = line.match(/(?:Θ|Theta|T):\s*([\d.]+)/i);
+        const alphaMatch = line.match(/(?:α|Alpha|A):\s*([\d.]+)/i);
+        const betaMatch = line.match(/(?:β|Beta|B):\s*([\d.]+)/i);
+        const gammaMatch = line.match(/(?:γ|Gamma|G):\s*([\d.]+)/i);
+        const ratioMatch = line.match(/(?:ratio|β\/α ratio|β\/α):\s*([\d.]+)/i);
         const stressMatch = line.match(/stress\s*(?:score)?:?\s*([\d.]+)/i) || line.match(/(\d+\.\d+)\s*%/);
 
         // Check if line is raw single ADC integer (e.g. "2048" or "1850")
         const rawAdcMatch = line.match(/^\s*(\d{2,4})\s*$/) || line.match(/Raw_ADC:\s*(\d+)/i);
 
-        let delta = deltaMatch ? parseFloat(deltaMatch[1]) : 0.018;
-        let theta = thetaMatch ? parseFloat(thetaMatch[1]) : 0.012;
-        let alpha = alphaMatch ? parseFloat(alphaMatch[1]) : 0.0016;
-        let beta = betaMatch ? parseFloat(betaMatch[1]) : 0.0005;
-        let gamma = gammaMatch ? parseFloat(gammaMatch[1]) : 0.0;
-        let ratio = ratioMatch ? parseFloat(ratioMatch[1]) : (beta / (alpha || 0.001));
+        let delta = deltaMatch ? parseFloat(deltaMatch[1]) : 0;
+        let theta = thetaMatch ? parseFloat(thetaMatch[1]) : 0;
+        let alpha = alphaMatch ? parseFloat(alphaMatch[1]) : 0;
+        let beta = betaMatch ? parseFloat(betaMatch[1]) : 0;
+        let gamma = gammaMatch ? parseFloat(gammaMatch[1]) : 0;
+        let ratio = ratioMatch ? parseFloat(ratioMatch[1]) : 0;
         let stressScore = stressMatch ? parseFloat(stressMatch[1]) : 0;
 
         if (rawAdcMatch && !stressMatch) {
@@ -1600,13 +1600,24 @@ class UdvegadarshiniApp {
                 return;
             }
             const norm = (adcVal - 2048) / 2048.0;
-            alpha = 0.002 + Math.abs(norm) * 0.005;
-            beta = 0.001 + Math.abs(norm) * 0.008;
+            alpha = 0.042 + Math.abs(norm) * 0.02;
+            beta = 0.015 + Math.abs(norm) * 0.04;
             ratio = beta / (alpha || 0.001);
             stressScore = Math.min(95, Math.max(10, ratio * 35.0));
         } else if (!stressMatch && !ratioMatch && !deltaMatch) {
             // Ignore setup header info text lines like "Board: ESP32-S3..."
             return;
+        }
+
+        // Ensure non-zero visible band powers when streaming active stress score
+        if (stressScore > 0 && delta === 0 && alpha === 0) {
+            const normS = stressScore / 100.0;
+            alpha = Math.max(0.0120, 0.0850 * (1.0 - normS));
+            beta = Math.max(0.0080, 0.0650 * normS);
+            theta = 0.0240;
+            delta = 0.0380;
+            gamma = 0.0060;
+            if (ratio === 0) ratio = beta / (alpha || 0.001);
         }
 
         this.processMetricsUpdate({

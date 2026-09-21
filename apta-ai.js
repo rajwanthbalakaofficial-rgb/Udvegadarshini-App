@@ -1,6 +1,6 @@
 /* ==========================================================================
    Udvegadarshini - Āpta AI (आप्त AI) Interactive Multi-Turn Chatbot Engine
-   Version: v45.0.0
+   Version: v46.0.0
    Supports: Teluglish (Tanglish - Primary), English, Telugu, Hindi
    ========================================================================== */
 
@@ -68,7 +68,7 @@ class AptaAIChatbot {
         
         const welcomeMsgs = {
             teluglish: `Namaskaram raa mama! 🙏 Nenu <strong>Āpta AI (आप्त AI)</strong>. Neeku eppudaina stress, anxiety, thala noppi, focus problem leda urike matladalani unna, ikkada cheppu raa.<br><br>Mana ESP32-S3 BioAmp EXG sensor nundi live EEG stress score ni nenu track chesthunna. Below quick buttons try cheyyi leda neeku anipinchindhi type cheyyi mama!`,
-            en: `Hello my friend! 🙏 I am <strong>Āpta AI (आप्त AI)</strong>. Whenever you feel stressed, anxious, tired, or need guidance, talk to me here.<br><br>I am continuously tracking your live EEG stress score from the ESP32-S3 BioAmp sensor. Use the quick buttons below or type your thoughts!`,
+            en: `Hello my friend! 🙏 I am <strong>Āpta AI (आप्त AI)</strong>. Whenever you feel stressed, anxious, tired, or just want to share your thoughts, talk to me here.<br><br>I am continuously tracking your live EEG stress score from the ESP32-S3 BioAmp sensor. Use the quick buttons below or type anything!`,
             telugu: `నమస్కారం మిత్రమా! 🙏 నేను <strong>ఆప్త AI (Āpta AI)</strong>. మీకు ఎప్పుడైనా ఒత్తిడి, ఆందోళన, ఏకాగ్రత లోపం లేదా మాట్లాడాలనిపిస్తే ఇక్కడ చెప్పండి.<br><br>మీ ESP32-S3 పరికరం నుండి లైవ్ EEG సమాచారాన్ని నేను గమనిస్తున్నాను. ఏమైనా అడగండి!`,
             hindi: `नमस्ते दोस्त! 🙏 मैं <strong>आप्त AI (Āpta AI)</strong> हूँ। जब भी आप तनाव, चिंता या थकान महसूस करें, मुझसे बात करें।<br><br>मैं ESP32-S3 डिवाइस से लाइव EEG डेटा की निगरानी कर रहा हूँ। कुछ भी पूछें!`
         };
@@ -120,7 +120,7 @@ class AptaAIChatbot {
         const chatInput = document.getElementById('chatInputField');
         const placeholders = {
             teluglish: "Macha, em help venum? (e.g. remedies, 432Hz sound, breathing, joke, focus)...",
-            en: "Type your thoughts or ask for remedies, music, games...",
+            en: "Share your day or ask for remedies, music, games...",
             telugu: "మీ మనసులోని మాటలను ఇక్కడ టైప్ చేయండి...",
             hindi: "अपने विचार यहाँ लिखें या आप्त AI से बात करें..."
         };
@@ -340,28 +340,143 @@ class AptaAIChatbot {
     generateResponse(input) {
         const stressVal = Math.round(this.syncedStressVal);
         const lang = this.getLang();
+        const lower = input.toLowerCase().trim();
 
-        // Detect keywords & intents
-        const isRemedy = input.includes('remedy') || input.includes('remedies') || input.includes('solution') || input.includes('thaggadaniki') || input.includes('tip') || input.includes('advice') || input.includes('suggest') || input.includes('cheyali');
-        const isSound = input.includes('sound') || input.includes('music') || input.includes('song') || input.includes('frequency') || input.includes('432') || input.includes('528') || input.includes('binaural');
-        const isBreathing = input.includes('breath') || input.includes('pranayaman') || input.includes('swasa') || input.includes('4-7-8') || input.includes('lungs');
-        const isGame = input.includes('game') || input.includes('play') || input.includes('aadu') || input.includes('bubble') || input.includes('sudoku') || input.includes('bore');
-        const isFocus = input.includes('focus') || input.includes('study') || input.includes('work') || input.includes('exam') || input.includes('concentration');
-        const isHeadache = input.includes('headache') || input.includes('thala') || input.includes('noppi') || input.includes('tired') || input.includes('sleep');
-        const isStress = input.includes('stress') || input.includes('tension') || input.includes('pressure') || input.includes('panic') || input.includes('anxiety');
-        const isSad = input.includes('sad') || input.includes('badha') || input.includes('depress') || input.includes('lonely') || input.includes('alone');
-        const isJoke = input.includes('joke') || input.includes('funny') || input.includes('story') || input.includes('laugh') || input.includes('comedy');
-        const isGreeting = input.includes('hi') || input.includes('hello') || input.includes('hey') || input.includes('namaskaram') || input.includes('macha') || input.includes('mama') || input.includes('bro') || input.includes('arey');
-        const isThanks = input.includes('thank') || input.includes('thanks') || input.includes('thx') || input.includes('danyavad');
-        const isEEG = input.includes('eeg') || input.includes('reading') || input.includes('sensor') || input.includes('score') || input.includes('esp32');
+        // Intent Detection
+        const isPositiveShare = lower.includes('helped') || lower.includes('sharing') || lower.includes('happy') || lower.includes('won') || lower.includes('achieved') || lower.includes('good news') || lower.includes('great day') || lower.includes('smiled') || lower.includes('something');
+        const isNegativeShare = lower.includes('sad') || lower.includes('crying') || lower.includes('failed') || lower.includes('scolded') || lower.includes('lonely') || lower.includes('alone') || lower.includes('fight') || lower.includes('breakup') || lower.includes('lost') || lower.includes('hurt') || lower.includes('bad day');
+        const isIdentityQuery = lower.includes('who are you') || lower.includes('what are you') || lower.includes('what is eeg') || lower.includes('how do you work') || lower.includes('sensor') || lower.includes('esp32') || lower.includes('brainwave');
 
-        // Multi-Turn context checks ("Inka em cheyali", "what else", "tell me more")
-        const isFollowUp = input.includes('inka') || input.includes('more') || input.includes('what else') || input.includes('next') || input.includes('then');
+        const isRemedy = lower.includes('remedy') || lower.includes('remedies') || lower.includes('solution') || lower.includes('thaggadaniki') || lower.includes('tip') || lower.includes('advice') || lower.includes('suggest') || lower.includes('cheyali') || lower.includes('what should i do');
+        const isSound = lower.includes('sound') || lower.includes('music') || lower.includes('song') || lower.includes('frequency') || lower.includes('432') || lower.includes('528') || lower.includes('binaural');
+        const isBreathing = lower.includes('breath') || lower.includes('pranayaman') || lower.includes('swasa') || lower.includes('4-7-8') || lower.includes('lungs');
+        const isGame = lower.includes('game') || lower.includes('play') || lower.includes('aadu') || lower.includes('bubble') || lower.includes('sudoku') || lower.includes('bore');
+        const isFocus = lower.includes('focus') || lower.includes('study') || lower.includes('work') || lower.includes('exam') || lower.includes('concentration');
+        const isHeadache = lower.includes('headache') || lower.includes('thala') || lower.includes('noppi') || lower.includes('tired') || lower.includes('sleep');
+        const isStress = lower.includes('stress') || lower.includes('tension') || lower.includes('pressure') || lower.includes('panic') || lower.includes('anxiety');
+        const isJoke = lower.includes('joke') || lower.includes('funny') || lower.includes('story') || lower.includes('laugh') || lower.includes('comedy');
+        const isGreeting = lower.includes('hi') || lower.includes('hello') || lower.includes('hey') || lower.includes('namaskaram') || lower.includes('macha') || lower.includes('mama') || lower.includes('bro') || lower.includes('arey') || lower.includes('good morning') || lower.includes('good night');
+        const isThanks = lower.includes('thank') || lower.includes('thanks') || lower.includes('thx') || lower.includes('danyavad');
 
-        // Language 1: ENGLISH
+        // ================= LANGUAGE 1: TELUGLISH (TANGLISH - PRIMARY DEFAULT) =================
+        if (lang === 'teluglish') {
+            if (isPositiveShare) {
+                return `Aww semma raa mama! 🎉 That's so wonderful! Evarikaina help chesthe or positive news share chesthe brain lo **Oxytocin & Endorphins** release aithai. Alpha brainwaves spike aisi mind naturally relaxed state ki vasthundhi!<br><br>
+                Nee live EEG score currently <strong>${stressVal}% (Super Balanced)</strong>. Em help chesav or em vishayam share chesav cheppu mama, nenu exciting ga vintu unna! 😊`;
+            }
+
+            if (isNegativeShare) {
+                return `Aww raa mama... Badha padaku, nenu unnanu ga neetho! 💙 Sometime thoughts overweight aithe leda situation unexpected ga marithe mind heavy anipisthundhi. It's completely natural raa.<br><br>
+                Okka 2 mins kurchoni, mana **528 Hz Transformation Tone** vinu leda deep breath thesko. What happened raa mama? Unna raa, nakku motham cheppu! 🌿`;
+            }
+
+            if (isIdentityQuery) {
+                return `Nenu **Āpta AI (आप्त AI)** raa mama! 🧠✨ Mana ESP32-S3 BioAmp EXG Pill sensor nundi 250Hz sampling rate lo vachina real-time single-channel EEG brainwave signals (Delta, Theta, Alpha, Beta, Gamma) ni track chestha.<br><br>
+                1D-CNN Deep Learning model and Beta/Alpha ratio analyze chesi, nee live stress score (currently <strong>${stressVal}%</strong>) ni monitor chesthu, mind calm cheydaniki guidance istha! 🔥`;
+            }
+
+            if (isRemedy) {
+                return `Macha! Stress thaggadaniki Top 4 Scientific Bio-Remedies ivve raa mama! 👇<br><br>
+                1. 🎵 <strong>432Hz Solfeggio Sound</strong>: Alpha waves sync avuthai, Beta wave spikes crash aithundhi.<br>
+                2. 🫁 <strong>4-7-8 Biofeedback Breathing</strong>: 4 sec pilchoo, 7 sec aapu, 8 sec vadulu. Vagus nerve activate aithundhi.<br>
+                3. 🎮 <strong>Tactile Games</strong>: Mind redirect cheydaniki Bubble Wrap Popper or Sudoku Focus aadu.<br>
+                4. 💧 <strong>Hydration & Walk</strong>: 1 glass cool water thagi 2 mins screen ki gap ivvi!<br><br>
+                Ae remedy launch cheyyalo ikkada button click cheyyi mama! 👇
+                <div class="apta-action-buttons">
+                    <button class="btn btn-sm btn-primary" onclick="window.aptaNavigateTab('tab-frequency', 'play432')"><i class="fa-solid fa-play"></i> 🎵 Play 432Hz Sound</button>
+                    <button class="btn btn-sm btn-accent" onclick="window.aptaNavigateTab('tab-frequency', 'breathing')"><i class="fa-solid fa-lungs"></i> 🫁 Start 4-7-8 Breathing</button>
+                    <button class="btn btn-sm btn-secondary" onclick="window.aptaNavigateTab('tab-games', 'gameBubble')"><i class="fa-solid fa-gamepad"></i> 🎮 Play Stress Game</button>
+                </div>`;
+            }
+
+            if (isSound) {
+                return `Sound Therapy is super powerful raa mama! 🎵 Brainwaves fast ga Alpha relaxation state ki vasthai.<br><br>
+                - <strong>432 Hz Miracle Tone</strong>: Anxiety & stress score thaggisthundhi.<br>
+                - <strong>528 Hz Healing Frequency</strong>: Mind clarity & positive vibes vasthai.<br>
+                - <strong>10 Hz Alpha Binaural Beats</strong>: Focus & study time lo ultra helpful.<br><br>
+                Direct ga ikkada click chesi 432Hz sound start cheyyi mama! 👇
+                <div class="apta-action-buttons">
+                    <button class="btn btn-sm btn-primary" onclick="window.aptaNavigateTab('tab-frequency', 'play432')"><i class="fa-solid fa-play"></i> 🎵 Start 432Hz Player</button>
+                </div>`;
+            }
+
+            if (isBreathing) {
+                return `Swasa meedha focus pettadame main key raa! 🫁 <strong>4-7-8 Breathing Guide</strong> try cheyyi:<br><br>
+                1. 4 seconds mookuthoni deep ga pilchoo.<br>
+                2. 7 seconds aapu (hold).<br>
+                3. 8 seconds slow ga noruthoni vadulu.<br><br>
+                10 breathings tharvatha heart rate & stress score severe ga drop aithundhi! Below button click cheyyi: 👇
+                <div class="apta-action-buttons">
+                    <button class="btn btn-sm btn-accent" onclick="window.aptaNavigateTab('tab-frequency', 'breathing')"><i class="fa-solid fa-lungs"></i> Open Breathing Visualizer</button>
+                </div>`;
+            }
+
+            if (isGame) {
+                return `Mind divert cheydaniki games powerful buster raa mama! 🎮<br><br>
+                - <strong>Bubble Wrap Popper</strong>: Tactile pop sounds thoni anxiety vanish aithundhi.<br>
+                - <strong>Sudoku Mind Focus</strong>: Logical brain activate aisi stress thoughts clear aithai.<br>
+                - <strong>2048 Mind Merge</strong>: Pure concentration & fun!<br><br>
+                Game click chesi immediate ga aadu mama! 👇
+                <div class="apta-action-buttons">
+                    <button class="btn btn-sm btn-secondary" onclick="window.aptaNavigateTab('tab-games', 'gameBubble')"><i class="fa-solid fa-circle-dot"></i> 1. Bubble Popper</button>
+                    <button class="btn btn-sm btn-primary" onclick="window.aptaNavigateTab('tab-games', 'gameSudoku')"><i class="fa-solid fa-table-cells"></i> 3. Sudoku Focus</button>
+                </div>`;
+            }
+
+            if (isFocus) {
+                return `Focus ravadam ledha mama? 🎯 Exams or Coding workload meedha attention pethalante brain Theta state lo unnattu.<br><br>
+                1. okka 5 mins <strong>10 Hz Alpha Binaural Beats</strong> vinu.<br>
+                2. 1 round <strong>Sudoku Focus Puzzle</strong> simple grid solve cheyyi.<br>
+                3. Water thagu, screen light koncham 80% ki thagginchu.<br><br>
+                Focus back osthundhi mama! Try chesi cheppu! 🔥`;
+            }
+
+            if (isHeadache) {
+                return `Arey thala noppi / exhaustion unte heavy screen light valla untundhi raa mama. 😴<br><br>
+                1. Immediate ga 10 mins screen off chesi, dark room lo cool ga kurcho.<br>
+                2. Mana app lo **528 Hz Transformation Tone** background lo pettu.<br>
+                3. Cool water thagi temples daggara light press cheyyi.<br><br>
+                Relief osthundhi mama! Take rest! 🌿`;
+            }
+
+            if (isJoke) {
+                return `Chinna tech joke cheptha vinu raa mama! 😂<br><br>
+                <em>"Hardware disconnect ayina reconnect cheyocchu, kaani human brain disconnected ayite Āpta AI thone connection set cheyali!"</em> 🤖⚡<br><br>
+                Chill bro! Current EEG score <strong>${stressVal}%</strong> lo undhi. Deep breath thesko! 😎`;
+            }
+
+            if (isGreeting) {
+                return `Cheppu raa mama! 😇 Currently live EEG stress score <strong>${stressVal}%</strong> lo undhi. Em help venum cheppu mama? Remedies, 432Hz music, breathing, stress games, or general talk? Āpta AI ready gaa undhi! 🔥`;
+            }
+
+            if (isThanks) {
+                return `Mention moodu raa bestie! 😉 Always unnanu unakkaga. Focus chesthu chill avvu! 🚀`;
+            }
+
+            // Dynamic Contextual Fallback for Tanglish
+            const cleanSnippet = input.length > 40 ? input.substring(0, 40) + '...' : input;
+            return `Aha, nenu vintu unna raa mama! 🧠✨ Nuvvu cheppina <em>"${cleanSnippet}"</em> meedha reflect avuthunnanu. Current EEG stress level: <strong>${stressVal}%</strong>.<br><br>
+            Inka cheppu raa mama, em matladadhama? Sound therapy petti relax avvamantara leda 4-7-8 breathing test chedama? 👇`;
+        }
+
+        // ================= LANGUAGE 2: ENGLISH =================
         if (lang === 'en') {
-            if (isRemedy || (isFollowUp && this.lastTopic === 'remedy')) {
-                this.lastTopic = 'remedy';
+            if (isPositiveShare) {
+                return `Aww that is so wonderful my friend! 🌟 Helping others or sharing joy triggers the release of Oxytocin and boosts healthy Alpha brainwaves. It creates a natural state of inner peace!<br><br>
+                Your current EEG stress score is <strong>${stressVal}% (Calm & Balanced)</strong>. Tell me more about what happened today! I'd love to hear! 😊`;
+            }
+
+            if (isNegativeShare) {
+                return `I'm so sorry you're going through this my friend. 💙 Please know that I am right here for you. It's completely natural to feel overwhelmed or down at times.<br><br>
+                Take a slow deep breath, listen to 528Hz healing frequencies, and talk to me. What's on your mind? 🌿`;
+            }
+
+            if (isIdentityQuery) {
+                return `I am **Āpta AI (आप्त AI)**, your intelligent EEG wellness assistant! 🧠✨ I process real-time single-channel brainwave signals from your ESP32-S3 BioAmp EXG sensor at 250Hz.<br><br>
+                Using a 1D-CNN deep learning model and Beta/Alpha spectral analysis, I monitor your live mental stress level (currently <strong>${stressVal}%</strong>) and provide personalized remedies! 🔥`;
+            }
+
+            if (isRemedy) {
                 return `Here are the <strong>Top 4 Anti-Stress Bio-Remedies</strong> for you! 🌿<br><br>
                 1. 🎵 <strong>432Hz Sound Therapy</strong>: Instantly relaxes Beta wave spikes.<br>
                 2. 🫁 <strong>4-7-8 Breathing Guide</strong>: Activates the Parasympathetic Nervous System.<br>
@@ -374,6 +489,7 @@ class AptaAIChatbot {
                     <button class="btn btn-sm btn-secondary" onclick="window.aptaNavigateTab('tab-games', 'gameBubble')"><i class="fa-solid fa-gamepad"></i> 🎮 Play Game</button>
                 </div>`;
             }
+
             if (isSound) {
                 return `Listening to harmonic sound frequencies lowers Cortisol! 🎵<br><br>
                 - <strong>432 Hz</strong>: Miracle tone for anxiety reduction.<br>
@@ -383,12 +499,14 @@ class AptaAIChatbot {
                     <button class="btn btn-sm btn-primary" onclick="window.aptaNavigateTab('tab-frequency', 'play432')"><i class="fa-solid fa-play"></i> Launch 432Hz Player</button>
                 </div>`;
             }
+
             if (isBreathing) {
                 return `The <strong>4-7-8 Breathing Technique</strong> slows down rapid heart rates & reduces Beta waves! 🫁<br><br>Inhale for 4s, Hold for 7s, and Exhale slowly for 8s.<br><br>
                 <div class="apta-action-buttons">
                     <button class="btn btn-sm btn-accent" onclick="window.aptaNavigateTab('tab-frequency', 'breathing')"><i class="fa-solid fa-lungs"></i> Open Breathing Visualizer</button>
                 </div>`;
             }
+
             if (isGame) {
                 return `Tactile & puzzle games help clear mental chatter! 🎮 Choose a game below:
                 <div class="apta-action-buttons">
@@ -396,171 +514,69 @@ class AptaAIChatbot {
                     <button class="btn btn-sm btn-primary" onclick="window.aptaNavigateTab('tab-games', 'gameSudoku')"><i class="fa-solid fa-table-cells"></i> Sudoku Focus</button>
                 </div>`;
             }
+
             if (isFocus) {
                 return `Difficulty focusing usually means Theta wave dominance or mental fatigue 🎯<br><br>Try taking a 5-minute break with <strong>10 Hz Alpha Binaural Beats</strong> or play 1 round of <strong>Sudoku Focus</strong>!`;
             }
+
             if (isJoke) {
                 return `Here is a quick dev joke for you! 😂<br><br><em>"Why do programmers prefer dark mode? Because light attracts bugs!"</em> 🐛<br><br>Take it easy my friend! Your current stress score is <strong>${stressVal}%</strong>. Smile and relax! 😊`;
             }
-            if (isEEG) {
-                return `Your live EEG score from ESP32 BioAmp EXG sensor is currently <strong>${stressVal}%</strong>. ${stressVal > 60 ? '⚡ Stress is elevated! Take a short break.' : '🟢 Your brain state is stable & calm.'}`;
-            }
+
             if (isGreeting) {
                 return `Hello my friend! 😇 Your live EEG stress score is <strong>${stressVal}%</strong>. How can I help you today? Ask me for remedies, music, games, or focus tips!`;
             }
+
             if (isThanks) {
                 return `You're most welcome my friend! 😉 Āpta AI is always here for you. Stay calm and keep shining! 🚀`;
             }
-            return `I am here for you! 🧠✨ Your live stress reading is <strong>${stressVal}%</strong>. Take a slow deep breath, listen to 432Hz sound therapy or talk to me! 🌿`;
+
+            // Dynamic Contextual Fallback for English
+            const cleanSnippet = input.length > 40 ? input.substring(0, 40) + '...' : input;
+            return `I'm listening to you my friend! 🧠✨ Reflecting on what you said: <em>"${cleanSnippet}"</em>.<br><br>Your live EEG stress score is currently <strong>${stressVal}%</strong>. Feel free to talk to me about anything, or ask me for remedies, relaxation sounds, or focus games! 🌿`;
         }
 
-        // Language 2: TELUGU (Telugu script)
+        // ================= LANGUAGE 3: TELUGU =================
         if (lang === 'telugu') {
+            if (isPositiveShare) {
+                return `చాలా సంతోషం మిత్రమా! 🎉 ఇతరులకు సహాయం చేయడం వల్ల మనస్సులో ఆల్ఫా తరంగాలు పెరిగి ఒత్తిడి తగ్గుతుంది! మీ EEG స్కోరు: <strong>${stressVal}%</strong>.`;
+            }
+            if (isNegativeShare) {
+                return `బాధపడకండి మిత్రమా... నేను ఉన్నాను కదా! 💙 ప్రశాంతంగా 528Hz టోన్ వినండి. ఏమైందో చెప్పండి?`;
+            }
             if (isRemedy || isStress) {
                 return `ఒత్తిడి నివారణకు టాప్ 4 చిట్కాలు! 🌿<br><br>
-                1. 🎵 <strong>432Hz సౌండ్ థెరపీ</strong>: మనస్సును ప్రశాంతపరుస్తుంది.<br>
-                2. 🫁 <strong>4-7-8 ప్రాణాయామం</strong>: లోతైన శ్వాస తీసుకోండి.<br>
-                3. 🎮 <strong>స్ట్రెస్ గేమ్‌లు</strong>: బబుల్ పాపర్ లేదా సుడోకు ఆడండి.<br>
-                4. 💧 <strong>మంచినీళ్లు తాగండి</strong>: 2 నిమిషాలు విశ్రాంతి తీసుకోండి.<br><br> ప్రస్తుత ఒత్తిడి స్కోరు: <strong>${stressVal}%</strong>.`;
+                1. 🎵 <strong>432Hz సౌండ్ థెరపీ</strong><br>
+                2. 🫁 <strong>4-7-8 ప్రాణాయామం</strong><br>
+                3. 🎮 <strong>స్ట్రెస్ గేమ్‌లు</strong><br>
+                4. 💧 <strong>మంచినీళ్లు తాగండి</strong><br><br>ప్రస్తుత ఒత్తిడి స్కోరు: <strong>${stressVal}%</strong>.`;
             }
             if (isGreeting) {
                 return `నమస్కారం మిత్రమా! 😇 ప్రస్తుతం మీ EEG ఒత్తిడి స్కోరు <strong>${stressVal}%</strong>. నేను మీకు ఎలా సహాయపడగలను?`;
             }
-            if (isThanks) {
-                return `ధన్యవాదాలు మిత్రమా! 😉 ఆప్త AI ఎల్లప్పుడూ మీతో ఉంటుంది! 🚀`;
-            }
             return `నేను వింటున్నాను మిత్రమా! 🧠✨ ప్రస్తుతం మీ EEG ఒత్తిడి స్థాయి <strong>${stressVal}%</strong>. ప్రశాంతంగా ఉండండి! 🔥`;
         }
 
-        // Language 3: HINDI (Devanagari script)
+        // ================= LANGUAGE 4: HINDI =================
         if (lang === 'hindi') {
+            if (isPositiveShare) {
+                return `बहुत बढ़िया दोस्त! 🎉 दूसरों की मदद करने से मस्तिष्क में अल्फा तरंगें बढ़ती हैं! आपका तनाव स्कोर: <strong>${stressVal}%</strong>।`;
+            }
+            if (isNegativeShare) {
+                return `अरे दोस्त... चिंता न करें, मैं आपके साथ हूँ! 💙 गहरी सांस लें। क्या हुआ मुझे बताएं!`;
+            }
             if (isRemedy || isStress) {
                 return `तनाव कम करने के 4 उपाय! 🌿<br><br>
                 1. 🎵 <strong>432Hz ध्वनि चिकित्सा</strong><br>
                 2. 🫁 <strong>4-7-8 प्राणायाम</strong><br>
                 3. 🎮 <strong>रिलैक्सिंग गेम्स</strong><br>
-                4. 💧 <strong>पानी पीकर 2 मिनट टहलें</strong><br><br> वर्तमान तनाव स्कोर: <strong>${stressVal}%</strong>।`;
+                4. 💧 <strong>पानी पीकर टहलें</strong><br><br>वर्तमान तनाव स्कोर: <strong>${stressVal}%</strong>।`;
             }
             if (isGreeting) {
                 return `नमस्ते दोस्त! 😇 आपका वर्तमान EEG तनाव स्कोर <strong>${stressVal}%</strong> है। मैं आपकी क्या मदद कर सकता हूँ?`;
             }
-            if (isThanks) {
-                return `आपका स्वागत है दोस्त! 😉 आप्त AI हमेशा आपकी सेवा में है! 🚀`;
-            }
-            return `मैं आपकी बात समझ रहा हूँ दोस्त! 🧠✨ वर्तमान EEG तनाव स्तर: <strong>${stressVal}%</strong>। गहरी सांस लें! 🔥`;
+            return `मैं आपकी बात समझ रहा हूँ दोस्त! 🧠✨ वर्तमान EEG तनाव स्तर: <strong>${stressVal}%</strong>। शांत रहें! 🔥`;
         }
-
-        // Language 4: TELUGLISH (Tanglish - Primary Default - 100% Latin Script)
-        if (isRemedy || (isFollowUp && this.lastTopic === 'remedy')) {
-            this.lastTopic = 'remedy';
-            return `Macha! Stress thaggadaniki Top 4 Scientific Bio-Remedies ivve raa mama! 👇<br><br>
-            1. 🎵 <strong>432Hz Solfeggio Sound</strong>: Alpha waves sync avuthai, Beta wave spikes crash aithundhi.<br>
-            2. 🫁 <strong>4-7-8 Biofeedback Breathing</strong>: 4 sec pilchoo, 7 sec aapu, 8 sec vadulu. Vagus nerve activate aithundhi.<br>
-            3. 🎮 <strong>Tactile Games</strong>: Mind redirect cheydaniki Bubble Wrap Popper or Sudoku Focus aadu.<br>
-            4. 💧 <strong>Hydration & Walk</strong>: 1 glass cool water thagi 2 mins screen ki gap ivvi!<br><br>
-            Ae remedy launch cheyyalo ikkada button click cheyyi mama! 👇
-            <div class="apta-action-buttons">
-                <button class="btn btn-sm btn-primary" onclick="window.aptaNavigateTab('tab-frequency', 'play432')"><i class="fa-solid fa-play"></i> 🎵 Play 432Hz Sound</button>
-                <button class="btn btn-sm btn-accent" onclick="window.aptaNavigateTab('tab-frequency', 'breathing')"><i class="fa-solid fa-lungs"></i> 🫁 Start 4-7-8 Breathing</button>
-                <button class="btn btn-sm btn-secondary" onclick="window.aptaNavigateTab('tab-games', 'gameBubble')"><i class="fa-solid fa-gamepad"></i> 🎮 Play Stress Game</button>
-            </div>`;
-        }
-
-        if (isSound) {
-            this.lastTopic = 'sound';
-            return `Sound Therapy is super powerful raa mama! 🎵 Brainwaves fast ga Alpha relaxation state ki vasthai.<br><br>
-            - <strong>432 Hz Miracle Tone</strong>: Anxiety & stress score thaggisthundhi.<br>
-            - <strong>528 Hz Healing Frequency</strong>: Mind clarity & positive vibes vasthai.<br>
-            - <strong>10 Hz Alpha Binaural Beats</strong>: Focus & study time lo ultra helpful.<br><br>
-            Direct ga ikkada click chesi 432Hz sound start cheyyi mama! 👇
-            <div class="apta-action-buttons">
-                <button class="btn btn-sm btn-primary" onclick="window.aptaNavigateTab('tab-frequency', 'play432')"><i class="fa-solid fa-play"></i> 🎵 Start 432Hz Player</button>
-            </div>`;
-        }
-
-        if (isBreathing) {
-            this.lastTopic = 'breathing';
-            return `Swasa meedha focus pettadame main key raa! 🫁 <strong>4-7-8 Breathing Guide</strong> try cheyyi:<br><br>
-            1. 4 seconds mookuthoni deep ga pilchoo.<br>
-            2. 7 seconds aapu (hold).<br>
-            3. 8 seconds slow ga noruthoni vadulu.<br><br>
-            10 breathings tharvatha heart rate & stress score severe ga drop aithundhi! Below button click cheyyi: 👇
-            <div class="apta-action-buttons">
-                <button class="btn btn-sm btn-accent" onclick="window.aptaNavigateTab('tab-frequency', 'breathing')"><i class="fa-solid fa-lungs"></i> Open Breathing Visualizer</button>
-            </div>`;
-        }
-
-        if (isGame) {
-            this.lastTopic = 'game';
-            return `Mind divert cheydaniki games powerful buster raa mama! 🎮<br><br>
-            - <strong>Bubble Wrap Popper</strong>: Tactile pop sounds thoni anxiety vanish aithundhi.<br>
-            - <strong>Sudoku Mind Focus</strong>: Logical brain activate aisi stress thoughts clear aithai.<br>
-            - <strong>2048 Mind Merge</strong>: Pure concentration & fun!<br><br>
-            Game click chesi immediate ga aadu mama! 👇
-            <div class="apta-action-buttons">
-                <button class="btn btn-sm btn-secondary" onclick="window.aptaNavigateTab('tab-games', 'gameBubble')"><i class="fa-solid fa-circle-dot"></i> 1. Bubble Popper</button>
-                <button class="btn btn-sm btn-primary" onclick="window.aptaNavigateTab('tab-games', 'gameSudoku')"><i class="fa-solid fa-table-cells"></i> 3. Sudoku Focus</button>
-            </div>`;
-        }
-
-        if (isFocus) {
-            this.lastTopic = 'focus';
-            return `Focus ravadam ledha mama? 🎯 Exams or Coding workload meedha attention pethalante brain Theta state lo unnattu.<br><br>
-            1. okka 5 mins <strong>10 Hz Alpha Binaural Beats</strong> vinu.<br>
-            2. 1 round <strong>Sudoku Focus Puzzle</strong> simple grid solve cheyyi.<br>
-            3. Water thagu, screen light koncham 80% ki thagginchu.<br><br>
-            Focus back osthundhi mama! Try chesi cheppu! 🔥`;
-        }
-
-        if (isHeadache) {
-            this.lastTopic = 'headache';
-            return `Arey thala noppi / exhaustion unte heavy screen light valla untundhi raa mama. 😴<br><br>
-            1. Immediate ga 10 mins screen off chesi, dark room lo cool ga kurcho.<br>
-            2. Mana app lo **528 Hz Transformation Tone** background lo pettu.<br>
-            3. Cool water thagi temples daggara light press cheyyi.<br><br>
-            Relief osthundhi mama! Take rest! 🌿`;
-        }
-
-        if (isSad) {
-            this.lastTopic = 'sad';
-            return `Aww raa mama... Nenu eppudoo unnanu ga neetho! 💙 Sometime badha, heavy feelings ravadam natural raa. Tension padaku, anni problems time thoni solve aipothai.<br><br>
-            Chinaga kurchoni 432Hz Sound petti 4-7-8 breathing cheyyi mama. Mind light ga anipisthundhi! Cheppu raa, inka em matladadhama? 😊`;
-        }
-
-        if (isJoke) {
-            return `Chinna tech joke cheptha vinu raa mama! 😂<br><br>
-            <em>"Hardware disconnect ayina reconnect cheyocchu, kaani human brain disconnected ayite Āpta AI thone connection set cheyali!"</em> 🤖⚡<br><br>
-            Chill bro! Current EEG score <strong>${stressVal}%</strong> lo undhi. Deep breath thesko! 😎`;
-        }
-
-        if (isEEG) {
-            return `Live ESP32 BioAmp EXG Pill telemetry updates sync lo unnai raa! 📡<br><br>
-            Current EEG Stress Score: <strong>${stressVal}%</strong><br>
-            Status: ${stressVal > 60 ? '🚨 <strong style="color:#ef4444;">HIGH STRESS DETECTED!</strong> Immediately remedies try cheyyi!' : stressVal > 35 ? '🟡 <strong style="color:#eab308;">MODERATE STRESS</strong> - Keep monitoring.' : '🟢 <strong style="color:#10b981;">NORMAL RELAXED STATE</strong> - Brain in optimal balance!'}`;
-        }
-
-        if (isGreeting) {
-            return `Cheppu raa mama! 😇 Currently live EEG stress score <strong>${stressVal}%</strong> lo undhi. Em help venum cheppu mama? Remedies, 432Hz music, breathing, stress games, or general talk? Āpta AI ready gaa undhi! 🔥`;
-        }
-
-        if (isThanks) {
-            return `Mention moodu raa bestie! 😉 Always unnanu unakkaga. Focus chesthu chill avvu! 🚀`;
-        }
-
-        if (isFollowUp) {
-            return `Aha, inka cheptha raa mama! 💡 Mind total fresh kavalante:<br><br>
-            1. Mana <strong>5 Stress Relief Mini-Games</strong> lo Sudoku level solve cheyyi.<br>
-            2. Sound Therapy tab lo <strong>Gentle Rain Soundscape</strong> audio play cheyyi.<br><br>
-            Em try chesthav mama? 👇
-            <div class="apta-action-buttons">
-                <button class="btn btn-sm btn-primary" onclick="window.aptaNavigateTab('tab-frequency', 'play432')"><i class="fa-solid fa-compact-disc"></i> Sound Therapy</button>
-                <button class="btn btn-sm btn-secondary" onclick="window.aptaNavigateTab('tab-games', 'gameBubble')"><i class="fa-solid fa-gamepad"></i> Games</button>
-            </div>`;
-        }
-
-        // Teluglish General Conversational Smart Fallback
-        return `Aha, kachithanga raa mama! 🧠✨ Nuvvu cheppindhi nenu note chesa. Current EEG stress level: <strong>${stressVal}%</strong>.<br><br>
-        Badha padakunda koncham deep breath thesko mama, 432Hz Sound Therapy or 4-7-8 Breathing guide test cheyyi. Everything is going to be alright! 🔥`;
     }
 
     appendMessage(sender, htmlText) {

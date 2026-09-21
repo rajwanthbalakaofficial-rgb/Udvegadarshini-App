@@ -209,12 +209,12 @@ void extractFeaturesAndPredict() {
     return;
   }
 
-  // Normalize Band Powers
-  float delta_power = (sumDelta / WINDOW_SIZE) * 0.01;
-  float theta_power = (sumTheta / WINDOW_SIZE) * 0.01;
-  float alpha_power = (sumAlpha / WINDOW_SIZE) * 0.01;
-  float beta_power  = (sumBeta  / WINDOW_SIZE) * 0.01;
-  float gamma_power = (sumGamma / WINDOW_SIZE) * 0.005;
+  // Normalize Band Powers into visible clinical scale
+  float delta_power = (sumDelta / WINDOW_SIZE) * 2.5;
+  float theta_power = (sumTheta / WINDOW_SIZE) * 2.0;
+  float alpha_power = (sumAlpha / WINDOW_SIZE) * 3.0;
+  float beta_power  = (sumBeta  / WINDOW_SIZE) * 4.0;
+  float gamma_power = (sumGamma / WINDOW_SIZE) * 1.5;
 
   // Cognitive Stress Indicator: Beta / Alpha Ratio
   float beta_alpha_ratio = beta_power / (alpha_power > 0.0001 ? alpha_power : 0.0001);
@@ -226,7 +226,7 @@ void extractFeaturesAndPredict() {
 
   // Exponential Moving Average (EMA) 90/10 Filter for Clinical Grade Stability
   static float smoothed_stress = 32.0; // Normal Baseline start
-  float raw_stress = (beta_alpha_ratio * 12.0) + (beta_power * 150.0) + 20.0;
+  float raw_stress = (beta_alpha_ratio * 12.0) + (beta_power * 15.0) + 20.0;
   if (raw_stress < 15.0) raw_stress = 15.0;
   if (raw_stress > 80.0) raw_stress = 80.0;
 
@@ -235,11 +235,11 @@ void extractFeaturesAndPredict() {
 
   // Format Output String matching Udvegadarshini Parser Specifications
   String outputStr = "";
-  outputStr += "Δ: " + String(delta_power, 4) + " ";
-  outputStr += "Θ: " + String(theta_power, 4) + " ";
-  outputStr += "α: " + String(alpha_power, 4) + " ";
-  outputStr += "β: " + String(beta_power, 4) + " ";
-  outputStr += "γ: " + String(gamma_power, 4) + " ";
+  outputStr += "Delta: " + String(delta_power, 4) + " ";
+  outputStr += "Theta: " + String(theta_power, 4) + " ";
+  outputStr += "Alpha: " + String(alpha_power, 4) + " ";
+  outputStr += "Beta: " + String(beta_power, 4) + " ";
+  outputStr += "Gamma: " + String(gamma_power, 4) + " ";
   outputStr += "β/α ratio: " + String(beta_alpha_ratio, 3) + " ";
   outputStr += "Hjorth act=" + String(hjorth_activity, 4) + " ";
   outputStr += "mob=" + String(hjorth_mobility, 4) + " ";
