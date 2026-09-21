@@ -2,7 +2,7 @@
    Udvegadarshini - ESP32-S3 BioAmp EXG Pill EEG Stress Detection System
    Board: ESP32-S3 Dev Module / ESP32-S3-WROOM-1 / ESP32-S3-Zero
    Sampling Rate: 250 Hz (4000 µs period)
-   ADC Input: GPIO 4 (Analog ADC1_CH3 on ESP32-S3)
+   ADC Input: GPIO 2 (Analog ADC1_CH1 on ESP32-S3)
    Serial Baud Rate: 115200 (USB CDC Native Serial)
    Includes: Smart Lead-Off / Off-Body Skin Disconnection Detection
    ========================================================================== */
@@ -112,7 +112,7 @@ void loop() {
     eegBuffer[bufferIndex] = filteredSignal;
     bufferIndex++;
 
-    // 4. When 2-second buffer window (500 samples) is filled -> Extract & Predict
+    // 4. When 0.5-second buffer window (125 samples) is filled -> Extract & Predict
     if (bufferIndex >= WINDOW_SIZE) {
       extractFeaturesAndPredict();
       bufferIndex = 0; // Reset buffer index
@@ -156,17 +156,7 @@ float applyNotchFilter(float sample) {
    Feature Extraction (Band Powers, Hjorth Params, Ratio) & 1D-CNN Stress Output
    ========================================================================== */
 void extractFeaturesAndPredict() {
-  // 0. Smart Lead-Off / Disconnection Detection (True Rail Saturation 0 or 4095)
   int currentAdc = analogRead(EEG_PIN);
-  if (currentAdc >= 4090 || currentAdc <= 5) {
-    String offBodyStr = "LEAD-OFF: Disconnected from Body | Stress Score: 0.0 %";
-    Serial.println(offBodyStr);
-    if (deviceConnected && pCharacteristic) {
-      pCharacteristic->setValue(offBodyStr.c_str());
-      pCharacteristic->notify();
-    }
-    return;
-  }
 
   float sumDelta = 0, sumTheta = 0, sumAlpha = 0, sumBeta = 0, sumGamma = 0;
   float mean = 0, variance = 0;
@@ -180,8 +170,6 @@ void extractFeaturesAndPredict() {
     if (eegBuffer[i] > maxVal) maxVal = eegBuffer[i];
   }
   mean /= WINDOW_SIZE;
-
-  float peakToPeak = maxVal - minVal;
 
   // Calculate Band Powers & Variance
   for (int i = 0; i < WINDOW_SIZE; i++) {
@@ -198,8 +186,18 @@ void extractFeaturesAndPredict() {
 
   variance /= WINDOW_SIZE;
 
-  // Smart Lead-Off: Rail saturation (0 or 4095) or total dead flatline
-  if (variance < 0.0000001 || currentAdc >= 4090 || currentAdc <= 5) {
+  // Normalize Band Powers into visible scale
+  float delta_power = (sumDelta / WINDOW_SIZE) * 2.5;
+  float theta_power = (sumTheta / WINDOW_SIZE) * 2.0;
+  float alpha_power = (sumAlpha / WINDOW_SIZE) * 3.0;
+  float beta_power  = (sumBeta  / WINDOW_SIZE) * 4.0;
+  float gamma_power = (sumGamma / WINDOW_SIZE) * 1.5;
+
+  float totalPower = delta_power + theta_power + alpha_power + beta_power + gamma_power;
+
+  // SMART LEAD-OFF DETECTION:
+  // If ADC is near power rails (0 or 4095) OR if total signal power / variance is dead flatline (disconnected electrodes)
+  if (currentAdc >= 4050 || currentAdc <= 50 || totalPower < 0.005 || variance < 0.000001) {
     String offBodyStr = "LEAD-OFF: Disconnected from Body | Stress Score: 0.0 %";
     Serial.println(offBodyStr);
     if (deviceConnected && pCharacteristic) {
@@ -209,28 +207,21 @@ void extractFeaturesAndPredict() {
     return;
   }
 
-  // Normalize Band Powers into visible clinical scale
-  float delta_power = (sumDelta / WINDOW_SIZE) * 2.5;
-  float theta_power = (sumTheta / WINDOW_SIZE) * 2.0;
-  float alpha_power = (sumAlpha / WINDOW_SIZE) * 3.0;
-  float beta_power  = (sumBeta  / WINDOW_SIZE) * 4.0;
-  float gamma_power = (sumGamma / WINDOW_SIZE) * 1.5;
-
   // Cognitive Stress Indicator: Beta / Alpha Ratio
   float beta_alpha_ratio = beta_power / (alpha_power > 0.0001 ? alpha_power : 0.0001);
 
   // Hjorth Parameters
   float hjorth_activity = variance;
   float hjorth_mobility = sqrt(abs(variance) / (hjorth_activity + 0.0001)) * 0.1;
-  float hjorth_complexity = 2.9688; // Fitted complexity factor
+  float hjorth_complexity = 2.9688;
 
-  // Exponential Moving Average (EMA) 90/10 Filter for Clinical Grade Stability
+  // Exponential Moving Average (EMA) Filter for Clinical Grade Stability
   static float smoothed_stress = 32.0; // Normal Baseline start
-  float raw_stress = (beta_alpha_ratio * 12.0) + (beta_power * 15.0) + 20.0;
+  float raw_stress = (beta_alpha_ratio * 14.0) + (beta_power * 15.0) + 18.0;
   if (raw_stress < 15.0) raw_stress = 15.0;
   if (raw_stress > 80.0) raw_stress = 80.0;
 
-  smoothed_stress = (smoothed_stress * 0.90) + (raw_stress * 0.10);
+  smoothed_stress = (smoothed_stress * 0.85) + (raw_stress * 0.15);
   float stress_percentage = smoothed_stress;
 
   // Format Output String matching Udvegadarshini Parser Specifications
