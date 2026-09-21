@@ -21,7 +21,7 @@
 const int EEG_PIN = 2;             // GPIO 2 (ADC1 CH1 on ESP32-S3) - Connect to BioAmp EXG OUT
 const int SAMPLING_FREQ = 250;     // 250 Hz Sampling frequency
 const int SAMPLE_PERIOD_US = 4000; // 1,000,000 / 250 = 4000 µs
-const int WINDOW_SIZE = 500;       // 2-second buffer window (250 * 2 = 500 samples)
+const int WINDOW_SIZE = 125;       // 0.5-second buffer window (125 samples @ 250Hz for 500ms continuous stream)
 
 // Signal Processing Buffer
 float eegBuffer[WINDOW_SIZE];
