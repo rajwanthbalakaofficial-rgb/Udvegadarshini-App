@@ -1609,20 +1609,23 @@ class UdvegadarshiniApp {
             return;
         }
 
-        // Ensure non-zero visible band powers when streaming active stress score
-        if (stressScore > 0 && delta === 0 && alpha === 0) {
-            const normS = stressScore / 100.0;
-            alpha = Math.max(0.0120, 0.0850 * (1.0 - normS));
-            beta = Math.max(0.0080, 0.0650 * normS);
-            theta = 0.0240;
-            delta = 0.0380;
-            gamma = 0.0060;
-            if (ratio === 0) ratio = beta / (alpha || 0.001);
+        // STRICT DISCONNECTION CHECK:
+        // If band powers are zero OR if stress score is 0 OR line indicates LEAD-OFF:
+        // IMMEDIATELY FORCE DISCONNECTED STATE (--% Off-Body)
+        if (stressScore === 0 || (delta === 0 && alpha === 0 && theta === 0 && beta === 0)) {
+            this.processMetricsUpdate({
+                stressScore: 0,
+                isLeadOff: true,
+                delta: 0, theta: 0, alpha: 0, beta: 0, gamma: 0,
+                betaAlphaRatio: 0, hjorthAct: 0, hjorthMob: 0, hjorthComp: 0,
+                entropy: 0, katzFD: 1.0
+            });
+            return;
         }
 
         this.processMetricsUpdate({
             stressScore: stressScore,
-            isLeadOff: stressScore === 0,
+            isLeadOff: false,
             delta: delta, theta: theta, alpha: alpha, beta: beta, gamma: gamma,
             betaAlphaRatio: ratio,
             hjorthAct: 0.0604, hjorthMob: 0.0990, hjorthComp: 2.9688,
