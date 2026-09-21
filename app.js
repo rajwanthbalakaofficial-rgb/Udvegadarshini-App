@@ -1609,22 +1609,36 @@ class UdvegadarshiniApp {
             return;
         }
 
-        // STRICT DISCONNECTION CHECK:
-        // If band powers are zero OR if stress score is 0 OR line indicates LEAD-OFF:
-        // IMMEDIATELY FORCE DISCONNECTED STATE (--% Off-Body)
-        if (stressScore === 0 || (delta === 0 && alpha === 0 && theta === 0 && beta === 0)) {
-            this.processMetricsUpdate({
-                stressScore: 0,
-                isLeadOff: true,
-                delta: 0, theta: 0, alpha: 0, beta: 0, gamma: 0,
-                betaAlphaRatio: 0, hjorthAct: 0, hjorthMob: 0, hjorthComp: 0,
-                entropy: 0, katzFD: 1.0
-            });
+        const isZeroSignal = line.includes('LEAD-OFF') || line.includes('Disconnected') || stressScore === 0 || (delta === 0 && alpha === 0 && theta === 0 && beta === 0);
+
+        if (isZeroSignal) {
+            this.clientLeadOffCount = (this.clientLeadOffCount || 0) + 1;
+            // Require 2 consecutive Lead-Off lines (1s) to prevent single-sample blink flickering!
+            if (this.clientLeadOffCount >= 2) {
+                this.smoothedUiScore = 0;
+                this.processMetricsUpdate({
+                    stressScore: 0,
+                    isLeadOff: true,
+                    delta: 0, theta: 0, alpha: 0, beta: 0, gamma: 0,
+                    betaAlphaRatio: 0, hjorthAct: 0, hjorthMob: 0, hjorthComp: 0,
+                    entropy: 0, katzFD: 1.0
+                });
+            }
             return;
         }
 
+        // Reset Lead-Off counter on valid physiological signal sample
+        this.clientLeadOffCount = 0;
+
+        // Gliding Exponential Moving Average for smooth non-flickering UI updates
+        if (!this.smoothedUiScore || this.smoothedUiScore === 0) {
+            this.smoothedUiScore = stressScore;
+        } else {
+            this.smoothedUiScore = (this.smoothedUiScore * 0.85) + (stressScore * 0.15);
+        }
+
         this.processMetricsUpdate({
-            stressScore: stressScore,
+            stressScore: this.smoothedUiScore,
             isLeadOff: false,
             delta: delta, theta: theta, alpha: alpha, beta: beta, gamma: gamma,
             betaAlphaRatio: ratio,

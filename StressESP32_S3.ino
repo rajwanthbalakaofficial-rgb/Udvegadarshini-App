@@ -193,18 +193,23 @@ void extractFeaturesAndPredict() {
   float beta_power  = (sumBeta  / WINDOW_SIZE) * 4.0;
   float gamma_power = (sumGamma / WINDOW_SIZE) * 1.5;
 
+  static int leadOffCount = 0;
   float totalPower = delta_power + theta_power + alpha_power + beta_power + gamma_power;
 
-  // SMART LEAD-OFF DETECTION:
-  // If ADC is near power rails (0 or 4095) OR if total signal power / variance is dead flatline (disconnected electrodes)
-  if (currentAdc >= 4050 || currentAdc <= 50 || totalPower < 0.005 || variance < 0.000001) {
-    String offBodyStr = "LEAD-OFF: Disconnected from Body | Stress Score: 0.0 %";
-    Serial.println(offBodyStr);
-    if (deviceConnected && pCharacteristic) {
-      pCharacteristic->setValue(offBodyStr.c_str());
-      pCharacteristic->notify();
+  // SMART LEAD-OFF DETECTION WITH HYSTERESIS (Requires 3 consecutive samples):
+  if (currentAdc >= 4050 || currentAdc <= 50 || totalPower < 0.0008 || variance < 0.0000001) {
+    leadOffCount++;
+    if (leadOffCount >= 3) {
+      String offBodyStr = "LEAD-OFF: Disconnected from Body | Stress Score: 0.0 %";
+      Serial.println(offBodyStr);
+      if (deviceConnected && pCharacteristic) {
+        pCharacteristic->setValue(offBodyStr.c_str());
+        pCharacteristic->notify();
+      }
+      return;
     }
-    return;
+  } else {
+    leadOffCount = 0; // Reset counter when valid physiological signals flow
   }
 
   // Cognitive Stress Indicator: Beta / Alpha Ratio
@@ -215,13 +220,13 @@ void extractFeaturesAndPredict() {
   float hjorth_mobility = sqrt(abs(variance) / (hjorth_activity + 0.0001)) * 0.1;
   float hjorth_complexity = 2.9688;
 
-  // Exponential Moving Average (EMA) Filter for Clinical Grade Stability
+  // Exponential Moving Average (EMA) 92/8 Filter for Smooth Gliding Readings
   static float smoothed_stress = 32.0; // Normal Baseline start
-  float raw_stress = (beta_alpha_ratio * 14.0) + (beta_power * 15.0) + 18.0;
+  float raw_stress = (beta_alpha_ratio * 8.0) + (beta_power * 10.0) + 22.0;
   if (raw_stress < 15.0) raw_stress = 15.0;
   if (raw_stress > 80.0) raw_stress = 80.0;
 
-  smoothed_stress = (smoothed_stress * 0.85) + (raw_stress * 0.15);
+  smoothed_stress = (smoothed_stress * 0.92) + (raw_stress * 0.08);
   float stress_percentage = smoothed_stress;
 
   // Format Output String matching Udvegadarshini Parser Specifications
