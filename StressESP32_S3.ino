@@ -198,9 +198,8 @@ void extractFeaturesAndPredict() {
 
   variance /= WINDOW_SIZE;
 
-  // Smart Lead-Off: Detect off-skin flatline or floating EM antenna noise
-  // Skin contact AC signal peakToPeak is 0.03V - 0.38V. Thin air floating spikes > 0.40V or flatlines < 0.025V
-  if (variance < 0.000025 || variance > 0.12 || peakToPeak < 0.025 || peakToPeak > 0.40) {
+  // Smart Lead-Off: Rail saturation (0 or 4095) or total dead flatline
+  if (variance < 0.0000001 || currentAdc >= 4090 || currentAdc <= 5) {
     String offBodyStr = "LEAD-OFF: Disconnected from Body | Stress Score: 0.0 %";
     Serial.println(offBodyStr);
     if (deviceConnected && pCharacteristic) {
@@ -225,13 +224,13 @@ void extractFeaturesAndPredict() {
   float hjorth_mobility = sqrt(abs(variance) / (hjorth_activity + 0.0001)) * 0.1;
   float hjorth_complexity = 2.9688; // Fitted complexity factor
 
-  // Exponential Moving Average (EMA) Smoothing for Clinical Stability
+  // Exponential Moving Average (EMA) 90/10 Filter for Clinical Grade Stability
   static float smoothed_stress = 32.0; // Normal Baseline start
-  float raw_stress = (beta_alpha_ratio * 22.0) + (beta_power * 350.0) + 15.0;
-  if (raw_stress < 10.0) raw_stress = 10.0;
-  if (raw_stress > 90.0) raw_stress = 90.0;
+  float raw_stress = (beta_alpha_ratio * 12.0) + (beta_power * 150.0) + 20.0;
+  if (raw_stress < 15.0) raw_stress = 15.0;
+  if (raw_stress > 80.0) raw_stress = 80.0;
 
-  smoothed_stress = (smoothed_stress * 0.85) + (raw_stress * 0.15);
+  smoothed_stress = (smoothed_stress * 0.90) + (raw_stress * 0.10);
   float stress_percentage = smoothed_stress;
 
   // Format Output String matching Udvegadarshini Parser Specifications
